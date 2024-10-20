@@ -11,7 +11,7 @@ const NewLoginScreen = () => {
   const [loading, setLoading] = useState(false); // For showing loading state
   const [popupVisible, setPopupVisible] = useState(false); // For controlling popup visibility
   const [popupMessage, setPopupMessage] = useState(''); // For storing popup message
-
+const [warningType,setWarningType]  = useState(null)
   const navigation = useNavigation();
 
   useLayoutEffect(() => {
@@ -35,6 +35,7 @@ const NewLoginScreen = () => {
     // Validation for empty fields
     if (!email || !password) {
       setPopupMessage('Email and Password are required.');
+      setWarningType('warning')
       setPopupVisible(true);
       return; // Exit if validation fails
     }
@@ -54,7 +55,7 @@ const NewLoginScreen = () => {
       } else {
         console.log(response.data)
         setPopupMessage(response.message);
-        
+        setWarningType("error")
         setPopupVisible(true);
       }
     } finally {
@@ -131,7 +132,7 @@ const NewLoginScreen = () => {
         visible={popupVisible}
         message={popupMessage}
         onClose={() => setPopupVisible(false)}
-        type={'warning'}
+        type={warningType}
         onOk={()=> setPopupVisible(false)}
       />
     </SafeAreaView>

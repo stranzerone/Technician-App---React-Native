@@ -12,7 +12,7 @@ const Loader = () => {
         iterationCount="infinite"
         direction="alternate"
       >
-        Loading...
+      
       </Animatable.Text>
       <Animatable.View
         animation="pulse"

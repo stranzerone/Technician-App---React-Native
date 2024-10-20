@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 10,
+   paddingRight:10,
     paddingVertical: 0,
     backgroundColor: 'transparent',
   },
@@ -201,6 +201,8 @@ const styles = StyleSheet.create({
   filterButton: {
     width: 40,
     height: 40,
+    borderWidth:1,
+    borderColor:"blue",
     borderRadius: 20,
     backgroundColor: '#fff',
     justifyContent: 'center',

@@ -16,15 +16,14 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12, // Increased border radius for a softer look
-    padding: 20, // Added padding for better spacing
+    paddingVertical: 20, // Added padding for better spacing
+    paddingHorizontal:12,
     marginBottom: 10, // Increased margin for better separation between cards
     elevation: 5, // More pronounced shadow effect
     shadowColor: '#000', // Shadow color for iOS
     shadowOffset: { width: 0, height: 4 }, // Deeper shadow
     shadowOpacity: 0.2, // More visible shadow
     shadowRadius: 6, // More spread out shadow
-    borderWidth: 1, // Border to enhance card appearance
-    borderColor: '#1996D3', // Border color matching the theme
   },
   message: {
     fontSize: 16,

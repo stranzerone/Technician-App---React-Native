@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, FlatList, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { GetInstructionsApi } from '../../service/BuggyListApis/GetInstructionsApi';
 import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
-import BuggyListCard from './BuggyListCard';
+// import BuggyListCard from './BuggyListCard';
+import BuggyListCard from "../BuggyListCardComponets/BuggyListCard"
 import Loader from '../LoadingScreen/AnimatedLoader';
 
 const BuggyListPage = ({ uuid }) => {
@@ -97,6 +98,7 @@ const BuggyListPage = ({ uuid }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor:'#E1F2FE'
   },
   listContainer: {
     padding: 10,

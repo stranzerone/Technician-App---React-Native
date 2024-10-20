@@ -32,7 +32,6 @@ export const GetNotificationsApi = async (page = 1) => { // Default page to 1 if
       });
 
       const data = response.data;
-      console.log(data, "Notification api");
       return data; // Return the relevant data
     } else {
       console.error("User info not found in AsyncStorage");

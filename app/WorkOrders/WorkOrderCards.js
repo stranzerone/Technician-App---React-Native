@@ -4,17 +4,17 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
 
-// Function to get badge classes based on priority
-const getPriorityBadgeClasses = (priority) => {
+// Function to get color based on priority
+const getPriorityColor = (priority) => {
   switch (priority) {
     case 'Emergency':
-      return 'inline-flex items-center rounded-md bg-red-300 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset font-extrabold ring-red-600/10';
+      return '#f56565'; // Red
     case 'High':
-      return 'inline-flex items-center rounded-md bg-orange-300 px-2 py-1 text-xs font-medium text-orange-700 ring-1 font-extrabold ring-inset ring-orange-600/10';
+      return '#ed8936'; // Orange
     case 'Normal':
-      return 'inline-flex items-center rounded-md bg-blue-300 px-2 py-1 text-xs font-medium text-blue-700  font-extrabold ring-1 ring-inset ring-blue-600/10';
+      return '#3182ce'; // Blue
     default:
-      return 'inline-flex items-center rounded-md bg-gray-300 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10';
+      return '#a0aec0'; // Gray
   }
 };
 
@@ -22,19 +22,19 @@ const getPriorityBadgeClasses = (priority) => {
 const getStatusBadgeClasses = (status) => {
   switch (status) {
     case 'OPEN':
-      return 'inline-flex items-center rounded-md bg-purple-200 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10';
+      return 'bg-blue-100 text-blue-700';  // Light Blue for OPEN
     case 'STARTED':
-      return 'inline-flex items-center rounded-md bg-yellow-200 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20';
+      return 'bg-orange-100 text-orange-800'; // Light Orange for STARTED
     case 'COMPLETED':
-      return 'inline-flex items-center rounded-md bg-green-200 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20';
+      return 'bg-green-100 text-green-700'; // Light Green for COMPLETED
     case 'HOLD':
-      return 'inline-flex items-center rounded-md bg-indigo-200 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10';
+      return 'bg-yellow-100 text-yellow-800'; // Light Yellow for HOLD
     case 'CANCELLED':
-      return 'inline-flex items-center rounded-md bg-red-200 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10';
+      return 'bg-red-100 text-red-700'; // Light Red for CANCELLED
     case 'REOPEN':
-      return 'inline-flex items-center rounded-md bg-purple-200 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10';
+      return 'bg-purple-100 text-purple-700'; // Light Purple for REOPEN
     default:
-      return 'inline-flex items-center rounded-md bg-gray-200 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10';
+      return 'bg-gray-100 text-gray-600'; // Light Gray for unknown statuses
   }
 };
 
@@ -42,27 +42,42 @@ const WorkOrderCard = ({ workOrder }) => {
   const navigation = useNavigation();
   const { ppmAsstPermissions } = usePermissions(); // Destructure permissions from the context
 
+  const priorityColor = getPriorityColor(workOrder.wo.Priority);
+
+  const statusBadgeClasses = getStatusBadgeClasses(workOrder.wo.Status);
+
   return (
     <TouchableOpacity
-      className="bg-white p-4 my-2 rounded-lg shadow-lg"
+      className="bg-white p-4 my-2 shadow-lg relative"
       onPress={() => {
         if (ppmAsstPermissions[0].includes('R')) {
-          navigation.navigate('BuggyListTopTabs', { workOrder: workOrder.wo.uuid });
+          navigation.navigate('BuggyList', { workOrder: workOrder.wo.uuid });
         }
       }}
     >
-      {/* Work Order ID and badges in the same row */}
+      {/* Work Order ID and priority in the same row */}
       <View className="flex-row justify-between items-center">
         <Text className="text-gray-600 text-xs">Work Order ID: {workOrder.wo['Sequence No']}</Text>
-        <View className="flex-row space-x-2">
-          {/* Priority Badge */}
-          <View className={getPriorityBadgeClasses(workOrder.wo.Priority)}>
-            <Text>{workOrder.wo.Priority}</Text>
-          </View>
-          {/* Status Badge */}
-          <View className={getStatusBadgeClasses(workOrder.wo.Status)}>
-            <Text>{workOrder.wo.Status || 'Unknown Status'}</Text>
-          </View>
+        <View className="flex-row items-center">
+          {/* Priority Dot with Glowing Effect */}
+          <View
+            style={{
+              width: 7, // Increase size for the glow
+              height: 7, // Increase size for the glow
+              borderRadius: 6, // Make it a perfect circle
+              backgroundColor: priorityColor,
+              marginRight: 4,
+              // Shadow properties for glowing effect
+              shadowColor: priorityColor, // Match the glow color
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.7,
+              shadowRadius: 6, // Increase for a more pronounced glow
+              elevation: 4, // For Android shadow
+            }}
+          />
+          <Text className="text-xs font-extrabold" style={{ color: priorityColor }}>
+            {workOrder.wo.Priority}
+          </Text>
         </View>
       </View>
 
@@ -89,6 +104,13 @@ const WorkOrderCard = ({ workOrder }) => {
               : 'N/A'}
           </Text>
         </View>
+      </View>
+
+      {/* Status Badge at the bottom right corner */}
+      <View className={`absolute bottom-0 right-0 inline-flex items-center px-6 py-1 text-xs font-medium ${statusBadgeClasses}`}>
+        <Text className="text-md font-black" style={{ color: statusBadgeClasses.includes('text') ? 'inherit' : '#000' }}>
+          {workOrder.wo.Status || 'Unknown Status'}
+        </Text>
       </View>
     </TouchableOpacity>
   );

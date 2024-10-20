@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
-import {WorkOrderInfoApi} from "../../service/WorkOrderInfoApi"
+import { WorkOrderInfoApi } from "../../service/WorkOrderInfoApi";
 
 const AssetInfo = ({ WoUuId }) => {
   const [workOrder, setWorkOrder] = useState(null);
@@ -19,6 +19,7 @@ const AssetInfo = ({ WoUuId }) => {
     const loadWorkOrderData = async () => {
       try {
         const data = await WorkOrderInfoApi(WoUuId);
+        console.log(data);
         setWorkOrder(data);
       } catch (error) {
         console.error('Error fetching work order:', error);
@@ -28,7 +29,7 @@ const AssetInfo = ({ WoUuId }) => {
     };
 
     loadWorkOrderData();
-  }, []);
+  }, [WoUuId]);
 
   if (loading) {
     return (
@@ -38,9 +39,17 @@ const AssetInfo = ({ WoUuId }) => {
     );
   }
 
-  if (!workOrder) {
-    return <Text>No work order data found.</Text>;
+  if (!workOrder || workOrder.length === 0) {
+    return <Text style={styles.errorText}>No work order data found.</Text>;
   }
+
+  // Extracting necessary data from the work order
+  const {
+    asset,
+    wo,
+    category,
+    pm
+  } = workOrder[0];
 
   return (
     <KeyboardAvoidingView
@@ -50,49 +59,51 @@ const AssetInfo = ({ WoUuId }) => {
     >
       <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={{ ...styles.headerText, fontSize: 16 }}>{workOrder[0]?.wo?.["Sequence No"]}</Text>
-          <Text style={styles.headerText}>{workOrder[0]?.wo?.Name}</Text>
+          <Text style={styles.headerText}>{wo?.["Sequence No"]}</Text>
+          <Text style={styles.headerSubText}>{wo?.Name}</Text>
         </View>
 
         <View style={styles.infoContainer}>
           {/* Work Order Details */}
           <View style={styles.detailsContainer}>
-            <View style={styles.detailRow}>
-              <DetailItem icon="assignment" text={workOrder[0]?.asset?.Name} />
-              <DetailItem icon="tag" text={workOrder[0]?.asset?.["Sequence No"]} />
-            </View>
-            <View style={styles.detailRow}>
-              <DetailItem icon="wrench" text={workOrder[0]?.wo?.Type} />
-              <DetailItem icon="tag" text={workOrder[0]?.category?.Name} />
-            </View>
-            <View style={styles.detailRow}>
-              <DetailItem icon="users" text={`Team: ${workOrder[0]?.pm?.AssignedTeam.join(', ')}`} />
-              <DetailItem icon="user" text={`Assigned: ${workOrder[0]?.wo?.Assigned.join(', ')}`} />
-            </View>
+            <DetailItem icon="assignment" label="Asset Name" text={asset?.Name} />
+            <DetailItem icon="tag" label="Asset ID" text={asset?.["Sequence No"]} />
+            <DetailItem icon="calendar" label="Deadline" text={wo?.["Due Date"]} />
+
+            <DetailItem icon="wrench" label="Type" text={wo?.Type} />
+            <DetailItem icon="tag" label="Category" text={category?.Name} />
+            <DetailItem icon="users" label="Team" text={pm?.AssignedTeam.join(', ')} isTag />
+            <DetailItem icon="user" label="Assigned" text={workOrder[0]?.wo?.Assigned.join(',    ')} isTag />
           </View>
         </View>
 
-        {/* Beautified Description Section */}
+        {/* Description Section */}
         <View style={styles.descriptionContainer}>
           <Text style={styles.descriptionTitle}>Work Order Description</Text>
           <View style={styles.descriptionBox}>
             <Text style={styles.descriptionText}>
-              {workOrder[0]?.wo?.Description || 'No description available for this work order.'}
+              {wo?.Description || 'No description available for this work order.'}
             </Text>
           </View>
         </View>
-
-        {/* Parts Info */}
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
-const DetailItem = ({ icon, text }) => (
+const DetailItem = ({ icon, label, text, isTag }) => (
   <View style={styles.detailItem}>
-    {icon === "assignment" && <MaterialIcons name={icon} size={20} color="#074B7C" />}
-    {icon !== "assignment" && <FontAwesome name={icon} size={20} color="#074B7C" />}
-    <Text style={styles.detailText}>{text}</Text>
+    <View style={styles.iconContainer}>
+      {icon === "assignment" ? (
+        <MaterialIcons name={icon} size={24} color="#074B7C" />
+      ) : (
+        <FontAwesome name={icon} size={24} color="#074B7C" />
+      )}
+    </View>
+    <View style={styles.detailTextContainer}>
+      <Text style={styles.detailLabel}>{label}:</Text>
+      <Text style={[styles.detailText, isTag && styles.tagText]}>{text || 'N/A'}</Text>
+    </View>
   </View>
 );
 
@@ -110,55 +121,81 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  errorText: {
+    textAlign: 'center',
+    color: '#FF0000',
+    fontSize: 16,
+    marginTop: 20,
+  },
   header: {
     marginBottom: 16,
   },
   headerText: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#074B7C',
   },
+  headerSubText: {
+    fontSize: 16,
+    color: '#1996D3',
+    marginBottom: 8,
+  },
   infoContainer: {
     backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 4,
     marginBottom: 16,
+    padding: 16,
   },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  detailsContainer: {
     marginBottom: 12,
   },
   detailItem: {
-    flex: 1,
-    backgroundColor: '#e7f1ff',
-    borderRadius: 8,
-    padding: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 4,
+    backgroundColor: '#e7f1ff',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 1 },
     shadowRadius: 2,
     elevation: 1,
+  },
+  iconContainer: {
+    marginRight: 10,
+  },
+  detailTextContainer: {
+    flex: 1,
+  },
+  detailLabel: {
+    fontWeight: 'bold',
+    color: '#074B7C',
   },
   detailText: {
     fontSize: 14,
     color: '#333',
-    textAlign: 'center',
     marginTop: 4,
+  },
+  tagText: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    color: '#074B7C',
+    marginLeft: 8,
+    fontWeight: 'normal',
   },
   descriptionContainer: {
     marginBottom: 20,
   },
   descriptionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#074B7C',
     marginBottom: 8,
@@ -166,12 +203,12 @@ const styles = StyleSheet.create({
   descriptionBox: {
     backgroundColor: '#fff',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 4,
   },
   descriptionText: {
     fontSize: 16,

@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
 import WorkOrderPage from '../WorkOrders/WorkOrderScreen';
 import AccessDeniedScreen from './AccessDeniedScreen';
 
@@ -9,16 +10,19 @@ const WorkOrderHomeTab = () => {
 
   const fetchData = async () => {
     const storedUuid = await AsyncStorage.getItem('uuid');
-    console.log('UUID checked');
+    console.log('UUID checked:', storedUuid);
     setUuid(storedUuid);
   };
 
-  useEffect(() => {
-   handleRefresh(); // Fetch UUID when the component mounts
-  }, []);
+  // Use useFocusEffect to fetch UUID whenever the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData(); // Fetch UUID when the component is focused
+    }, [])
+  );
 
   const handleRefresh = () => {
-    fetchData(); // Refresh the UUID when the button is clicked
+    fetchData(); // Refresh the UUID when needed
   };
 
   console.log(uuid, "UUID checked");
@@ -26,7 +30,7 @@ const WorkOrderHomeTab = () => {
   return (
     <View style={styles.container}>
       {uuid ? (
-        <WorkOrderPage uuid={uuid} />
+        <WorkOrderPage uuid={uuid} /> // Pass the stored UUID
       ) : (
         <AccessDeniedScreen onRefresh={handleRefresh} /> // Pass the refresh function
       )}

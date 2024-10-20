@@ -1,28 +1,25 @@
 import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
 import WorkOrdersMainScreen from '../WorkOrderStack/WoDynamicTabScreen';
 import BuggyListTopTabs from '../BuggyListTopTabs/BuggyListTopTabs';
 
-// Placeholder components for each screen in the WorkOrderHomeTab's nested tab navigation
+const Stack = createStackNavigator();
 
-const Tab = createBottomTabNavigator();
-
-// Nested tab navigator for WorkOrderHomeTab
-const WorkOrderHomeTab = () => {
+// Main stack navigator for your application
+const WorkOrderStack = () => {
   return (
-    <Tab.Navigator
-      initialRouteName="Work Order List"  // Set the initial tab here
-      screenOptions={() => ({
-    
-        headerShown: false,  // Hides the header from all screens
-      })}
-    >
-      <Tab.Screen name="Work Order List" component={WorkOrdersMainScreen} />
-      <Tab.Screen name="BuggyListTopTabs" component={BuggyListTopTabs} />
-    </Tab.Navigator>
+      <Stack.Navigator
+        initialRouteName="Work Order List" // Set the initial screen here
+        screenOptions={{
+          headerShown: false, // Hide header if not needed
+        }}
+      >
+        <Stack.Screen name="Work Order List" component={WorkOrdersMainScreen} />
+        <Stack.Screen name="BuggyList" component={BuggyListTopTabs} />
+      </Stack.Navigator>
+
   );
 };
 
-export default WorkOrderHomeTab;
+export default WorkOrderStack;

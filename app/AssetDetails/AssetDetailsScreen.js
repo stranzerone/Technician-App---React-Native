@@ -71,22 +71,23 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 10,
+    paddingTop: 10,
+    paddingBottom: 80, // Add padding to the bottom for the tab bar
   },
   commentsContainer: {
     overflow: 'hidden', // Ensures content is hidden when collapsed
   },
   expandButton: {
+    position: 'absolute',
+    bottom: 50, // Position above the bottom tab bar
+    left: 20,
+    right: 20,
     flexDirection: 'row',
-    textAlign: 'center',
-    paddingHorizontal: 10,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 10,
     backgroundColor: '#074B7C',
     borderRadius: 8,
-    marginTop: 10,
-    alignSelf: 'center',
   },
   expandText: {
     fontSize: 16,

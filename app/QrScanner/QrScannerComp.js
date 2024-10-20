@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect } from "react";
-import { Text, View, StyleSheet, Button } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { CameraView, Camera } from "expo-camera";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
@@ -26,15 +26,26 @@ export default function QrScanner({onRefresh}) {
     // Store UUID in AsyncStorage
     try {
       await AsyncStorage.setItem('uuid', uuid);
-      console.log(uuid,"UUID stored successfully!");
-      onRefresh();
-      console.log("page refreshed")
+      console.log(uuid, "UUID stored successfully!");
+
+      // Call onRefresh if provided
+      if (onRefresh) {
+        onRefresh();
+      }
+
+      // Wait for a short time before navigating
+      setTimeout(() => {
+    // Assuming `uuid` is the variable containing your UUID
+    console.log(uuid,"sending to route")
+navigation.navigate("Work Order List", { paramUuId : uuid });
+
+        setScanned(false); // Reset scanned to allow scanning again
+      }, 1000); // Delay navigation to ensure smooth transition
+
     } catch (error) {
       console.error("Failed to store UUID:", error);
+      setScanned(false); // Reset scanned even if an error occurs
     }
-
-    // Navigate to WorkOrders screen
-    navigation.navigate("Work Orders");
   };
 
   if (hasPermission === null) {
@@ -56,11 +67,6 @@ export default function QrScanner({onRefresh}) {
           style={styles.camera}
         />
       </View>
-      {scanned && (
-        <View style={styles.buttonContainer}>
-          <Button title={"Tap to Scan Again"} onPress={() => setScanned(false)} />
-        </View>
-      )}
     </View>
   );
 }
@@ -84,10 +90,5 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
-  },
-  buttonContainer: {
-    marginTop: 20, 
-    width: "60%", 
-    alignSelf: "center", 
   },
 });
