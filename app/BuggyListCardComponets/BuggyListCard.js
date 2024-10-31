@@ -17,7 +17,7 @@ const BuggyListCard = ({ item, onUpdateSuccess, WoUuId }) => {
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pdfPreview, setPdfPreview] = useState(null);
-
+console.log(item.type,"item")
   // Convert image URL to base64 for preview
   useEffect(() => {
     if (item.image) {

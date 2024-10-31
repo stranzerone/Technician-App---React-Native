@@ -3,7 +3,6 @@ import { View, StyleSheet, SafeAreaView, TouchableOpacity, Text, Animated, Keybo
 import AssetInfo from './AssetInfo';
 import CommentsPage from '../WoComments/WoCommentsScreen';
 import { FontAwesome5 } from '@expo/vector-icons'; // Import FontAwesome5
-
 const AssetDetailsMain = ({ uuid }) => {
   const [expanded, setExpanded] = useState(false); // State for managing expand/collapse
   const animation = useState(new Animated.Value(0))[0]; // Initialize animation state
@@ -37,6 +36,7 @@ const AssetDetailsMain = ({ uuid }) => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       >
+     
         <View style={styles.content}>
           {/* Info Section */}
           <AssetInfo WoUuId={WoUuId} />

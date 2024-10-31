@@ -15,7 +15,7 @@ const NotificationMainPage = () => {
         const data = await GetNotificationsApi(); // Fetch notifications from your API
         setNotifications(data.data); // Adjust according to your API response structure
       
-      console.log(data,'ui Notifications')
+     
       } catch (err) {
         setError(err.message);
       } finally {

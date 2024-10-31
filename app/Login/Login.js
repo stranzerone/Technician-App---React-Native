@@ -1,65 +1,101 @@
 import React, { useLayoutEffect, useState } from 'react';
 import { SafeAreaView, View, TextInput, Image, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { loginApi } from '../../service/LoginApi';
+import { loginApi } from '../../service/UserLoginApis/LoginApi'; 
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import technicianImage from '../../assets/SvgImages/Technician.png'; // Adjust the path to your technician image
+import technicianImage from '../../assets/SvgImages/Technician.png'; 
 import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
+import UserCard from './MultipleUserCards/MultipleUserCards'; 
+import { GetMyAccounts } from '../../service/UserLoginApis/GetMyAccountsApi';
+import { LogMeInWithOtp } from '../../service/LoginWithOtp/LoginMeInWithOtp';
+import { useDispatch } from 'react-redux';
+import {fetchAssets} from "../../utils/ReduxToolkitSetup/AssetSlice"
 const NewLoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false); // For showing loading state
-  const [popupVisible, setPopupVisible] = useState(false); // For controlling popup visibility
-  const [popupMessage, setPopupMessage] = useState(''); // For storing popup message
-const [warningType,setWarningType]  = useState(null)
+  const [loading, setLoading] = useState(false);
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+  const [warningType, setWarningType] = useState(null);
+  const [multipleUsers, setMultipleUsers] = useState([]);
+  const [showUserCard, setShowUserCard] = useState(false);
   const navigation = useNavigation();
-
+const dispatch = useDispatch()
   useLayoutEffect(() => {
     const checkLoginStatus = async () => {
       try {
         const userInfo = await AsyncStorage.getItem('userInfo');
-      
         if (userInfo) {
-          console.log("User Exists");
-          navigation.navigate("Home"); // Navigate to the Home screen if userInfo exists
+          dispatch(fetchAssets())
+          navigation.navigate('Home'); 
         }
       } catch (error) {
         console.error('Error fetching user info:', error);
       }
     };
 
-    checkLoginStatus(); // Check login status on component mount
-  }, [navigation]); // Add `navigation` to the dependency array
+    checkLoginStatus();
+  }, [navigation]);
 
   const handleLogin = async () => {
-    // Validation for empty fields
     if (!email || !password) {
       setPopupMessage('Email and Password are required.');
-      setWarningType('warning')
+      setWarningType('warning');
       setPopupVisible(true);
-      return; // Exit if validation fails
+      return;
     }
 
     try {
       setLoading(true);
-      const response = await loginApi(email, password);
+      const data = { email, password };
+      const response = await loginApi(data);
 
-      // Debug: Log the full response
-
-      // Check the status and navigate
-      if (response && response.status == 'success') {
-        // Save user info to AsyncStorage
-        setEmail(''); // Clear email field
-        setPassword(''); // Clear password field
-        navigation.navigate('Home'); // Navigate to Home
+      if (response && response.status === 'success') {
+        setEmail('');
+        setPassword('');
+        navigation.navigate('Home');
+      } else if (Array.isArray(response.data) && response.data.length > 1) {
+        setMultipleUsers(response.data);
+        setShowUserCard(true);
       } else {
-        console.log(response.data)
-        setPopupMessage(response.message);
-        setWarningType("error")
+        setPopupMessage(response.message || 'Unknown error');
+        setWarningType('error');
         setPopupVisible(true);
       }
+    } catch (error) {
+      console.error('Login error:', error);
+      setPopupMessage('Login failed. Please try again.');
+      setWarningType('error');
+      setPopupVisible(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUserSelect = async (user) => {
+    try {
+      setLoading(true);
+      const data = { email, password, user };
+      const response = await loginApi(data);
+
+      if (response && response.status === 'success') {
+        setEmail('');
+        setPassword('');
+        dispatch(fetchAssets())
+        navigation.navigate('Home');
+      } else {
+        setPopupMessage(response.message || 'Unknown error');
+        setWarningType('error');
+        setPopupVisible(true);
+      }
+    } catch (error) {
+      console.error('Error logging in with selected user:', error);
+      setPopupMessage('Login failed. Please try again.');
+      setWarningType('error');
+      setPopupVisible(true);
+    } finally {
+      setLoading(false);
+      setShowUserCard(false);
     }
   };
 
@@ -67,16 +103,15 @@ const [warningType,setWarningType]  = useState(null)
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
         <Image
-          source={technicianImage} // Use the imported image from assets
+          source={technicianImage}
           style={styles.imageBackground}
           resizeMode="contain"
         />
       </View>
 
-      {/* Place logo below the blue header container */}
       <View style={styles.logoContainer}>
         <Image
-          source={{ uri: "https://factech.co.in/fronts/images/Final_Logo_grey.png" }} // Replace with your logo image URL
+          source={{ uri: 'https://factech.co.in/fronts/images/Final_Logo_grey.png' }} 
           style={styles.logoImage}
           resizeMode="contain"
         />
@@ -101,17 +136,12 @@ const [warningType,setWarningType]  = useState(null)
           onChangeText={setPassword}
         />
 
-        {/* Row container for "Login with OTP" and "Forgot Password" */}
         <View style={styles.linkRowContainer}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('OtpLogin')}
-            style={styles.otpLoginLink}>
+          <TouchableOpacity onPress={() => navigation.navigate('OtpLogin')} style={styles.otpLoginLink}>
             <Text style={styles.otpLinkText}>Login with OTP</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ForgotPassword')}
-            style={styles.forgotPasswordLink}>
+          <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotPasswordLink}>
             <Text style={styles.link}>Forgot Password?</Text>
           </TouchableOpacity>
         </View>
@@ -119,22 +149,28 @@ const [warningType,setWarningType]  = useState(null)
         <TouchableOpacity
           style={[styles.loginButton, loading && styles.loginButtonDisabled]}
           onPress={handleLogin}
-          disabled={loading} // Disable button when loading
+          disabled={loading} 
         >
-          <Text style={styles.loginButtonText}>
-            {loading ? 'Logging in...' : 'Login'}
-          </Text>
+          <Text style={styles.loginButtonText}>{loading ? 'Logging in...' : 'Login'}</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Dynamic Popup for displaying messages */}
       <DynamicPopup
         visible={popupVisible}
         message={popupMessage}
         onClose={() => setPopupVisible(false)}
         type={warningType}
-        onOk={()=> setPopupVisible(false)}
+        onOk={() => setPopupVisible(false)}
       />
+
+      {showUserCard && (
+        <UserCard
+          visible={showUserCard}
+          onClose={() => setShowUserCard(false)}
+          users={multipleUsers}
+          onSelectUser={handleUserSelect} 
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -145,40 +181,38 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   headerContainer: {
-    height: '30%', // Height for logo and SVG image section
-    borderBottomRightRadius: 0, // Apply border radius for bottom right
-    borderBottomLeftRadius: 200, // Apply border radius for bottom left
-    overflow: 'hidden', // Ensures the border radius is applied
-    flexDirection: 'row', // Align items in a row
-    alignItems: 'flex-end', // Center items vertically
+    height: '30%',
+    borderBottomLeftRadius: 200,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     backgroundColor: '#1996D3',
   },
   imageBackground: {
-    position: "relative",
+    position: 'relative',
     left: 140,
-    height: '100%', // Ensure the image takes the full height of the container
-    width: '80%', // Ensure the image takes the full width of the container
+    height: '100%',
+    width: '80%',
   },
   logoContainer: {
-    height: '10%', // Adjust as necessary
-    justifyContent: 'center', // Center the logo vertically
-    alignItems: 'center', // Center the logo horizontally
+    height: '10%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   logoImage: {
-    width: 120, // Make the logo smaller
-    height: 40, // Adjust height as necessary
+    width: 120,
+    height: 40,
   },
   formContainer: {
     width: '100%',
-    height: "50%", // Adjust as necessary for the form
+    height: '50%',
     alignItems: 'center',
-    display: 'flex',
-    justifyContent: "start",
+    justifyContent: 'start',
     paddingHorizontal: 20,
   },
   linkRowContainer: {
-    flexDirection: 'row', // Align items in a row
-    justifyContent: 'space-between', // Spread them apart
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     width: '100%',
     marginBottom: 16,
     paddingHorizontal: 20,
@@ -195,8 +229,8 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   input: {
-    width: Platform.OS === "ios" ? '85%' : "100%",
-    color: "#074B7C",
+    width: Platform.OS === 'ios' ? '85%' : '100%',
+    color: '#074B7C',
     padding: 12,
     marginBottom: 16,
     borderColor: '#1996D3',
@@ -205,7 +239,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   loginButton: {
-    width: Platform.OS === "ios" ? '80%' : "100%",
+    width: Platform.OS === 'ios' ? '80%' : '100%',
     padding: 14,
     backgroundColor: '#074B7C',
     borderRadius: 12,

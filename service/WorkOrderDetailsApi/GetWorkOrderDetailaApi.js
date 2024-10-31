@@ -23,9 +23,9 @@ const apiToken = parsedUserInfo.data.api_token
     const headers = {
         'Content-Type': 'application/json',
         'ism-auth': JSON.stringify({
-          "api-token": apiToken,     // Dynamic from AsyncStorage
-          "user-id": userId,         // Dynamic from AsyncStorage
-          "site-id":  2     // If siteId is not available, fallback to default
+          "api-token": apiToken,    
+          "user-id": userId,        
+          "site-id":  2    
         })
       };
 

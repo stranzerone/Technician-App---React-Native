@@ -3,10 +3,14 @@ import { Text, View, StyleSheet } from "react-native";
 import { CameraView, Camera } from "expo-camera";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import DynamicPopup from "../DynamivPopUps/DynapicPopUpScreen";
 
 export default function QrScanner({onRefresh}) {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
+  const [popupVisible, setPopupVisible] = useState(false);  // State for popup visibility
+  const [popupMessage, setPopupMessage] = useState('');     // State for popup message
+  const [popupType, setPopupType] = useState('error');      // State for popup type (error, success, etc.)
   const navigation = useNavigation();
 
   const getCameraPermissions = async () => {
@@ -20,6 +24,7 @@ export default function QrScanner({onRefresh}) {
 
   const handleBarcodeScanned = async ({ data }) => {
     setScanned(true);
+    console.log(data,'uuid data')
     const uuid = data.split("=")[2];
     console.log(`Scanned data: ${uuid}`);
 
@@ -33,14 +38,23 @@ export default function QrScanner({onRefresh}) {
         onRefresh();
       }
 
-      // Wait for a short time before navigating
-      setTimeout(() => {
-    // Assuming `uuid` is the variable containing your UUID
+  
     console.log(uuid,"sending to route")
-navigation.navigate("Work Order List", { paramUuId : uuid });
 
-        setScanned(false); // Reset scanned to allow scanning again
-      }, 1000); // Delay navigation to ensure smooth transition
+if(data.includes('app.factech')){
+  setScanned(false); // Reset scanned to allow scanning again
+
+  navigation.navigate("DynamicWo", { paramUuId : uuid });
+}else{
+console.log(data,"not contain")
+setScanned(false); // Reset scanned to allow scanning again
+
+setPopupMessage("Qr Is Not Releated to app.factech, Scan a Valid Qr ");
+setPopupType("error"); // Set the popup type to 'error'
+setPopupVisible(true); // Display the popup
+
+
+}
 
     } catch (error) {
       console.error("Failed to store UUID:", error);
@@ -67,6 +81,14 @@ navigation.navigate("Work Order List", { paramUuId : uuid });
           style={styles.camera}
         />
       </View>
+      <DynamicPopup
+      visible={popupVisible}
+      type={popupType}
+      message={popupMessage}
+      onOk={() => setPopupVisible(false)}  // Close the popup when OK is pressed
+
+      onClose={() => setPopupVisible(false)}  // Close the popup when OK is pressed
+    />
     </View>
   );
 }

@@ -30,8 +30,8 @@ console.log(params,"api parmas")
     try {
       const response = await axios.get(apiUrl, { params,headers, withCredentials: true });
       const data = response.data.data
-     console.log(data.type,"api")
   if(response.data.metadata.count){
+
     return data; // Return the relevant data
 
   }else{

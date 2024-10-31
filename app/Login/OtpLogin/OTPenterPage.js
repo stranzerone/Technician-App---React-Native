@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Text,
   StyleSheet,
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -14,17 +13,24 @@ import {
 } from 'react-native';
 import otpSvg from "../../../assets/SvgImages/otp.png";
 import validateOtp from '../../../service/LoginWithOtp/ValidateOtpApi'; // Adjust the path accordingly
+import {GetMyAccounts} from '../../../service/UserLoginApis/GetMyAccountsApi'; // Import the fetchMyAccounts API function
 import { useNavigation } from '@react-navigation/native';
 import DynamicPopup from '../../DynamivPopUps/DynapicPopUpScreen';
+import UserCard from '../MultipleUserCards/MultipleUserCards'; // Import UserCard component
+import { LogMeInWithOtp } from '../../../service/LoginWithOtp/LoginMeInWithOtp';
+
 const OtpPage = ({ route }) => {
   const data = route.params.response.data;
   const [otp, setOtp] = useState(['', '', '', '']);
   const [activeInputIndex, setActiveInputIndex] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(data.expire_in); // Set timeLeft to expire_in
-  const [attemptsRemaining, setAttemptsRemaining] = useState(data.try); // Set attemptsRemaining to data.try
-  const [popupVisible, setPopupVisible] = useState(false); // For controlling DynamicPopup visibility
-  const [popupData, setPopupData] = useState({ type: '', message: '' }); // Pop-up type and message
+  const [timeLeft, setTimeLeft] = useState(data.expire_in);
+  const [attemptsRemaining, setAttemptsRemaining] = useState(data.try);
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupData, setPopupData] = useState({ type: '', message: '' });
+  const [userCards, setUserCards] = useState([]); // To store user card data
+  const [showUserCard, setShowUserCard] = useState(false); // Control visibility of UserCard modal
   const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
+  const [token,setToken] =useState(null)
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -32,17 +38,17 @@ const OtpPage = ({ route }) => {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(timer);
-          return 0; // Stop countdown at 0
+          return 0;
         }
         return prevTime - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer); // Cleanup timer on unmount
+    return () => clearInterval(timer);
   }, []);
 
   const handleChangeText = (text, index) => {
-    if (text.length > 1) return; // Only allow single character input
+    if (text.length > 1) return;
     const newOtp = [...otp];
     newOtp[index] = text;
 
@@ -53,28 +59,43 @@ const OtpPage = ({ route }) => {
     }
   };
 
+  const handleUserSelect = async(user)=>{
+ const response = await  LogMeInWithOtp({token:token,data:user})
+ console.log(response,"received on ui on log o")
+ console.log(response.status ,"status for otp lgo")
+ if(response.status == "success"){
+navigation.navigate('Home')
+ }
+
+  }
+
   const handleVerifyOtp = async () => {
     const otpString = otp.join('');
     if (otpString.length === 4) {
       try {
-        const response = await validateOtp(data.id, otpString); // Call validateOtp function
-      
-        console.log(response,"enter otp response ui")
-        if (response.status === 'success') {
-          setPopupData({
-            type: 'success',
-            message: 'OTP Verified Successfully!',
-          });
-        
-            navigation.navigate('Home'); // Navigate after successful verification
-        
+        const response = await validateOtp(data.id, otpString);
+        if (response.status == 'success') {
+          setToken(response.data.token)
+          // Fetch accounts after successful OTP verification
+          const accountsResponse = await GetMyAccounts(response.data.token);
+          console.log(accountsResponse,"response on accounts")
+          if (accountsResponse && accountsResponse.status === 'success') {
+            setUserCards(accountsResponse.data); // Set user cards data from response
+            setShowUserCard(true); // Show user card modal
+          } else {
+            setPopupData({
+              type: 'error',
+              message: 'Failed to fetch accounts. Please try again.',
+            });
+            setPopupVisible(true);
+          }
         } else {
           setPopupData({
             type: 'error',
             message: 'Invalid OTP. Please try again.',
           });
           setPopupVisible(true);
-          setAttemptsRemaining((prev) => Math.max(prev - 1, 0)); // Decrease attempts
+          setAttemptsRemaining((prev) => Math.max(prev - 1, 0));
         }
       } catch (error) {
         setPopupData({
@@ -89,7 +110,7 @@ const OtpPage = ({ route }) => {
         message: 'Please enter a valid 4-digit OTP.',
       });
       setPopupVisible(true);
-      setAttemptsRemaining((prev) => Math.max(prev - 1, 0)); // Decrease attempts
+      setAttemptsRemaining((prev) => Math.max(prev - 1, 0));
     }
   };
 
@@ -134,7 +155,7 @@ const OtpPage = ({ route }) => {
                   setActiveInputIndex(index);
                   if (!digit) setOtp((prev) => {
                     const newOtp = [...prev];
-                    newOtp[index] = ''; // Clear input if focused
+                    newOtp[index] = '';
                     return newOtp;
                   });
                 }}
@@ -146,7 +167,7 @@ const OtpPage = ({ route }) => {
           <TouchableOpacity
             style={styles.verifyOtpButton}
             onPress={handleVerifyOtp}
-            disabled={timeLeft === 0 || attemptsRemaining === 0} // Disable if time expired or attempts are over
+            disabled={timeLeft === 0 || attemptsRemaining === 0}
           >
             <Text style={styles.verifyOtpButtonText}>Verify OTP</Text>
           </TouchableOpacity>
@@ -168,12 +189,20 @@ const OtpPage = ({ route }) => {
         onClose={() => setPopupVisible(false)}
         onOk={() => setPopupVisible(false)}
       />
+
+      {/* UserCard Modal for displaying fetched user accounts */}
+      {showUserCard && (
+        <UserCard
+          visible={showUserCard} // Control visibility of the modal
+          onClose={() => setShowUserCard(false)} // Function to close the modal
+          users={userCards} // Pass the list of user accounts
+          onSelectUser={handleUserSelect} // Pass the handleUserSelect function to UserCard
+
+        />
+      )}
     </SafeAreaView>
   );
 };
-
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -183,7 +212,7 @@ const styles = StyleSheet.create({
   topContainer: {
     height: '10%',
     borderBottomEndRadius: 70,
-    width: '100%', // Full width
+    width: '100%',
     backgroundColor: '#1996D3',
     position: 'absolute',
     top: 0,
@@ -191,7 +220,7 @@ const styles = StyleSheet.create({
   },
   bottomContainer: {
     height: '10%',
-    width: '100%', // Full width
+    width: '100%',
     borderTopLeftRadius: 70,
     backgroundColor: '#1996D3',
     position: 'absolute',
@@ -210,19 +239,19 @@ const styles = StyleSheet.create({
     paddingBottom: '10%',
   },
   imageUriContainer: {
-    height: '25%', // Adjusted size for better proportions
+    height: '25%',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
   imageUri: {
-    width: 150, // Adjusted size
-    height: 150, // Adjusted size
+    width: 150,
+    height: 150,
     borderRadius: 20,
   },
   textContainer: {
     alignItems: 'center',
-    marginBottom: 20, // Reduced margin for compactness
+    marginBottom: 20,
   },
   headingOTP: {
     fontSize: 24,
@@ -239,20 +268,20 @@ const styles = StyleSheet.create({
   timerText: {
     textAlign: 'center',
     fontSize: 16,
-    color: '#FF5722', // Color for the timer
+    color: '#FF5722',
     marginTop: 8,
   },
   attemptsText: {
     textAlign: 'center',
     fontSize: 16,
-    color: '#FF5722', // Color for attempts remaining
+    color: '#FF5722',
     marginTop: 4,
   },
   inputContainer: {
     flexDirection: 'row',
     alignSelf: 'center',
     justifyContent: 'space-between',
-    width: '80%', // Adjust as necessary
+    width: '80%',
     marginBottom: 20,
   },
   input: {

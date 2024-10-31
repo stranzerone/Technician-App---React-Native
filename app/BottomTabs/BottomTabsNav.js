@@ -17,6 +17,7 @@ import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 import { usePermissions } from '../GlobalVariables/PermissionsContext'; // Use your PermissionsContext
 import NotificationMainPage from '../Notification/NotificationScreen';
 import { GetNotificationsApi } from '../../service/NotificationsApis/GetNotificationsApi';
+import ImageUploadScreen from '../SamplePges/UploadImage';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 

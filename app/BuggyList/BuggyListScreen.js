@@ -18,7 +18,7 @@ const BuggyListPage = ({ uuid }) => {
     setLoading(true); // Set loading to true before fetching data
     try {
       const result = await GetInstructionsApi(uuid);
-      console.log("data received");
+ 
       setData(result);
     } catch (error) {
       setError(error.message || 'Something went wrong');

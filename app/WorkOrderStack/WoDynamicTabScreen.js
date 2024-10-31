@@ -10,7 +10,7 @@ const WorkOrderHomeTab = () => {
 
   const fetchData = async () => {
     const storedUuid = await AsyncStorage.getItem('uuid');
-    console.log('UUID checked:', storedUuid);
+    console.log('UUID checked: on double', storedUuid);
     setUuid(storedUuid);
   };
 

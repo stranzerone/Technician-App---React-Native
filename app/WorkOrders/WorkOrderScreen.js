@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, Animated } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Ensure AsyncStorage is imported
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fetchServiceRequests } from '../../service/FetchWorkOrderApi';
-import { usePermissions } from '../GlobalVariables/PermissionsContext';
 import FilterOptions from './WorkOrderFilter';
 import WorkOrderCard from './WorkOrderCards';
 const WorkOrderPage = () => {
@@ -13,8 +11,6 @@ const WorkOrderPage = () => {
   const [loading, setLoading] = useState(true); // Loading state
   const [workOrders, setWorkOrders] = useState([]); // Work orders data
   const [selectedWOIndex, setSelectedWOIndex] = useState(null); // Track the selected work order index
-  const navigation = useNavigation();
-  const { ppmAsstPermissions } = usePermissions(); // Destructure permissions from the context
 
   // Animation setup
   const indicatorAnim = useRef(new Animated.Value(0)).current; // Animation value
@@ -22,29 +18,36 @@ const WorkOrderPage = () => {
   // Filter options
   const filters = ['OPEN', 'STARTED', 'COMPLETED', 'HOLD', 'CANCELLED', 'REOPEN'];
 
-  // Fetching work order data
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true); // Set loading to true while fetching
+  // Function to fetch work order data
+  const fetchData = async () => {
+    setLoading(true); // Set loading to true while fetching
 
-      try {
-        const id = await AsyncStorage.getItem('uuid'); // Fetch the uuid from AsyncStorage
-        if (id) {
-          const fetchedWorkOrders = await fetchServiceRequests(selectedFilter, id);
-          setWorkOrders(fetchedWorkOrders);
-        } else {
-          // Handle case where uuid is not found
-          setWorkOrders([]); // Reset work orders if uuid is not found
-        }
-      } catch (error) {
-        console.error('Error fetching work orders:', error);
+    try {
+      const id = await AsyncStorage.getItem('uuid'); // Fetch the uuid from AsyncStorage
+     console.log(id,"id on screen")
+      if (id) {
+        const fetchedWorkOrders = await fetchServiceRequests(selectedFilter, id);
+        setWorkOrders(fetchedWorkOrders);
+      } else {
+        // Handle case where uuid is not found
+        setWorkOrders([]); // Reset work orders if uuid is not found
       }
+    } catch (error) {
+      console.error('Error fetching work orders:', error);
+    }
 
-      setLoading(false); // Set loading to false after fetching
-    };
+    setLoading(false); // Set loading to false after fetching
+  };
 
+  // Fetch work orders when the page is opened or when selectedFilter changes
+  useEffect(() => {
+    fetchData(); // Fetch work orders when the component mounts
+  }, []); // Empty dependency array means it runs once on mount
+
+  // Re-fetch data when the selected filter changes
+  useEffect(() => {
     fetchData();
-  }, [selectedFilter]); // Re-fetch data when selectedFilter changes
+  }, [selectedFilter]); // Re-fetch when selectedFilter changes
 
   const applyFilter = (filter) => {
     setSelectedFilter(filter);
@@ -67,8 +70,6 @@ const WorkOrderPage = () => {
     <View style={styles.container}>
       {/* Header with Add Button, Status Tile, and Filter Button */}
       <View style={styles.header}>
-      
-      
         {/* Status Tile */}
         <View style={styles.statusTile}>
           <Text style={styles.statusText}>{selectedFilter}</Text>
@@ -144,22 +145,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-   paddingRight:10,
+    paddingRight: 10,
     paddingVertical: 0,
     backgroundColor: 'transparent',
-  },
-  addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 4,
   },
   statusTile: {
     flex: 1,
@@ -174,7 +162,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  
   noRecordsContainer: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -201,13 +188,13 @@ const styles = StyleSheet.create({
   filterButton: {
     width: 40,
     height: 40,
-    borderWidth:1,
-    borderColor:"blue",
+    borderWidth: 4,
+    borderColor: "#074B7C",
     borderRadius: 20,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: 'black',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,

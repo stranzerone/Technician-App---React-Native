@@ -20,8 +20,9 @@ const uuid = await AsyncStorage.getItem('uuid');
       const userId = parsedUserInfo.data.id; 
       const apiToken = parsedUserInfo.data.api_token;
     // const { id: userId, api_token: apiToken } = parsedUserInfo; // Corruserectly access the data object
-
-    const apiUrl = 'https://nppm-api.isocietymanager.com/v3/workorder/assigned/asset';
+//https://nppm-api.isocietymanager.com/v3/workorder/filter
+    const apiUrl =` https://nppm-api.isocietymanager.com/v3/workorder/filter`
+    // 'https://nppm-api.isocietymanager.com/v3/workorder/assigned/asset';
     
     // Log the selected filter for debugging
     console.log(selectedFilter, "Filter");
@@ -29,6 +30,8 @@ const uuid = await AsyncStorage.getItem('uuid');
     // Define the parameters for the API call
     const params = {
       site_id: 2,
+      breakdown1:false,
+      breakdown2:false,
       asset_uuid: uuid,
       breakdown: false,
       Status: selectedFilter,

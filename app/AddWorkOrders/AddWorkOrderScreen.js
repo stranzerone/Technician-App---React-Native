@@ -1,155 +1,150 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import Icon from 'react-native-vector-icons/Feather'; // Feather icons
+import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, Text } from 'react-native';
+import AssetSearch from './AssetSearch/AssetSearch';
+import TypeSelector from './OptionsInputs/AddType';
+import AssignedUserScreen from './AssignToSearch/AssignToInput';
+import TaskInput from './TextInput/TextInputs';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { submitWorkOrder } from '../../service/AddWorkOrderApis/CreateWorkOrderApi'; // Import your API function
+import PrioritySelector from './OptionsInputs/PriorityInput';
+const AddWorkOrderScreen = () => {
+  const [name, setName] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [estimatedTime, setEstimatedTime] = useState('');
+  const [selectedAsset, setSelectedAsset] = useState(null);
+  const [selectedUser, setSelectedUser] = useState([]);
+ const [typeSelected,setTypeSelected] = useState(null)
+ const [priority,setPriority] = useState(null)
+  const handleSubmit = async () => {
+    // Validate inputs before sending to the API
+    if (!name || !dueDate || !estimatedTime || !selectedAsset || !selectedUser) {
+      Alert.alert("Error", "Please fill in all fields before submitting.");
+      return;
+    }
 
-const AddWorkOrderForm = () => {
-  const [selectedType, setSelectedType] = useState('manual'); // default option
-  const [manualFields, setManualFields] = useState({
-    name: '',
-    workOrderType: 'planned', // Default work order type
-    asset: '',
-    dueDate: '',
-    priority: 'normal',
-    estimatedTime: '',
-    assignedTo: '',
-  });
+    const workOrderData = {
+      name,
+      dueDate,
+      priority,
+      estimatedTime,
+      asset: selectedAsset,
+      user: selectedUser,
+      type:typeSelected
+    };
+
+    try {
+      console.log(selectedUser)
+      const response = await submitWorkOrder(workOrderData);
+      Alert.alert("Success", "Work order submitted successfully!");
+      resetForm();
+    } catch (error) {
+      Alert.alert("Error", "Failed to submit work order. Please try again.");
+      console.error(error);
+    }
+  };
+
+  const resetForm = () => {
+    setName('');
+    setDueDate('');
+    setEstimatedTime('');
+    setSelectedAsset(null);
+    setSelectedUser(null);
+  };
+
+  const OnSelectAsset = (assetName) => {
+    console.log(assetName,"testing")
+    setSelectedAsset(assetName);
+  };
+
+  const onSelectStaff = (staffNames) => {
+    const userIds = staffNames.map(staff => staff.user_id); // Extract user_id from each staff object
+    console.log(userIds, "staff user IDs");
+    setSelectedUser(userIds); // Store the array of user IDs in selectedUser state
+  };
+  
+
+  const onTypeSelect = (type) => {
+    setTypeSelected(type)
+  };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollView}>
-        
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Select WO Type:</Text>
-          <Picker
-            selectedValue={selectedType}
-            onValueChange={(itemValue) => setSelectedType(itemValue)}
-            style={styles.picker}>
-            <Picker.Item label="PMs" value="pm" />
-            <Picker.Item label="Manual" value="manual" />
-          </Picker>
+    <SafeAreaView style={styles.screenContainer}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.listContainer}>
+          <View style={styles.formSection}>
+            <AssetSearch onSelectAsset={OnSelectAsset} />
+          </View>
+          <View style={styles.formSection}>
+            <AssignedUserScreen onSelectStaff={onSelectStaff} />
+          </View>
         </View>
 
-        {selectedType === 'manual' && (
-          <>
-            {[ 
-              { placeholder: 'Enter Work Order Name', value: manualFields.name, key: 'name', icon: 'file-text' },
-              { placeholder: 'Enter Asset Name', value: manualFields.asset, key: 'asset', icon: 'tool' },
-              { placeholder: 'Enter Due Date', value: manualFields.dueDate, key: 'dueDate', icon: 'calendar' },
-              { placeholder: 'Enter Estimated Time', value: manualFields.estimatedTime, key: 'estimatedTime', icon: 'clock' },
-              { placeholder: 'Enter Assigned Person', value: manualFields.assignedTo, key: 'assignedTo', icon: 'user' },
-            ].map(({ placeholder, value, key, icon }) => (
-              <View key={key} style={styles.formGroupWithIcon}>
-                <Icon name={icon} size={20} color="#1996D3" style={styles.icon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder={placeholder}
-                  value={value}
-                  onChangeText={(text) => setManualFields({ ...manualFields, [key]: text })}
-                />
-              </View>
-            ))}
+        <View style={styles.formSection}>
+          <TypeSelector onTypeSelect={onTypeSelect} />
+        </View>
+        <View style={styles.formSection}>
+          <PrioritySelector onPrioritySelect={(value)=>{
+            setPriority(value)}} />
+        </View>
+        <View style={styles.formSection}>
+          <TaskInput
+            onChangeName={setName}
+            onChangeDueDate={setDueDate}
+            onChangeEstimatedTime={setEstimatedTime}
+          />
+        </View>
 
-            {/* Work Order Type Selection */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Work Order Type:</Text>
-              <Picker
-                selectedValue={manualFields.workOrderType}
-                onValueChange={(itemValue) => setManualFields({ ...manualFields, workOrderType: itemValue })}
-                style={styles.picker}>
-                <Picker.Item label="Planned" value="planned" />
-                <Picker.Item label="Unplanned" value="unplanned" />
-              </Picker>
-            </View>
-
-            {/* Priority Selection */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Priority:</Text>
-              <Picker
-                selectedValue={manualFields.priority}
-                onValueChange={(itemValue) => setManualFields({ ...manualFields, priority: itemValue })}
-                style={styles.picker}>
-                <Picker.Item label="Emergency" value="emergency" />
-                <Picker.Item label="Normal" value="normal" />
-                <Picker.Item label="High" value="high" />
-              </Picker>
-            </View>
-          </>
-        )}
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => {
-            // Handle the submission of the form
-            console.log('Submitted:', selectedType === 'manual' ? manualFields : 'PM selected');
-          }}>
-          <Text style={styles.buttonText}>Add Work Order</Text>
+        {/* Customized Submit Button */}
+        <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+          <Text style={styles.buttonText}>Submit Work Order</Text>
         </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  screenContainer: {
     flex: 1,
-    paddingVertical: 20,
-    background: 'rgb(2,0,36)',
-    background: 'linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(0,212,255,0.0967558906191871) 0%)',
+    paddingBottom: 30,
+    backgroundColor: '#F0F4F8',
   },
-  scrollView: {
-    padding: 20,
-    flexGrow: 1,
+
+  scrollContainer: {
+    paddingBottom: 40,
   },
-  formGroup: {
-    marginBottom: 20,
+  buttonContainer:{
+width:"100%",
+alignItems:'center'
   },
-  formGroupWithIcon: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#B0BEC5', // Light gray border color
-    paddingBottom: 10,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold', // Made labels bold
-    color: '#074B7C', // Dark color for labels
-    marginBottom: 5,
-    flex: 1,
-  },
-  input: {
-    flex: 2,
-    borderWidth: 1,
-    borderColor: '#1996D3', // Changed border color of inputs
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#FFFFFF', // White background for inputs
-  },
-  picker: {
-    flex: 2,
-    borderWidth: 1,
-    borderColor: '#1996D3', // Changed border color of picker
-    borderRadius: 5,
-    backgroundColor: '#FFFFFF', // White background for picker
-  },
-  icon: {
-    marginRight: 10,
+  formSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 15,
+    elevation: 2,
+  
   },
   button: {
-    marginTop: 20,
-    backgroundColor: '#074B7C', // Button background color
-    paddingVertical: 15,
+    backgroundColor: '#074B7C', // Light color
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    width:"70%",
     borderRadius: 5,
     alignItems: 'center',
-    elevation: 3,
+    elevation: 2, // Shadow for Android
+    shadowColor: '#000', // Shadow for iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    marginVertical: 20, // Add some vertical spacing
   },
   buttonText: {
-    color: '#FFFFFF', // White text color for button
+    color: '#FFFFFF', // Text color
     fontSize: 16,
     fontWeight: 'bold',
   },
 });
 
-export default AddWorkOrderForm;
+export default AddWorkOrderScreen;

@@ -7,19 +7,21 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { WorkOrderInfoApi } from "../../service/WorkOrderInfoApi";
+import ProgressPage from './ProgressBar';
 
 const AssetInfo = ({ WoUuId }) => {
   const [workOrder, setWorkOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [percentage, setPercentage] = useState(0); // Fixed spelling from precentage to percentage
 
   useEffect(() => {
     const loadWorkOrderData = async () => {
       try {
         const data = await WorkOrderInfoApi(WoUuId);
-        console.log(data);
         setWorkOrder(data);
       } catch (error) {
         console.error('Error fetching work order:', error);
@@ -48,7 +50,7 @@ const AssetInfo = ({ WoUuId }) => {
     asset,
     wo,
     category,
-    pm
+    pm,
   } = workOrder[0];
 
   return (
@@ -59,21 +61,34 @@ const AssetInfo = ({ WoUuId }) => {
     >
       <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.headerText}>{wo?.["Sequence No"]}</Text>
-          <Text style={styles.headerSubText}>{wo?.Name}</Text>
+          <View style={styles.progressContainer}>
+            <ProgressPage setPercentages={setPercentage} />
+          </View>
+          <View style={styles.textContainer}>
+            <Text style={styles.headerText}>{wo?.["Sequence No"]}</Text>
+            <Text style={styles.headerSubText}>{wo?.Name}</Text>
+            <View style={styles.buttonContainer}>
+              <CustomButton
+                icon="check-circle"
+                text="Mark Complete"
+                onPress={() => console.log("Mark as Complete")}
+                disabled={percentage < 100} // Disable if percentage is less than 100
+              />
+              {/* <CustomButton icon="edit" text="Change Status" onPress={() => console.log("Change Status")} /> */}
+            </View>
+          </View>
         </View>
 
         <View style={styles.infoContainer}>
           {/* Work Order Details */}
           <View style={styles.detailsContainer}>
             <DetailItem icon="assignment" label="Asset Name" text={asset?.Name} />
-            <DetailItem icon="tag" label="Asset ID" text={asset?.["Sequence No"]} />
+            <DetailItem icon="hashtag" label="Asset ID" text={asset?.["Sequence No"]} />
             <DetailItem icon="calendar" label="Deadline" text={wo?.["Due Date"]} />
-
             <DetailItem icon="wrench" label="Type" text={wo?.Type} />
-            <DetailItem icon="tag" label="Category" text={category?.Name} />
+            <DetailItem icon="tags" label="Category" text={category?.Name} />
             <DetailItem icon="users" label="Team" text={pm?.AssignedTeam.join(', ')} isTag />
-            <DetailItem icon="user" label="Assigned" text={workOrder[0]?.wo?.Assigned.join(',    ')} isTag />
+            <DetailItem icon="user" label="Assigned" text={wo?.Assigned.join(', ')} isTag />
           </View>
         </View>
 
@@ -91,6 +106,18 @@ const AssetInfo = ({ WoUuId }) => {
   );
 };
 
+// CustomButton component definition remains unchanged
+const CustomButton = ({ icon, text, onPress, disabled }) => (
+  <TouchableOpacity
+    style={[styles.button, disabled && styles.disabledButton]} // Apply faint green when disabled
+    onPress={!disabled ? onPress : null} // Prevent onPress when disabled
+    disabled={disabled} // Disable the button to prevent touch events
+  >
+    <FontAwesome name={icon} size={16} color={disabled ? "#A9A9A9" : "#fff"} style={styles.buttonIcon} />
+    <Text style={[styles.buttonText, disabled && styles.disabledText]}>{text}</Text>
+  </TouchableOpacity>
+);
+
 const DetailItem = ({ icon, label, text, isTag }) => (
   <View style={styles.detailItem}>
     <View style={styles.iconContainer}>
@@ -107,6 +134,8 @@ const DetailItem = ({ icon, label, text, isTag }) => (
   </View>
 );
 
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -114,21 +143,26 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     padding: 16,
-    flexGrow: 1, // Allow the content to take up the entire height
+    flexGrow: 1,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  errorText: {
-    textAlign: 'center',
-    color: '#FF0000',
-    fontSize: 16,
-    marginTop: 20,
-  },
   header: {
+    flexDirection: 'row',
+    gap: 40,
     marginBottom: 16,
+  },
+  progressContainer: {
+    width: '40%',
+    justifyContent: 'center',
+  },
+  textContainer: {
+    width: '60%',
+    justifyContent: 'center',
+    paddingLeft: 8,
   },
   headerText: {
     fontSize: 18,
@@ -138,7 +172,40 @@ const styles = StyleSheet.create({
   headerSubText: {
     fontSize: 16,
     color: '#1996D3',
-    marginBottom: 8,
+  },
+  buttonContainer: {
+    flexDirection: 'column',
+    marginTop: 8,
+  },
+  button: {
+    width:120,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor:  '#28a745',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 5,
+   
+  },
+  disabledButton: {
+    backgroundColor: '#d1f7e7', // Faint green background for disabled state
+  },
+  disabledText: {
+    color: '#A9A9A9', // Gray text for disabled state
+  },
+  buttonIcon: {
+    marginRight: 6,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  errorText: {
+    textAlign: 'center',
+    color: '#FF0000',
+    fontSize: 16,
+    marginTop: 20,
   },
   infoContainer: {
     backgroundColor: '#fff',

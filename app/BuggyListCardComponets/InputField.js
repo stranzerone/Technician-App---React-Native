@@ -41,24 +41,7 @@ const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, pdfPrevi
             />
           </View>
         );
-      // case 'dropdown':
-      //   return item.options && item.options.length > 0 ? (
-      //     <View style={styles.inputContainer}>
-      //       <Text style={styles.label}>Dropdown:</Text>
-      //       <RNPickerSelect
-      //         onValueChange={(value) => setInputValue(value)}
-      //         items={item.options.map((option) => ({ label: option, value: option }))}
-      //         placeholder={{ label: 'Select an option', value: null }}
-      //         value={inputValue}
-      //         useNativeAndroidPickerStyle={false}
-      //         style={pickerSelectStyles}
-      //       />
-      //     </View>
-      //   ) : (
-      //     <Text style={styles.errorText}>No options available</Text>
-      //   );
-
-
+    
       case 'dropdown':
         return item.options && item.options.length > 0 ? (
           <View style={styles.inputContainer}>
@@ -176,23 +159,43 @@ console.log(result,"document selected")
     setLoading(false);
   };
 
+
   const handleImagePicker = async () => {
     setLoading(true);
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 1,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      const uploadResponse = await uploadImageToServer(result.assets[0].uri, item.id, WoUuId);
-      if (uploadResponse) {
-        onUpdateSuccess();
+  
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 1,
+      });
+  
+      if (!result.canceled && result.assets && result.assets[0].uri) {
+        const imageUri = result.assets[0].uri;
+  
+        // Construct the file data to ensure it's in JPEG format
+        const fileData = {
+          uri: imageUri,
+          fileName: `photo_${Date.now()}.jpeg`, // Generate unique filename in JPEG format
+          mimeType: 'image/jpeg', // Set the MIME type explicitly to JPEG
+        };
+  
+        // Upload the image to the server
+        const uploadResponse = await uploadImageToServer(fileData, item.id, WoUuId);
+  
+        if (uploadResponse) {
+          onUpdateSuccess(); // Call the success handler if upload is successful
+        } else {
+          console.error("Upload failed");
+        }
       }
+    } catch (error) {
+      console.error("Error capturing or uploading image:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
-
+  
   return (
     <>
       {renderField()}
@@ -322,15 +325,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between', // Space between image and buttons
     marginTop: 8, // Add some margin at the top
   },
-  // imagePreviewContainer: {
-  //   flex: 1,
-  //   marginRight: 10,
-  //   borderWidth: 1,
-  //   borderRadius: 10,
-  //   borderStyle: 'dashed',
-  //   alignItems: 'center',
-  //   justifyContent: 'center', // Center align the content
-  // },
+
   buttonContainer: {
     flexDirection: 'column',
     gap:10,
