@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   TextInput,
 } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 import { GetAllPmsApi } from "../../service/PMS/GetAllPms";
 import { CreatePmsApi } from "../../service/PMS/CreatePms";
 import DynamicPopup from "../DynamivPopUps/DynapicPopUpScreen";
@@ -19,16 +20,16 @@ const PMList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [popupVisible, setPopupVisible] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
-  const [popupType, setPopupType] = useState(""); // Success, Error, etc.
+  const [popupType, setPopupType] = useState(""); 
   const [confirmationPopupVisible, setConfirmationPopupVisible] = useState(false);
   const [selectedUuid, setSelectedUuid] = useState(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const fetchPMs = async () => {
       try {
         const data = await GetAllPmsApi();
         setPms(data);
-        setFilteredPms(data); // Initialize filtered PMs with all data
+        setFilteredPms(data); 
       } catch (error) {
         console.error("Error fetching PMs:", error);
       } finally {
@@ -47,7 +48,7 @@ const PMList = () => {
       );
       setFilteredPms(filteredData);
     } else {
-      setFilteredPms(pms); // Reset to original list if search is cleared
+      setFilteredPms(pms); 
     }
   };
 
@@ -71,69 +72,65 @@ const PMList = () => {
 
   const renderItem = ({ item }) => (
     <View
-      className="bg-white rounded-lg p-4 mb-6 shadow-lg border-2 border-blue-300"
-      style={{ elevation: 5 }} // Add a bit of shadow for a lifted effect
+      className="bg-white rounded-lg p-3 mb-4 shadow-md border-2 border-blue-300"
+      style={{ elevation: 4 }}
     >
-      {/* PM Name */}
-      <View className="flex-row items-center mb-3">
-        <Icon name="build" size={28} color="#1996D3" />
-        <Text className="ml-3 text-black text-lg font-semibold">
+      <View className="flex-row items-center mb-2">
+        <Icon name="file-text" size={24} color="#1996D3" />
+        <Text className="ml-2 text-black text-base font-semibold">
           {item.Name || "Unnamed PM"}
         </Text>
       </View>
 
-      {/* Asset */}
-      <View className="flex-row items-center mb-3">
-        <Icon name="precision-manufacturing" size={24} color="#4CAF50" />
-        <Text className="ml-3 text-gray-800 text-sm">
+      <View className="flex-row items-center mb-2">
+        <Icon name="cogs" size={20} color="#4CAF50" />
+        <Text className="ml-2 text-gray-800 text-xs">
           <Text className="font-medium text-black">Asset:</Text>{" "}
           {item.ass || "Not Assigned"}
         </Text>
       </View>
 
-      {/* Category */}
-      <View className="flex-row items-center mb-3">
-        <Icon name="category" size={24} color="#FFA726" />
-        <Text className="ml-3 text-gray-800 text-sm">
+      <View className="flex-row items-center mb-2">
+        <Icon name="tags" size={20} color="#FFA726" />
+        <Text className="ml-2 text-gray-800 text-xs">
           <Text className="font-medium text-black">Category:</Text>{" "}
           {item.cat || "N/A"}
         </Text>
       </View>
 
-      {/* Location */}
-      <View className="flex-row items-center">
-        <Icon name="location-on" size={24} color="#F44336" />
-        <Text className="ml-3 text-gray-800 text-sm">
+      <View className="flex-row items-center mb-2">
+        <Icon name="map-marker" size={20} color="#F44336" />
+        <Text className="ml-2 text-gray-800 text-xs">
           <Text className="font-medium text-black">Location:</Text>{" "}
           {item.loc || "Unknown"}
         </Text>
       </View>
 
-      {/* Create Button */}
       <TouchableOpacity
         onPress={() => showConfirmationPopup(item._ID)}
         style={{
           backgroundColor: "#1996D3",
-          padding: 10,
-          marginTop: 10,
-          borderRadius: 5,
+          padding: 8,
+          marginTop: 8,
+          borderRadius: 4,
         }}
       >
-        <Text style={{ color: "white", textAlign: "center" }}>Create</Text>
+        <Text style={{ color: "white", textAlign: "center", fontSize: 14 }}>
+          Create
+        </Text>
       </TouchableOpacity>
     </View>
   );
 
   return (
     <View className="flex-1 bg-gray-50 p-4">
-      {/* Search Bar */}
       <TextInput
         value={searchQuery}
         onChangeText={handleSearch}
         placeholder="Search PMs by Name"
-        className="bg-white p-3 rounded-lg mb-5 border-2 border-gray-300 shadow-md"
+        className="bg-white p-3 rounded-lg mb-5 border-2 border-gray-300 shadow-sm"
         style={{
-          fontSize: 16,
+          fontSize: 14,
           color: "#333",
         }}
       />
@@ -148,20 +145,18 @@ const PMList = () => {
         />
       )}
 
-      {/* Dynamic Popup for Confirmation */}
       <DynamicPopup
         visible={popupVisible}
         type={popupType}
         message={popupMessage}
         onClose={() => setPopupVisible(false)}
-        onOk={() => setPopupVisible(false)} // Close the popup on 'OK' press
+        onOk={() => setPopupVisible(false)}
       />
 
-      {/* Confirmation Popup */}
       <DynamicPopup
         visible={confirmationPopupVisible}
         type="alert"
-        message="Are you sure you want to create this PMS?"
+        message="Are you sure you want to create WO from this PM?"
         onClose={() => setConfirmationPopupVisible(false)}
         onOk={() => {
           setConfirmationPopupVisible(false);

@@ -1,9 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet, Text, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  TouchableOpacity,
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Import the icon library
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
-const TaskInput = ({onChangeName,onChangeDueDate,onChangeEstimatedTime}) => {
+const TaskInput = ({ onChangeName, onChangeDueDate, onChangeEstimatedTime }) => {
   const [name, setName] = useState('');
   const [estimatedTime, setEstimatedTime] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -11,24 +21,20 @@ const TaskInput = ({onChangeName,onChangeDueDate,onChangeEstimatedTime}) => {
 
   const handleDateChange = (event, selectedDate) => {
     if (event.type === 'set' && selectedDate) {
-      setSelectedDueDate(selectedDate); // Update selectedDueDate state
-      onChangeDueDate(selectedDate)
+      setSelectedDueDate(selectedDate);
+      onChangeDueDate(selectedDate);
     }
-    setShowDatePicker(false); // Hide the date picker
+    setShowDatePicker(false);
   };
 
-  // Function to format and validate estimated time input
   const handleEstimatedTimeChange = (value) => {
-    // Allow only numbers and hyphen
-    const formattedValue = value.replace(/[^0-9-]/g, '');
-    
-    // Split the input by hyphen
-    const parts = formattedValue.split('-');
+    let formattedValue = value.replace(/[^0-9]/g, '');
 
-    // Validate the input format (HH-MM)
-    if (parts.length <= 2) {
-      setEstimatedTime(formattedValue); // Update estimated time state
+    if (formattedValue.length > 2) {
+      formattedValue = `${formattedValue.slice(0, 2)}-${formattedValue.slice(2, 4)}`;
     }
+
+    setEstimatedTime(formattedValue);
   };
 
   return (
@@ -38,45 +44,53 @@ const TaskInput = ({onChangeName,onChangeDueDate,onChangeEstimatedTime}) => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.innerContainer}>
-          <Text style={styles.label}>Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter task name"
-            value={name}
-            onChangeText={setName} // Update local state
-            onBlur={()=>onChangeName(name)}
-          />
+          <View style={styles.row}>
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              style={[styles.input, { height: 50, width: 160 }]}
+              placeholder="Enter task name"
+              value={name}
+              onChangeText={setName}
+              onBlur={() => onChangeName(name)}
+              multiline={true}
+            />
+          </View>
+
           <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-            <Text style={styles.label}>Due Date</Text>
-            <View style={styles.dateContainer}>
-              <Text style={styles.dateText}>
-                {selectedDueDate.toISOString().split('T')[0]} {/* Display formatted date */}
-              </Text>
-              <Text>
-                <Icon name="calendar-today" size={24} color="#1996D3" /> {/* Calendar icon */}
-              </Text>
+            <View style={styles.row}>
+              <Text style={styles.label}>Due Date</Text>
+              <View style={styles.dateContainer}>
+                <Text style={styles.dateText}>
+                  {selectedDueDate.toISOString().split('T')[0]}
+                </Text>
+
+
+                <FontAwesome name="calendar" size={18} color="#1996D3" />
+              </View>
             </View>
           </TouchableOpacity>
-          {/* Render DateTimePicker only if showDatePicker is true */}
+
           {showDatePicker && (
             <DateTimePicker
               value={selectedDueDate}
               mode="date"
               display="default"
               onChange={handleDateChange}
-              minimumDate={new Date()} // Set minimum date to today
+              minimumDate={new Date()}
             />
           )}
 
-          <Text style={styles.label}>Estimated Time (HH-MM)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter estimated time (HH-MM)"
-            value={estimatedTime}
-            onChangeText={handleEstimatedTimeChange} // Update local state
-            keyboardType="default" // Allow text input
-            onBlur={()=>onChangeEstimatedTime(estimatedTime)}
-          />
+          <View style={styles.row}>
+            <Text style={styles.label}>Est Time</Text>
+            <TextInput
+              style={[styles.input, styles.inputRow, { height: 40, width: 160 }]}
+              placeholder="HH-MM"
+              value={estimatedTime}
+              onChangeText={handleEstimatedTimeChange}
+              keyboardType="numeric"
+              onBlur={() => onChangeEstimatedTime(estimatedTime)}
+            />
+          </View>
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -86,38 +100,48 @@ const TaskInput = ({onChangeName,onChangeDueDate,onChangeEstimatedTime}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    display: 'flex',
+    padding: 0,
   },
   innerContainer: {
     flex: 1,
     justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   label: {
+    width: '40%',
     marginBottom: 5,
     fontSize: 16,
-    fontWeight:"bold",
+    fontWeight: 'bold',
     color: '#074B7C',
   },
   input: {
-    height: 40,
     borderColor: '#1996D3',
     borderWidth: 1,
+    width: '60%',
     borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 15,
     backgroundColor: '#FFFFFF',
+  },
+  inputRow: {
+    flex: 1,
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+  gap:20,
     borderColor: '#1996D3',
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
     height: 40,
     backgroundColor: '#FFFFFF',
-    marginBottom: 15,
   },
   dateText: {
     color: '#074B7C',

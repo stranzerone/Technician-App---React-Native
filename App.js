@@ -9,7 +9,8 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Provider } from 'react-redux';
-import store from './utils/Store/Store.js'; // Path to your Redux store
+import { PersistGate } from 'redux-persist/integration/react'; // Import PersistGate
+import { store, persistor } from './utils/Store/Store.js'; // Import the Redux store and persistor
 import MainNavigation from './MainNavigation.js'; // Path to your MainNavigation
 import NfcManager from 'react-native-nfc-manager';
 
@@ -28,7 +29,6 @@ const App = () => {
 
         if (isSupported) {
           const isEnabled = await NfcManager.isEnabled();
-          console.log(`NFC Enabled: ${isEnabled}`);
           setNfcEnabled(isEnabled);
         } else {
           console.log('NFC is not supported on this device.');
@@ -58,102 +58,96 @@ const App = () => {
     // If NFC is not supported or enabled, return MainNavigation
     return (
       <Provider store={store}>
-        <MainNavigation />
+        <PersistGate loading={null} persistor={persistor}>
+          <MainNavigation />
+        </PersistGate>
       </Provider>
-    );
-  }
-
-  if (nfcEnabled === null) {
-    // While checking NFC status, show a loader
-    return (
-      <View style={styles.centeredContainer}>
-        <Text>Checking NFC status...</Text>
-      </View>
     );
   }
 
   return (
     <Provider store={store}>
-      <View style={{ flex: 1 }}>
-        <MainNavigation />
-        {!nfcEnabled && (
-          <Modal
-            visible={!nfcEnabled}
-            transparent
-            animationType="fade"
-            onRequestClose={() => {}}
-          >
-            <View style={styles.modalBackground}>
-              <View style={styles.popupContainer}>
-                <Image
-                  source={require('./assets/SvgImages/fm.jpg')} // Replace with the path to your NFC icon/logo
-                  style={styles.logo}
-                />
-                <Text style={styles.popupTitle}>Enable NFC</Text>
-                <Text style={styles.popupText}>
-                  NFC is not enabled. Please enable it in your settings to
-                  continue.
-                </Text>
-                <TouchableOpacity
-                  style={styles.enableButton}
-                  onPress={handleEnableNfc}
-                >
-                  <Text style={styles.buttonText}>Enable NFC</Text>
-                </TouchableOpacity>
+      <PersistGate loading={null} persistor={persistor}>
+        <View style={{ flex: 1 }}>
+          <MainNavigation />
+          {!nfcEnabled && (
+            <Modal
+              visible={!nfcEnabled}
+              transparent
+              animationType="fade"
+              onRequestClose={() => {}}
+            >
+              <View style={styles.modalBackground}>
+                <View style={styles.popupContainer}>
+                  <Image
+                    source={require('./assets/SvgImages/fm.jpg')} // Replace with the path to your NFC icon/logo
+                    style={styles.logo}
+                  />
+                  <Text style={styles.popupTitle}>Enable NFC</Text>
+                  <Text style={styles.popupText}>
+                    NFC is not enabled. Please enable it in your settings to
+                    continue.
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.enableButton}
+                    onPress={handleEnableNfc}
+                  >
+                    <Text style={styles.buttonText}>Enable NFC</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          </Modal>
-        )}
-      </View>
+            </Modal>
+          )}
+        </View>
+      </PersistGate>
     </Provider>
   );
-};
-
-const styles = StyleSheet.create({
-  centeredContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalBackground: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  popupContainer: {
-    width: 300,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    alignItems: 'center',
-    padding: 20,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    marginBottom: 15,
-  },
-  popupTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  popupText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  enableButton: {
-    backgroundColor: '#074B7C', // Replace with your preferred theme color
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+}
+  const styles = StyleSheet.create({
+    centeredContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalBackground: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    popupContainer: {
+      width: 300,
+      backgroundColor: 'white',
+      borderRadius: 10,
+      alignItems: 'center',
+      padding: 20,
+    },
+    logo: {
+      width: 80,
+      height: 80,
+      marginBottom: 15,
+    },
+    popupTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    popupText: {
+      fontSize: 16,
+      textAlign: 'center',
+      marginBottom: 20,
+    },
+    enableButton: {
+      backgroundColor: '#074B7C', // Replace with your preferred theme color
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 5,
+    },
+    buttonText: {
+      color: 'white',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
 });
 
 export default App;

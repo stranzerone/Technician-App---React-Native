@@ -1,8 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const MarkAsCompleteApi = async (item) => {
-  console.log(item, "item values for closing"); // Check the values being passed
+export const MarkAsCompleteApi = async (item,remark) => {
+  console.log(item,remark, "item values for closing"); // Check the values being passed
 
   // Fetch user info from AsyncStorage
   const userInfo = await AsyncStorage.getItem('userInfo');
@@ -30,6 +30,7 @@ export const MarkAsCompleteApi = async (item) => {
     status_uuid:  "36891c87-60c5-4a0a-9e5c-e726e542f49f",
     updated_at: new Date().toISOString().replace("T", " ").split(".")[0] ,
     updated_by: userId,
+    instruction_remark:remark,
     uuid: item.uuid,
     };
     console.log(payload,'payload')
@@ -47,7 +48,7 @@ export const MarkAsCompleteApi = async (item) => {
     try {
       // Send the PUT request
       const response = await axios.put(apiUrl, payload, { headers, withCredentials: true });
-         console.log(response.data,'from api')
+         console.log(response.data,'from api to mark as complete')
       // Check if the response is as expected
       if (response.data.status === 'success') {
         return true; // Return success

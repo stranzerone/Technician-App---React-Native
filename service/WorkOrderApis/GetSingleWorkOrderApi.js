@@ -32,7 +32,7 @@ export const GetSingleWorkOrders = async (uuid) => {
       breakdown: false,
       Status: "OPEN",
       page_no: 1,
-      per_page: 5,
+      per_page: 10,
       user_id: userId,
       "api-token": apiToken,
      " user-id": userId,

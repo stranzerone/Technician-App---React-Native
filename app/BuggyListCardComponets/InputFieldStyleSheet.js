@@ -18,6 +18,12 @@ const styles = StyleSheet.create({
     shadowRadius: 3.5,
     elevation: 5,
   },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'black',
+    marginBottom: 8,
+  },
   label: {
     fontSize: 16,
     fontWeight: '600',
@@ -70,9 +76,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   buttonContainer: {
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    marginTop: 8,
+    height:"60%",
+    justifyContent: 'center',
   },
   imageAttachmentContainer: {
     flexDirection: 'row',

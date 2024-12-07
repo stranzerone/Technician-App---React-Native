@@ -22,6 +22,11 @@ import BuggyListComponent from '../SamplePages/SampleReduxBLcards';
 import ComplaintDropdown from '../RaiseComplaint/ComplaintDropdown';
 import ComplaintsScreen from '../MyComplaints/ComplaintsScreen';
 import RequestServiceTabs from '../ServiceTab/RequestServiceTopTabs';
+import WorkOrderPage from '../WorkOrders/WorkOrderScreen';
+import ComplaintCloseScreen from '../MyComplaints/CloseComplaint';
+import SubComplaint from '../RaiseComplaint/SubComplaintItem';
+import NewComplaintPage from '../RaiseComplaint/CompaintInput';
+import { useDispatch } from 'react-redux';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -32,6 +37,21 @@ const WorkOrderStack = () => (
       component={WorkOrderHomeTab}
       options={{ headerShown: false }}
     />
+  <Stack.Screen 
+  name="AddWo"
+  component={RequestServiceTabs}
+  options={{
+    title: 'Create WO',
+    headerShown: false,
+    headerStyle: {
+      height: 40,  // Adjust height as needed
+    },
+    headerTitleStyle: {
+      fontSize: 18,  // You can also adjust the title font size if needed
+    },
+  }}
+/>
+
   </Stack.Navigator>
 );
 
@@ -45,12 +65,44 @@ const QRCodeStack = () => (
   </Stack.Navigator>
 );
 
+
+
+const ServiceRequestStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="Service Request"
+      component={ComplaintsScreen}
+      options={{ headerShown: false }}
+    />
+     <Stack.Screen 
+          name="subComplaint"
+          component={SubComplaint} 
+          options={{ title: 'Sub Category', headerShown: true }}
+
+          />
+          <Stack.Screen 
+           name="complaintInput"
+           component={NewComplaintPage}
+           options={{ title: 'Report Complaint', headerShown: true }}
+           />
+          <Stack.Screen name="CloseComplaint" component={ComplaintCloseScreen} />
+          <Stack.Screen 
+          name="RaiseComplaint"
+           component={ComplaintDropdown} 
+           options={{ title: 'Select Category', headerShown: true }}
+
+           />
+  </Stack.Navigator>
+);
+
 const MyTabs = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [totalNotifications, setTotalNotifications] = useState(); // Initialize notification count
+ const [dispatchCount,setDispatchCount]  =useState(0)
   const navigation = useNavigation();
   const { setPpmAsstPermissions,notificationsCount } = usePermissions(); // Extract context permissions function
   const [user,setUser] = useState({})
+  const dispatch = useDispatch(0)
   useEffect(() => {
     const loadPermissions = async () => {
       try {
@@ -59,8 +111,7 @@ const MyTabs = () => {
         if (savedPermissions) {
           const userInfo = JSON.parse(savedPermissions); // Parse the stored string into an object
           const userData = JSON.parse(user); // Parse the stored string into an object
-console.log(userData,'from aync user')
-setUser(userData)
+         setUser(userData)
           // Check if permissions exist in the userInfo object
           if (userInfo.data && userInfo.data.permissions) {
             // Filter permissions that start with 'PPMASST'
@@ -68,7 +119,6 @@ setUser(userData)
               .filter(item => item.startsWith('PPMASST.')) // Get items starting with 'PPMASST'
               .map(item => item.split('.')[1]); // Split at the first dot and take the second part
             
-            console.log(filteredPermissions, "Filtered and saved at Tabs"); // Log filtered permissions
             setPpmAsstPermissions(filteredPermissions); // Set permissions in context
           }
         }
@@ -77,7 +127,6 @@ setUser(userData)
       }
     };
 
-    console.log(user,'stored user')
 
  
 
@@ -93,7 +142,6 @@ setUser(userData)
   const fetchTotalNotifications = async () => {
     try {
       const response = notificationsCount; // Call your API to get notifications
-     console.log(response,"this is fetch badge of new notifications")
       setTotalNotifications(response || 0); // Update the state with the total notifications count
     } catch (error) {
       console.error("Error fetching notifications count:", error);
@@ -116,7 +164,7 @@ setUser(userData)
     try {
       await AsyncStorage.removeItem('userInfo');
       await AsyncStorage.removeItem('uuid');
-      navigation.navigate("Login");
+      navigation.replace("Login");
     } catch (error) {
       console.error('Error clearing local storage', error);
       Alert.alert('Error', 'Could not log out. Please try again.');
@@ -219,10 +267,10 @@ setUser(userData)
         })}
       >
         <Tab.Screen name="Work Orders" options={{ title: 'Work List' }} component={WorkOrderStack} />
-        <Tab.Screen name="MyComplaints" options={{ title: 'Complaints' }} component={ComplaintsScreen} />
+        {/* <Tab.Screen name="MyComplaints" options={{ title: 'Complaints' }} component={ComplaintsScreen} /> */}
 
         <Tab.Screen name="QRCode" options={{ title: 'QR Scanner' }} component={QRCodeStack} />
-        <Tab.Screen name="ServiceRequests" options={{ title: 'Create Order' }} component={RequestServiceTabs} />
+        <Tab.Screen name="ServiceRequests" options={{ title: 'Service Request' }} component={ServiceRequestStack} />
 
         <Tab.Screen 
           name="Notifications" 

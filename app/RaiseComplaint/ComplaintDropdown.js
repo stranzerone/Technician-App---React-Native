@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput,
 import { GetAllMyComplaints } from '../../service/ComplaintApis/GetMyAllComplaints';
 import { FontAwesome } from '@expo/vector-icons'; // Import icons from FontAwesome
 import { useNavigation } from '@react-navigation/native';
-
+import { usePermissions } from '../GlobalVariables/PermissionsContext';
 const { width } = Dimensions.get('window'); // Get the screen width
 
 const ComplaintDropdown = () => {
@@ -11,10 +11,13 @@ const ComplaintDropdown = () => {
   const [loading, setLoading] = useState(true); // State to manage loading
   const [expandedComplaintId, setExpandedComplaintId] = useState(null);
   const [searchQuery, setSearchQuery] = useState(''); // State for search query
-
-  const navigation = useNavigation()
+ 
+  const { notificationsCount } = usePermissions();
+    const navigation = useNavigation()
   // Fetch complaints when the component mounts
   useEffect(() => {
+
+    console.log("fetching complaints")
     const fetchComplaints = async () => {
       try {
         const response = await GetAllMyComplaints();
@@ -31,7 +34,7 @@ const ComplaintDropdown = () => {
     };
 
     fetchComplaints(); // Call the fetch function
-  }, []); // Empty dependency array to run only on mount
+  }, [notificationsCount]); // Empty dependency array to run only on mount
 
   // Toggle complaint expansion
   const toggleComplaint = (id) => {
@@ -119,11 +122,7 @@ const styles = StyleSheet.create({
     right: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    zIndex: 1, // Ensures search bar stays on top
-    backgroundColor: '#FFFFFF', // Background color for the search container
-    borderRadius: 8,
-    elevation: 3, // Adding a slight shadow for better visibility
-    paddingHorizontal: 10, // Horizontal padding for the container
+  paddingHorizontal: 10, // Horizontal padding for the container
   },
   searchBar: {
     flex: 1,

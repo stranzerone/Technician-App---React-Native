@@ -46,7 +46,7 @@ export default function MainNavigation() {
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           <Stack.Screen name="OtpLogin" component={OtpLogin} />
           <Stack.Screen name="OtpEnter" component={OtpEnterPage} />
-          <Stack.Screen name="WorkOrderPage" component={WorkOrderPage} />
+          {/* <Stack.Screen name="WorkOrderPage" component={WorkOrderPage} />
           <Stack.Screen 
           name="subComplaint"
           component={SubComplaint} 
@@ -64,7 +64,7 @@ export default function MainNavigation() {
            component={ComplaintDropdown} 
            options={{ title: 'Select Category', headerShown: true }}
 
-           />
+           /> */}
         </Stack.Navigator>
       </NavigationContainer>
     </PermissionsProvider>

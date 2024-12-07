@@ -34,18 +34,15 @@ const OtpPage = ({ route }) => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
+    if (timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prevTime) => prevTime - 1);
+      }, 1000);
+  
+      return () => clearInterval(timer); // Cleanup the timer on component unmount or timeLeft changes
+    }
+  }, [timeLeft]);
+  
 
   const handleChangeText = (text, index) => {
     if (text.length > 1) return;

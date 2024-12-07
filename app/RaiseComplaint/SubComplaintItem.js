@@ -70,16 +70,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9F9F9', // Light background for the whole view
-    padding: 10,
+    paddingBottom:60,
+    paddingHorizontal:20
+    
+    
+
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
-    backgroundColor: '#FFFFFF', // Background color for the search container
-    borderRadius: 8,
-    elevation: 3, // Adding a slight shadow for better visibility
+    marginVertical: 0,
     paddingHorizontal: 10, // Horizontal padding for the container
+    paddingBottom:15
   },
   searchBar: {
     flex: 1,

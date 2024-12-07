@@ -16,6 +16,7 @@ const BuggyListCard = ({ item, onUpdateSuccess, WoUuId }) => {
   const [preview, setPreview] = useState(null); // Use one state to manage preview type and URL
   const [loading, setLoading] = useState(true);
   // Function to handle image and document picking
+  
   const handleFilePick = useCallback(async (pickerType) => {
     try {
       let result;

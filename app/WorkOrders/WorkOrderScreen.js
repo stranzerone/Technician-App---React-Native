@@ -1,6 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, Animated, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  Animated,
+  TextInput,
+  Modal,
+  RefreshControl,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import FilterOptions from './WorkOrderFilter';
 import WorkOrderCard from './WorkOrderCards';
@@ -8,7 +19,13 @@ import { fetchWorkOrders, selectWorkOrders } from '../../utils/Slices/WorkOrderS
 import { fetchServiceRequests } from '../../service/FetchWorkOrderApi';
 import { fetchAllUsers } from '../../utils/Slices/UsersSlice';
 import { fetchAllTeams } from '../../utils/Slices/TeamSlice';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { fetchAssets } from '../../utils/Slices/AssetSlice';
+import { fetchAllPms } from '../../utils/Slices/PmsSlice';
+import { fetchAllReduxData } from '../AllReduxCall/MakeReduxCallsLogin';
+import { usePermissions } from '../GlobalVariables/PermissionsContext';
 const WorkOrderPage = ({ route, nullUuId }) => {
+  const [refreshing, setRefreshing] = useState(false); // State for pull-to-refresh
   const [filterVisible, setFilterVisible] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('OPEN');
   const [selectedWOIndex, setSelectedWOIndex] = useState(null);
@@ -16,60 +33,45 @@ const WorkOrderPage = ({ route, nullUuId }) => {
   const [filteredWorkOrders, setFilteredWorkOrders] = useState([]);
   const indicatorAnim = useRef(new Animated.Value(0)).current;
   const dispatch = useDispatch();
-
-  // Check if `uuid` is provided from `route.params` or fallback to `nullUuId`
+  const { notificationsCount } = usePermissions();
   const uuid = route?.params?.uuid || nullUuId;
 
   let workOrders = useSelector(selectWorkOrders);
   const loading = useSelector((state) => state.workOrders.status === 'loading');
 
-  console.log(uuid,'recied for dynamic one or two')
-  useEffect(() => {
-    if (workOrders.length === 0) {
+  console.log('Page got refreshed');
 
-  const fetchApiWorkOrders = async()=>{
-console.log("Fetching through api")
-        workOrders = await fetchServiceRequests(selectedFilter)
-      }
-      fetchApiWorkOrders()
-      console.log("dispatch started")
+  // Fetch work orders when the screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchData = async () => {
+        if (workOrders.length === 0) {
+          await fetchServiceRequests(selectedFilter);
+          await fetchAllReduxData(dispatch);
+        }
+      };
 
-      dispatch(fetchWorkOrders());
-      dispatch(fetchAllTeams());
-      dispatch(fetchAllUsers());
-   
-    }
-  }, [dispatch, workOrders]);
-
-
-
-
+      fetchData();
+    }, [dispatch, workOrders,selectedFilter])
+  );
 
   useEffect(() => {
     let filterData;
-  
-    // Check if uuid is present; if so, filter based on uuid and selectedFilter
+
     if (uuid) {
-      filterData = workOrders.filter((order) => {
-        return order.wo.asset_uuid === uuid ;
-      });
+      filterData = workOrders.filter((order) => order.wo.asset_uuid === uuid);
     } else {
-      // If uuid is not present, filter based only on selectedFilter
       filterData = workOrders.filter((order) => order.wo.Status === selectedFilter);
     }
-  
-    // Apply search filter if inputNumber is present
+
     if (inputNumber) {
       filterData = filterData.filter((order) =>
         order.wo['Sequence No'].includes(inputNumber)
       );
     }
-  
+
     setFilteredWorkOrders(filterData);
   }, [workOrders, uuid, selectedFilter, inputNumber]);
-  
-
-
 
   const applyFilter = (filter) => {
     setSelectedFilter(filter);
@@ -85,144 +87,211 @@ console.log("Fetching through api")
     }).start();
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true); // Set the refreshing state to true
+    try {
+      console.log("refreshed the whole page")
+      // await fetchServiceRequests(selectedFilter);
+      // await fetchAllReduxData(dispatch);
+       dispatch(fetchWorkOrders())
+     } catch (error) {
+      console.error('Error refreshing work orders:', error);
+    } finally {
+      setRefreshing(false); // Ensure refreshing is set to false after data is fetched
+    }
+  };
+
+
+  useEffect(()=>{
+console.log("handle refresh called to refresh page")
+    handleRefresh()
+  },[notificationsCount])
+
+  const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
-    {
-      !uuid &&
-      <View style={styles.header}>
-      <View style={{ backgroundColor: '#074B7C' }} className="w-[60vw] h-11 flex flex-row items-center justify-start shadow-md">
-        <TouchableOpacity
-          onPress={() => setFilterVisible((prev) => !prev)}
-          className="w-[52%] h-full bg-white border border-gray-600 shadow-lg rounded-r-full flex-row items-center justify-center"
-        >
-          <Icon name="filter" size={20} color="#000" />
-          <Text className="text-black font-bold ml-2">Status</Text>
-        </TouchableOpacity>
-        <View className="flex-1 h-full rounded-l-full flex items-center justify-center">
-          <Text className="text-white font-bold text-md">{selectedFilter}</Text>
-        </View>
-      </View>
-      <TextInput
-        className="h-full border-black border"
-        style={styles.numberInput}
-        onChangeText={(text) => setInputNumber(text)}
-        value={inputNumber}
-        placeholder="Search Wo ID"
-        keyboardType="numeric"
-        placeholderTextColor="#888"
-      />
-    </View>
-}
+      {!uuid && (
+        <>
+          <View style={styles.headerContainer}>
+            <View style={styles.header}>
+              <TouchableOpacity
+                onPress={() => setFilterVisible((prev) => !prev)}
+                style={styles.statusButton}
+              >
+                <Icon name="filter" size={20} color="#074B7C" style={styles.searchIcon} />
+                <Text style={styles.statusButtonText}>Status</Text>
+              </TouchableOpacity>
+
+              <View style={styles.statusTextContainer}>
+                <Text style={styles.statusText}>{selectedFilter}</Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate('AddWo')}
+                style={styles.addButton}
+              >
+                <Icon name="plus" size={20} color="#074B7C" style={styles.searchIcon} />
+                <Text style={styles.addButtonText}>Add WO</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Icon name="search" size={20} color="#074B7C" style={styles.searchIcon} />
+            <TextInput
+              style={styles.numberInput}
+              onChangeText={(text) => setInputNumber(text)}
+              value={inputNumber}
+              placeholder="Search WO ID"
+              keyboardType="numeric"
+              placeholderTextColor="#888"
+            />
+          </View>
+        </>
+      )}
       {loading ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#1996D3" />
         </View>
       ) : (
-        <View>
-          {filteredWorkOrders && filteredWorkOrders.length > 0 ? (
-            <FlatList
-              data={filteredWorkOrders}
-              keyExtractor={(item) => item.wo['Sequence No']}
-              renderItem={({ item, index }) => (
-                <TouchableOpacity onPress={() => handleWorkOrderPress(index)}>
-                  <WorkOrderCard workOrder={item} />
-                </TouchableOpacity>
-              )}
-              contentContainerStyle={[styles.contentContainer, { paddingBottom: 110 }]}
-            />
-          ) : (
-            <View style={styles.noRecordsContainer}>
-              <Text>
-                <Icon name="exclamation-circle" size={50} color="#999" />
-              </Text>
-              <Text style={styles.noRecordsText}>No Records Found</Text>
-              <Text style={styles.suggestionText}>Try adjusting your filters or adding a new work order.</Text>
-            </View>
+        <FlatList
+          data={filteredWorkOrders}
+          keyExtractor={(item) => item.wo['Sequence No']}
+          renderItem={({ item, index }) => (
+            <TouchableOpacity onPress={() => handleWorkOrderPress(index)}>
+              <WorkOrderCard workOrder={item} />
+            </TouchableOpacity>
           )}
-
-          {selectedWOIndex !== null && (
-            <Animated.View
-              style={[
-                styles.indicator,
-                {
-                  transform: [{ translateY: indicatorAnim }],
-                },
-              ]}
-            />
-          )}
-        </View>
-      )}
-
-      {filterVisible && (
-        <FilterOptions
-          filters={['OPEN', 'STARTED', 'COMPLETED', 'HOLD', 'CANCELLED', 'REOPEN']}
-          selectedFilter={selectedFilter}
-          applyFilter={applyFilter}
-          closeFilter={() => setFilterVisible(false)}
+          contentContainerStyle={styles.contentContainer}
+          refreshing={refreshing} // Add refreshing state to FlatList
+          onRefresh={handleRefresh} // Add onRefresh callback
         />
+      )}
+      {filterVisible && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={filterVisible}
+          onRequestClose={() => setFilterVisible(false)}
+        >
+          <FilterOptions
+            filters={['OPEN', 'STARTED', 'COMPLETED', 'HOLD', 'CANCELLED', 'REOPEN']}
+            selectedFilter={selectedFilter}
+            applyFilter={applyFilter}
+            closeFilter={() => setFilterVisible(false)}
+          />
+        </Modal>
       )}
     </View>
   );
 };
 
-// Styles
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f8f9fa',
+    paddingBottom:60,
   },
-  numberInput: {
-    flex: 1,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
-    color: '#000',
+
+  headerContainer: {
+    backgroundColor: '#074B7C',
+    paddingVertical: 10,
   },
   header: {
-    backgroundColor: '#074B7C',
-    marginTop: 3,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 4,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-  },
-  noRecordsContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: '40%',
-  },
-  noRecordsText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#074B7C',
-    marginTop: 10,
-  },
-  suggestionText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 5,
-    paddingHorizontal: 20,
-  },
-  contentContainer: {
+    justifyContent: 'space-between',
     paddingHorizontal: 10,
-    paddingBottom: 20,
-    marginTop: 10,
+  },
+  statusButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 5,
+    width: 120,
+    paddingHorizontal: 10,
+    borderTopLeftRadius: 0,
+    borderBottomStartRadius: 0,
+    borderRadius: 20,
+  },
+  statusButtonText: {
+    marginLeft: 8,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  statusTextContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statusText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: '#fff',
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1996D3',
+    width: 100,
+    paddingVertical: 5,
+    borderBottomRightRadius: 0,
+    borderTopRightRadius: 0,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+  },
+  addButtonText: {
+    marginLeft: 8,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 10,
+    paddingTop: 10,
+  },
+  numberInput: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
+    width: '80%',
   },
   loaderContainer: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  contentContainer: {
+    padding: 10,
+  },
+  noRecordsContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50,
+  },
+  noRecordsText: {
+    fontSize: 18,
+    color: '#666',
+    marginTop: 10,
+  },
+  suggestionText: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 5,
+    textAlign: 'center',
   },
   indicator: {
     position: 'absolute',
-    left: 0,
-    right: 0,
+    width: '100%',
     height: 5,
-    backgroundColor: '#074B7C',
-    bottom: 0,
+    backgroundColor: '#1996D3',
   },
 });
 

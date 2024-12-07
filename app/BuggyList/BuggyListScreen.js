@@ -7,17 +7,18 @@ import Loader from '../LoadingScreen/AnimatedLoader';
 import ProgressPage from '../AssetDetails/ProgressBar';
 import CommentsPage from '../WoComments/WoCommentsScreen';
 import { FontAwesome5 } from '@expo/vector-icons';
+import { WorkOrderInfoApi } from '../../service/WorkOrderInfoApi';
 
 const BuggyListPage = ({ uuid, wo }) => {
   const [data, setData] = useState([]);
+  const [assetDescription, setAssetDescription] = useState(''); // State for asset description
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expanded, setExpanded] = useState(false); // State for managing expand/collapse
   const animation = useState(new Animated.Value(0))[0]; // Initialize animation state
   const navigate = useNavigation();
 
-  console.log(uuid, wo, "info");
-  
+  // Function to fetch buggy list data
   const loadBuggyList = async () => {
     setLoading(true); // Set loading to true before fetching data
     try {
@@ -30,13 +31,25 @@ const BuggyListPage = ({ uuid, wo }) => {
     }
   };
 
+  // Function to fetch asset description
+  const loadAssetDescription = async () => {
+    try {
+      const response = await WorkOrderInfoApi(uuid); // Call the asset info API using uuid
+      setAssetDescription(response[0].wo.Description || 'No description available.');
+    } catch (error) {
+      setError(error.message || 'Error fetching asset description.');
+    }
+  };
+
   useEffect(() => {
     loadBuggyList();
+    loadAssetDescription(); // Fetch asset description on mount
   }, [uuid]);
 
   useFocusEffect(
     React.useCallback(() => {
       loadBuggyList(); // Call loadBuggyList when the screen is focused
+      loadAssetDescription(); // Re-fetch description when screen is focused
     }, [uuid]) // Depend on uuid to refetch if it changes
   );
 
@@ -67,7 +80,7 @@ const BuggyListPage = ({ uuid, wo }) => {
 
   const commentsHeight = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 400], // Adjust the expanded height as needed
+    outputRange: [0, 500], // Adjust the expanded height as needed
     extrapolate: 'clamp',
   });
 
@@ -77,8 +90,6 @@ const BuggyListPage = ({ uuid, wo }) => {
       navigate.navigate('AddInstructions', { order: lastItem.order }); // Pass the order of the last item
     }
   };
-
-  
 
   if (error) {
     return (
@@ -92,11 +103,10 @@ const BuggyListPage = ({ uuid, wo }) => {
   }
 
   if (data.length === 0) {
-    return <Loader />
+    return <Loader />;
   }
 
   if(!data){
-   
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>No instructions available.</Text>
@@ -106,8 +116,8 @@ const BuggyListPage = ({ uuid, wo }) => {
 
   return (
     <View style={styles.container}>
-      <View>
-        <ProgressPage data={data} wo={wo} />
+      <View style={styles.descriptionContainer}>
+        <Text style={styles.assetDescription}>{assetDescription}</Text>
       </View>
       <FlatList
         data={data}
@@ -118,27 +128,31 @@ const BuggyListPage = ({ uuid, wo }) => {
       <Animated.View style={[styles.commentsContainer, { height: commentsHeight }]}>
         <CommentsPage WoUuId={uuid} />
       </Animated.View>
+
+      {/* Comments Expand Button */}
       <TouchableOpacity style={styles.expandButton} onPress={toggleExpand}>
-        <Text style={styles.expandText}>{expanded ? 'Collapse Comments' : 'Expand Comments'}</Text>
         <FontAwesome5
-          name={expanded ? 'chevron-up' : 'chevron-down'} // Using FontAwesome5 icons
+          name={expanded ? 'comments' : 'comments'} // Using FontAwesome5 icons
           size={20}
           color="#fff" // Set icon color to white for contrast
         />
       </TouchableOpacity>
+
+      {/* Progress Bar Container */}
+      <View style={styles.progressBarContainer}>
+      <ProgressPage data={data} wo={wo} />
+      </View>
     </View>
   );
 };
-
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E1F2FE',
-    paddingBottom: 100,
   },
   listContainer: {
     padding: 10,
+    paddingBottom: 80, // Ensure space for the expand button
   },
   errorContainer: {
     flex: 1,
@@ -150,17 +164,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
   },
+  descriptionContainer: {
+    borderTopWidth:1,
+    borderBottomWidth:1,
+    padding: 20, // Increased padding for better spacing
+    backgroundColor: '#fff', // White background for clarity
+    marginBottom: 15, // Space between description and next component
+    shadowColor: '#000', // Shadow color for iOS
+    shadowOffset: { width: 0, height: 4 }, // Shadow offset for iOS
+    shadowOpacity: 0.1, // Light shadow opacity for subtle effect
+    shadowRadius: 6, // Blur radius for the shadow
+    elevation: 5, // Shadow for Android
+  },
+  assetDescription: {
+    fontSize: 14, // Slightly larger font size for readability
+    fontWeight: '600', // Make the text bolder
+    color: '#333', // Darker text color for contrast
+    textAlign: 'center', // Center-align the text
+    lineHeight: 24, // Improved line height for readability
+  },
   expandButton: {
+    marginBottom: 60,
     position: 'absolute',
-    bottom: 60, // Position above the bottom tab bar
-    left: 20,
-    right: 20,
-    flexDirection: 'row',
+    bottom: 10, // Attach to the bottom with a small margin
+    left: 10, // Attach to the left with a small margin
+    width: 50, // Set width equal to height for a perfect circle
+    height: 50, // Set height equal to width for a perfect circle
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 10,
+    alignItems: 'center', // Center the content inside the button
     backgroundColor: '#074B7C',
-    borderRadius: 8,
+    borderRadius: 25, // Half of the width/height for a circular shape
+    elevation: 5, // Add shadow for better visibility (on Android)
+    shadowColor: '#000', // Shadow color for iOS
+    shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
+    shadowOpacity: 0.25, // Shadow opacity for iOS
+    shadowRadius: 3.84, // Shadow blur radius for iOS
   },
   expandText: {
     fontSize: 16,
@@ -187,20 +225,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  progressBarContainer: {
+    position: 'absolute',
+    bottom: 70, // Attach to the bottom
+    right: 10, // Attach to the right
+    width: 50,
+    height: 50,
     justifyContent: 'center',
-    backgroundColor: '#1996D3',
-    padding: 15,
-    borderRadius: 5,
-    margin: 10,
+    alignItems: 'center',
+    backgroundColor: '#074B7C',
+    borderRadius: 25,
+    elevation: 5, // Add shadow for better visibility (on Android)
+    shadowColor: '#000', // Shadow color for iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  addButtonText: {
-    color: '#fff',
-    marginLeft: 8,
-    fontSize: 16,
+  progressButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
-
 export default BuggyListPage;

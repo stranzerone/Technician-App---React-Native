@@ -1,21 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, Button, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  TextInput,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  Modal,
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-// import { getOtp, postComment, closeComplaint } from '../api/complaints';
 import { GetComplaintComments } from '../../service/RaiseComplaintApis/GetComplaintComments';
 import { PostMyComment } from '../../service/RaiseComplaintApis/PostMyComment';
+import { CloseComplaintApi } from '../../service/ComplaintApis/CloseComplaintApi';
+import { useNavigation, CommonActions } from '@react-navigation/native';
+import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 
 const ComplaintCloseScreen = ({ route }) => {
   const { complaint } = route.params;
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
-  const [status, setStatus] = useState(complaint.status);
   const [isOtpMode, setIsOtpMode] = useState(false);
   const [otp, setOtp] = useState('');
-  const [isPosting, setIsPosting] = useState(false); // State to track loading
+  const [isPosting, setIsPosting] = useState(false);
+  const [popupVisible, setPopupVisible] = useState(false); // For controlling popup visibility
+  const [popupConfig, setPopupConfig] = useState({}); // For configuring the popup
+  const navigation = useNavigation();
 
   useEffect(() => {
-    // Fetch comments when the component mounts
     fetchComments();
   }, []);
 
@@ -24,272 +38,178 @@ const ComplaintCloseScreen = ({ route }) => {
       const fetchedComments = await GetComplaintComments(complaint.id);
       setComments(fetchedComments);
     } catch (error) {
-      console.error('Error fetching comments:', error);
       Alert.alert('Error', 'Failed to fetch comments. Please try again.');
-    }
-  };
-
-  const fetchOtp = async () => {
-    try {
-    //   await getOtp(complaint.id); // Fetch OTP from API
-      Alert.alert('OTP Sent', 'An OTP has been sent to your registered contact.');
-      setIsOtpMode(true);
-    } catch (error) {
-      console.error('Error generating OTP:', error);
-      Alert.alert('Error', 'Failed to send OTP. Please try again.');
     }
   };
 
   const handleAddComment = async () => {
     if (newComment.trim()) {
       try {
-        setIsPosting(true); // Set loading to true
-        // Post the new comment
-        await PostMyComment(complaint.id, newComment); // Send comment to API
-
-        // Refresh the comments list after posting a new comment
+        setIsPosting(true);
+        await PostMyComment(complaint.id, newComment);
         fetchComments();
-        setNewComment(''); // Clear the input field after posting
+        setNewComment('');
       } catch (error) {
-        console.error('Error posting comment:', error);
         Alert.alert('Error', 'Failed to post comment. Please try again.');
       } finally {
-        setIsPosting(false); // Set loading to false after posting
+        setIsPosting(false);
       }
     } else {
       Alert.alert('Empty Comment', 'Please enter a comment before submitting.');
     }
   };
 
-  const handleCloseComplaint = async () => {
-    if (isOtpMode) {
-      try {
-        const result = await closeComplaint(complaint.id, otp); // Send OTP to close complaint
-        if (result.success) {
-          Alert.alert('Complaint Closed', 'Complaint has been successfully closed.');
-          setStatus('Closed');
-          setComments([...comments, { id: comments.length + 1, text: 'Complaint closed.', username: 'System' }]);
-          setIsOtpMode(false);
-          setOtp('');
-        } else {
-          Alert.alert('Invalid OTP', result.message || 'Please enter the correct OTP.');
-        }
-      } catch (error) {
-        console.error('Error closing complaint:', error);
-        Alert.alert('Error', 'Failed to close complaint. Please try again.');
-      }
-    } else {
-      await fetchOtp();
-    }
-  };
-
   const renderComment = ({ item }) => (
-    <View style={styles.commentContainer}>
-      <FontAwesome name="comment" size={16} color="#074B7C" style={styles.commentIcon} />
+    <View className="flex-row p-3 bg-white shadow-sm rounded-lg mb-3">
+      <FontAwesome name="comment" size={18} color="#1996D3" className="mr-2" />
       <View>
-        <Text style={styles.usernameText}>{item.name}</Text>
-        <Text style={styles.commentText}>{item.remarks}</Text>
+        <Text className="text-blue-700 font-semibold">{item.name}</Text>
+        <Text className="text-gray-600">{item.remarks}</Text>
       </View>
     </View>
   );
 
+  const handleCloseComplaint = () => {
+    setIsOtpMode(true);
+  };
+
+  const handleOtpSubmit = async () => {
+    if (otp.length === 4) {
+      setIsOtpMode(false);
+      try {
+        const response = await CloseComplaintApi(complaint, otp);
+        if (response.status === 'success') {
+          // Show success popup
+          setPopupConfig({
+            type: 'success',
+            message: 'Complaint closed successfully!',
+          });
+          setPopupVisible(true);
+
+          // Navigate to "Service Request" without back navigation
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Service Request' }],
+            })
+          );
+        } else {
+          // Show error popup
+          setPopupConfig({
+            type: 'error',
+            message:response.message,
+          });
+          setPopupVisible(true);
+        }
+      } catch (error) {
+        // Show error popup for unexpected issues
+        setPopupConfig({
+          type: 'error',
+          message: 'An error occurred. Please try again.',
+        });
+        setPopupVisible(true);
+      }
+    } else {
+      Alert.alert('Error', 'Please enter a valid 4-digit OTP.');
+    }
+  };
+
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={styles.contentContainer}>
-        {/* Main Complaint Info */}
-        <View style={styles.mainInfo}>
-          <Text style={styles.complaintTitle}>{complaint.name}</Text>
-          <Text style={styles.description}>{complaint.description}</Text>
-          <Text style={styles.createdDate}>Created on: {complaint.created_at}</Text>
-          <View style={styles.statusContainer}>
-            <Text style={styles.status}>Status: {status}</Text>
-            {status !== 'Closed' && (
-              <TouchableOpacity style={styles.closeButton} onPress={handleCloseComplaint}>
-                <Text style={styles.closeButtonText}>Close Complaint</Text>
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <View className="flex-1 bg-gray-50 p-4">
+        <View className="bg-white p-4 rounded-lg shadow-md mb-4">
+          <Text className="text-lg font-bold text-gray-900">{complaint.name}</Text>
+          <Text className="text-gray-600 mt-2">{complaint.description}</Text>
+          <Text className="text-gray-400 mt-2">Created on: {complaint.createdDate}</Text>
+          <View className="flex-row items-center justify-between mt-4">
+            <Text className="text-gray-700 font-semibold">Status: {complaint.status}</Text>
+            {complaint.status !== 'Closed' && (
+              <TouchableOpacity
+                className="bg-blue-500 px-4 py-2 rounded-lg"
+                onPress={handleCloseComplaint}
+              >
+                <Text className="text-white font-semibold">Close Complaint</Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        {/* OTP Input */}
-        {isOtpMode && (
-          <View style={styles.otpContainer}>
-            <TextInput
-              style={styles.otpInput}
-              placeholder="Enter OTP"
-              keyboardType="numeric"
-              value={otp}
-              onChangeText={setOtp}
-            />
-            <Button title="Submit OTP" onPress={handleCloseComplaint} color="#074B7C" />
-          </View>
-        )}
-
-        {/* Divider */}
-        <View style={styles.divider} />
-
-        {/* Comments Section */}
-        <Text style={styles.sectionTitle}>Comments</Text>
-        <FlatList
-          data={comments}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderComment}
-          style={styles.commentsList}
-          ListEmptyComponent={<Text style={styles.noComments}>No comments yet.</Text>}
-        />
+        <View className="flex-1">
+          <Text className="text-lg font-bold text-gray-900 mb-4">Comments</Text>
+          <FlatList
+            data={comments}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderComment}
+            ListEmptyComponent={
+              <Text className="text-gray-500 text-center mt-4">No comments yet.</Text>
+            }
+          />
+        </View>
       </View>
 
-      {/* Add New Comment */}
-      <View style={styles.addCommentContainer}>
+      <View className="flex-row items-center mb-[50] bg-gray-100 p-4">
         <TextInput
-          style={styles.commentInput}
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-700"
           placeholder="Add a new comment"
           value={newComment}
           onChangeText={setNewComment}
         />
         {isPosting ? (
-          <ActivityIndicator size="small" color="#fff" style={styles.loadingButton} />
+          <ActivityIndicator size="small" color="#fff" className="ml-2" />
         ) : (
-          <TouchableOpacity style={styles.postButton} onPress={handleAddComment}>
-            <Text style={styles.postButtonText}>Post</Text>
+          <TouchableOpacity
+            className="ml-2 bg-blue-500 px-4 py-2 rounded-lg"
+            onPress={handleAddComment}
+          >
+            <Text className="text-white font-semibold">Post</Text>
           </TouchableOpacity>
         )}
       </View>
+
+      {/* OTP Modal */}
+      <Modal visible={isOtpMode} transparent animationType="slide">
+        <View className="flex-1 bg-black bg-opacity-50 justify-center items-center">
+          <View className="bg-white w-4/5 p-5 rounded-lg shadow-lg">
+            <Text className="text-lg font-bold mb-4">Enter OTP</Text>
+            <TextInput
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 text-center"
+              placeholder="Enter 4-digit OTP"
+              keyboardType="numeric"
+              maxLength={4}
+              value={otp}
+              onChangeText={setOtp}
+            />
+            <View className="flex-row justify-between">
+              <TouchableOpacity
+                className="bg-blue-500 flex-1 mr-2 py-2 rounded-lg"
+                onPress={handleOtpSubmit}
+              >
+                <Text className="text-white text-center font-semibold">Submit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="bg-red-500 flex-1 ml-2 py-2 rounded-lg"
+                onPress={() => setIsOtpMode(false)}
+              >
+                <Text className="text-white text-center font-semibold">Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Dynamic Popup */}
+      {popupVisible && (
+        <DynamicPopup
+          type={popupConfig.type} // success, error, warning, etc.
+          message={popupConfig.message}
+          onClose={() => setPopupVisible(false)} // Close popup when dismissed
+        />
+      )}
     </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9f9f9',
-  },
-  contentContainer: {
-    flex: 1,
-    padding: 16,
-    paddingBottom: 70,
-  },
-  mainInfo: {
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderColor: '#ddd',
-  },
-  complaintTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#074B7C',
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 10,
-  },
-  createdDate: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 10,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  status: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#074B7C',
-  },
-  closeButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    backgroundColor: '#F44336',
-    borderRadius: 4,
-  },
-  closeButtonText: {
-    color: '#fff',
-    fontSize: 14,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#074B7C',
-    marginVertical: 10,
-  },
-  commentsList: {
-    flexGrow: 0,
-    marginBottom: 20,
-  },
-  commentContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  commentIcon: {
-    marginRight: 8,
-  },
-  usernameText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  commentText: {
-  
-
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#074B7C',
-  },
-  noComments: {
-    textAlign: 'center',
-    color: '#999',
-    fontSize: 14,
-    marginVertical: 20,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#ddd',
-    marginVertical: 10,
-  },
-  addCommentContainer: {
-    position: 'absolute',
-    bottom: 40,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderColor: '#ddd',
-  },
-  commentInput: {
-    flex: 1,
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    fontSize: 14,
-    color: '#333',
-  },
-  postButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#074B7C',
-    borderRadius: 4,
-    marginLeft: 12,
-  },
-  postButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  loadingButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-});
 
 export default ComplaintCloseScreen;

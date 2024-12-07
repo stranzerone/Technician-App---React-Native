@@ -2,16 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { View, FlatList, StyleSheet, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
 import ComplaintCard from './ComplaintCard';
 import { GetMyComplaints } from '../../service/RaiseComplaintApis/GetMyComplaintApi';
-import RNPickerSelect from 'react-native-picker-select';
 import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import FilterOptions from '../WorkOrders/WorkOrderFilter';
 
 const ComplaintsScreen = () => {
   const [complaints, setComplaints] = useState([]);
   const [filteredComplaints, setFilteredComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState('Open');
+  const [selectedStatus, setSelectedStatus] = useState('All');
+  const [showFilter, setShowFilter] = useState(false);
   const navigation = useNavigation();
 
   const statusOptions = [
@@ -52,6 +53,7 @@ const ComplaintsScreen = () => {
       const filtered = complaints.filter(complaint => complaint.status === status);
       setFilteredComplaints(filtered);
     }
+    setShowFilter(false);  // Close the filter after selection
   };
 
   const renderComplaintCard = ({ item }) => (
@@ -65,8 +67,7 @@ const ComplaintsScreen = () => {
     />
   );
 
-  // New condition to check for no filtered complaints
-  const noComplaints = filteredComplaints.length === 0;
+  const noComplaints = filteredComplaints?.length === 0;
 
   if (loading) {
     return (
@@ -87,34 +88,37 @@ const ComplaintsScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Filter and Add Complaint Section */}
-      <View style={styles.filterContainer}>
-        {/* Dropdown for selecting status */}
-        <View style={styles.dropdownContainer}>
-          <RNPickerSelect
-            onValueChange={handleStatusChange}
-            items={statusOptions.map(option => ({
-              ...option,
-              style: { color: option.color, fontWeight: selectedStatus === option.value ? 'bold' : 'normal' },
-            }))}
-            value={selectedStatus}
-            style={{
-              inputIOS: [styles.pickerInput, { color: statusOptions.find(option => option.value === selectedStatus)?.color }],
-              inputAndroid: [styles.pickerInput, { color: statusOptions.find(option => option.value === selectedStatus)?.color }],
-              iconContainer: styles.iconContainer,
-            }}
-            placeholder={{}}
-          />
+      <View style={styles.header}>
+        {/* Filter button on the left */}
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={() => setShowFilter(!showFilter)}
+        >
+          <FontAwesome name="filter" size={18} color="#fff" />
+          <Text style={styles.filterText}>Filter</Text>
+        </TouchableOpacity>
+
+        {/* Selected filter status in the center */}
+        <View style={styles.selectedStatusContainer}>
+          <Text  className="bg-blue-300 px-5 py-1   rounded-lg" style={styles.selectedStatus}>{selectedStatus.toUpperCase()}</Text>
         </View>
 
-        {/* Button for adding new complaint */}
+        {/* Add button on the right */}
         <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('RaiseComplaint')}>
-          <FontAwesome name="plus" size={16} color="#fff" />
+          <FontAwesome name="plus" size={18} color="#fff" />
           <Text style={styles.addButtonText}>Add</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Show "No Complaints Found" if filtered complaints are empty */}
+      {showFilter && (
+        <FilterOptions
+          filters={statusOptions.map(option => option.value)}
+          selectedFilter={selectedStatus}
+          applyFilter={handleStatusChange}
+          closeFilter={() => setShowFilter(false)}  // Close the filter when the option is selected
+        />
+      )}
+
       {noComplaints ? (
         <View style={styles.noComplaintsContainer}>
           <FontAwesome name="exclamation-circle" size={30} color="#999" />
@@ -130,7 +134,6 @@ const ComplaintsScreen = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -155,46 +158,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 20,
   },
-  filterContainer: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+    paddingHorizontal: 10,
+  },
+  filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  dropdownContainer: {
-    width: '70%',
-    marginRight: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#074B7C',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#074B7C',
-    paddingLeft: 12,
   },
-  pickerInput: {
-    height: 50,
+  filterText: {
+    color: '#fff',
+    marginLeft: 8,
     fontSize: 16,
+    fontWeight: '500',
   },
-  iconContainer: {
-    right: 10,
-    top: 15,
+  selectedStatusContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  selectedStatus: {
+    color: '#074B7C',
+    fontSize: 15,
+    fontWeight: 'bold',
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '30%',
-    height: 50,
     backgroundColor: '#074B7C',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
   },
   addButtonText: {
     color: '#fff',
-    fontSize: 14,
     marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '500',
   },
   noComplaintsContainer: {
     flex: 1,

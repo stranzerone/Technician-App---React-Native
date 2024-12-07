@@ -2,64 +2,77 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { GetAllWorkOrders } from '../../service/WorkOrderApis/GetAllWorkOrderApi';
 
-// Async thunk to fetch work orders with hardcoded statuses
-export const fetchWorkOrders = createAsyncThunk('workOrders/fetchWorkOrders', async (_, { rejectWithValue }) => {
-  // Define the statuses array directly in the thunk
-  const filters = ['OPEN', 'STARTED', 'COMPLETED', 'HOLD', 'CANCELLED', 'REOPEN'];
-  let allWorkOrders = [];
+// Async thunk to fetch work orders for predefined statuses
+export const fetchWorkOrders = createAsyncThunk(
+  'workOrders/fetchWorkOrders',
+  async (_, { rejectWithValue }) => {
+    const filters = ['OPEN', 'STARTED', 'COMPLETED', 'HOLD', 'CANCELLED', 'REOPEN'];
+    let allWorkOrders = [];
 
-  for (const status of filters) {
     try {
-      const response = await GetAllWorkOrders(status); // Fetch work orders for each status
+      for (const status of filters) {
+        const response = await GetAllWorkOrders(status);
 
-      // If no data is returned, skip to the next status
-      if (!response || response.length === 0) {
-        continue; // Skip to the next status
+        if (response?.length > 0) {
+          allWorkOrders = [...allWorkOrders, ...response];
+        }
       }
 
-      allWorkOrders = [...allWorkOrders, ...response]; // Add each response to the array
+      if (allWorkOrders.length === 0) {
+        throw new Error('No work orders found.');
+      }
+
+      return allWorkOrders;
     } catch (error) {
-      console.error(`Error fetching work orders for status: ${status}`, error);
-      continue; // Skip to the next status if there's an error
+      console.error('Error fetching work orders:', error.message);
+      return rejectWithValue(error.message);
     }
   }
-
-  // If no work orders were fetched after all attempts, reject the thunk
-  if (allWorkOrders.length === 0) {
-    return rejectWithValue('No work orders could be fetched.');
-  }
-
-  return allWorkOrders; // Return the combined array of work orders
-});
+);
 
 const workOrdersSlice = createSlice({
   name: 'workOrders',
   initialState: {
-    data: [],
-    filteredData: [],
-    status: 'idle',
-    error: null,
+    data: [], // All work orders
+    filteredData: [], // Filtered work orders
+    status: 'idle', // Fetching status ('idle', 'loading', 'succeeded', 'failed')
+    error: null, // Error message
   },
   reducers: {
     filterWorkOrders: (state, action) => {
       const status = action.payload;
-     console.log(status,"pauload")
+
       if (status) {
-        // Use state.data to filter
-        state.filteredData = state.data.filter(item =>
-          item.wo.status == status
-        );
+        // Filter based on work order status
+        state.filteredData = state.data.filter((item) => item.wo.status === status);
       } else {
-        // Reset to full data if no search text
-        state.filteredData = state.data; 
+        // Reset to full data if no filter applied
+        state.filteredData = [...state.data];
+      }
+    },
+    resetWorkOrders: (state) => {
+      state.filteredData = [...state.data]; // Reset filtered data to all data
+    },
+    updateWorkOrderStatus: (state, action) => {
+      const { id, status } = action.payload;
+      const workOrder = state.data.find((item) => item.wo.uuid == id);
+console.log(workOrder,"data to update redux")
+      if (workOrder) {
+        workOrder.wo.Status = status; // Update the status in all work orders
       }
 
+      // Update filtered data as well
+      const filteredWorkOrder = state.filteredData.find((wo) => wo.id === id);
+      if (filteredWorkOrder) {
+        filteredWorkOrder.wo.status = status;
+      }
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchWorkOrders.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
       })
       .addCase(fetchWorkOrders.fulfilled, (state, action) => {
         state.status = 'succeeded';
@@ -68,16 +81,18 @@ const workOrdersSlice = createSlice({
       })
       .addCase(fetchWorkOrders.rejected, (state, action) => {
         state.status = 'failed';
-        state.error = action.payload; // Set custom error message if no data fetched
+        state.error = action.payload || 'Failed to fetch work orders.';
       });
   },
 });
 
-// Export the filterWorkOrders action
-export const { filterWorkOrders } = workOrdersSlice.actions;
+// Export actions
+export const { filterWorkOrders, resetWorkOrders, updateWorkOrderStatus } = workOrdersSlice.actions;
 
-// Selectors to access data
+// Selectors
 export const selectWorkOrders = (state) => state.workOrders.data;
 export const selectFilteredWorkOrders = (state) => state.workOrders.filteredData;
+export const selectWorkOrdersStatus = (state) => state.workOrders.status;
+export const selectWorkOrdersError = (state) => state.workOrders.error;
 
 export default workOrdersSlice.reducer;

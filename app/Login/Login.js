@@ -26,7 +26,7 @@ const NewLoginScreen = () => {
           navigation.dispatch(
             CommonActions.reset({
               index: 0,
-              routes: [{ name: 'Home' }], // Replace 'Home' with your home screen's name
+              routes: [{ name: 'Home' }], 
             })
           );
         }

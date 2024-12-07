@@ -1,25 +1,38 @@
-
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const getAllTeams = async () => {
+export const CloseComplaintApi = async (data,otp) => {
   const userInfo = await AsyncStorage.getItem('userInfo');
-console.log("get all Teams")
+
+  console.log(data,"data for closing complaint")
   if (userInfo) {
 
     const parsedUserInfo = JSON.parse(userInfo);
     const userId = parsedUserInfo.data.id
     const apiToken = parsedUserInfo.data.api_token
     const societyId =parsedUserInfo.data.societyId
-    const apiUrl = 'https://nppm-api.isocietymanager.com/v3/teams?';
+
+    const apiUrl = 'https://api.isocietymanager.com/staff/updatecomplaint';
 
      const params = {
-   "site_uuid":"415a06d6-9059-4233-b89d-7953ff7ba79d",
     "user-id":userId,
     "api-token":apiToken,
       
     };
 
+const payload ={
+ask_otp: 0,
+"amount": data.amount,
+"createdDate": data.createdDate,
+"description": data.description,
+"id": data.id,
+"name": data.name,
+otp:otp,
+status: "Closed",
+}
+
+console.log(payload,"payload")
+console.log(data,'data')
     const headers = {
         'Content-Type': 'application/json',
         'ism-auth': JSON.stringify({
@@ -30,12 +43,14 @@ console.log("get all Teams")
       };
 
     try {
-      const response = await axios.get(apiUrl, { params,headers, withCredentials: true });
+      const response = await axios.put(apiUrl,payload,{ params,headers});
+
+     console.log(response.data,"this is response for closing")
       return response.data
 
 
     } catch (error) {
-      console.error('Error fetching data from teams:', error);
+      console.error('Error fetching data:', error);
       throw error; // Throw error to handle it later
     }
   } else {

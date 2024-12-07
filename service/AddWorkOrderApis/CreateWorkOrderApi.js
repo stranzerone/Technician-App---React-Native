@@ -3,8 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = 'https://nppm-api.isocietymanager.com/v3/workorder';
 
+
+
 export const submitWorkOrder = async (workOrderData) => {
-  console.log(workOrderData.asset.Name,'data from ui to api')
+  console.log(workOrderData,"recieved payload")
+
   try {
     const userInfo = await AsyncStorage.getItem('userInfo');
     console.log(userInfo, "info");
@@ -26,14 +29,14 @@ export const submitWorkOrder = async (workOrderData) => {
       })
     };
 
-    const payload = {
+        const payload = {
       "Name": workOrderData.name,
       "Type": workOrderData.type,
       "Asset": workOrderData.asset.Name,
-      "Assigned": workOrderData.user,
+      // "Assigned": workOrderData.user,
       "Due Date": workOrderData.dueDate,
       "Estimated Time": workOrderData.estimatedTime,
-      "Priority": workOrderData.priority,
+      "Priority": workOrderData.priority.Value,
       "user_id": userId,
       "asset_uuid": workOrderData.asset.uuid,
       "breakdown": false,

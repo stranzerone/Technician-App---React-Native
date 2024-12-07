@@ -15,7 +15,7 @@ const NotificationCard = ({ message, createdAt }) => {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
-    borderTopWidth:1,
+    borderBottomWidth:1,
     paddingVertical: 20, // Added padding for better spacing
     paddingHorizontal:12,
     elevation: 5, // More pronounced shadow effect

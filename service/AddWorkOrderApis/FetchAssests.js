@@ -41,7 +41,6 @@ const GetAssets = async (text) => {
 
     // Make the API request using axios
     const response = await axios.get(baseUrl, { params, headers });
-
     // Return the API response data
     return response.data;
   

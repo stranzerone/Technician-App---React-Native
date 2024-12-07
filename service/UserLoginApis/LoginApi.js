@@ -36,11 +36,23 @@ export const loginApi = async (user) => {
     // Check if the login is successful
     if (response.data.message === 'Login Successful.') {
       // Store the token and user info in AsyncStorage
+
       await AsyncStorage.setItem('userInfo', JSON.stringify(response.data));
       await AsyncStorage.setItem('user', JSON.stringify(user.user));
 
+
+      console.log(response.data.data.designation_name,'userinfo')
       // Return the entire response, not just the status
-      return response.data;
+
+      if(response.data.data.designation_name == 'Staff'  || response.data.data.designation_name == 'Admin' ){
+        return response.data;
+
+      }else{
+        return {
+          message: "You are not authorized to log in. Only Admins or Staff members are allowed."
+        };
+        
+      }
     } else {
       // Handle unsuccessful login attempts
       return response.data;

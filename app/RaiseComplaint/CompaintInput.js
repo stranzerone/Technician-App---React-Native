@@ -1,11 +1,14 @@
 import React, { useState, useLayoutEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView, SafeAreaView, Platform, KeyboardAvoidingView, Keyboard, Alert } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { GetComplaintLocations } from '../../service/ComplaintApis/GetComplaintLocations';
 import { ComplaintImageUploadApi } from '../../service/ComplaintApis/ComplaintImageUpload';
+import { CreateComplaintApi } from '../../service/ComplaintApis/CreateComplaintApi';
+import { useNavigation } from '@react-navigation/native';
+import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 
-const NewComplaintPage = ({ route, navigation }) => {
+const NewComplaintPage = ({ route }) => {
   const { subCategory } = route.params;
   const [location, setLocation] = useState('');
   const [allLocations, setAllLocations] = useState([]);
@@ -16,7 +19,9 @@ const NewComplaintPage = ({ route, navigation }) => {
   const [imageLoading, setImageLoading] = useState(false);
   const [error, setError] = useState('');
   const [isInputActive, setInputActive] = useState(false);
+ const [imageUrl,setImageUrl] = useState('')
 
+ const navigation = useNavigation()
   // Fetch all location options on mount
   useLayoutEffect(() => {
     const fetchAllLocations = async () => {
@@ -47,93 +52,80 @@ const NewComplaintPage = ({ route, navigation }) => {
     }
   };
 
-  // Function to handle image picking
   const pickImage = async () => {
     setImageLoading(true); // Set loading state for image pick
+  
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
       aspect: [4, 3],
       quality: 1,
     });
-
+  
     if (!result.canceled) {
-      setImage(result.assets[0]);
-      const ImageResponse = await ComplaintImageUploadApi(result.assets[0]);
-      console.log(ImageResponse, "response for image upload");
-      setImageLoading(false);  // Set loading state false after image is picked
+      setImage(result.assets[0]); // Set the image immediately
+      setImageLoading(false); // Stop loading state immediately after setting image
+  
+      // Upload image in the background (non-blocking)
+      try {
+        const ImageResponse = await ComplaintImageUploadApi(result.assets[0]);
+        setImageUrl(ImageResponse.data.url)
+        console.log(ImageResponse, "response for image upload");
+      } catch (uploadError) {
+        console.error('Error uploading image:', uploadError);
+      }
     } else {
       setImageLoading(false); // Reset loading if no image is selected
     }
   };
+  
+  const submitComplaint= async()=>{
 
-  // Submit complaint data
-  const submitComplaint = async () => {
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('category', subCategory.complaint_category);
-      formData.append('subCategory', subCategory.name);
-      formData.append('location', location);
-      formData.append('description', description);
-      if (image) {
-        formData.append('image', {
-          uri: image.uri,
-          name: `complaint_image+${Date.now()}.jpg`,
-          type: image.mimeType,
-        });
-      }
+const data ={
+  data:subCategory,
+  society:location.id,
+  description:description,
+  image:imageUrl
+}
 
-      const response = await fetch('https://api.example.com/complaints', {
-        method: 'POST',
-        body: formData,
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+const response = await CreateComplaintApi(data)
 
-      const result = await response.json();
-      if (response.ok) {
-        alert('Complaint submitted successfully!');
-        navigation.goBack();
-      } else {
-        setError(result.message || 'Error submitting complaint');
-      }
-    } catch (error) {
-      setError('Error submitting complaint');
-    } finally {
-      setLoading(false);
-    }
-  };
+
+if(response.status == 'success'){
+
+  navigation.navigate('Service Request')
+  console.log('complaint added')
+}else{
+  window.alert("something went wrong")
+}
+  }
+
+
 
   // Disable submit button if any field is missing
-  const isSubmitDisabled = !location || !description || !image;
+  const isSubmitDisabled = !location || !description || !imageUrl;
+
+const locationClicked = (item)=>{
+
+  console.log(item,'selected name')
+          setLocation(item); // Dynamically set the selected location
+          setInputActive(false); // Hide the dropdown list
+
+}
+
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
+       <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 40} // Adjust this value to move input above keyboard
+      >
       <ScrollView style={styles.container}>
 
         {/* Location Section */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Location</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter location"
-            value={location}
-            onFocus={() => setInputActive(true)}
-            onBlur={() => setInputActive(false)}
-            onChangeText={handleLocationInput}
-          />
-          {loading && <ActivityIndicator size="small" color="#1996D3" style={styles.loader} />}
-          {isInputActive && (
-            <View style={styles.locationList}>
-              {filteredLocations.map((item) => (
-                <TouchableOpacity key={item.id} onPress={() => { setLocation(item.name); setInputActive(false); }}>
-                  <Text style={styles.locationOption}>{item.name}</Text>
-                </TouchableOpacity>
-              ))}
-              {filteredLocations.length === 0 && <Text style={styles.locationOption}>No location options found</Text>}
-            </View>
-          )}
-        </View>
+      
 
         {/* Category Section */}
         <View style={styles.section}>
@@ -145,6 +137,38 @@ const NewComplaintPage = ({ route, navigation }) => {
         <View style={styles.section}>
           <Text style={styles.label}>Sub Category</Text>
           <Text style={styles.valueText}>{subCategory.name || 'Not selected'}</Text>
+        </View>
+
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Location</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter location"
+            value={location.name}
+            onFocus={() => setInputActive(true)}
+            onChangeText={handleLocationInput}
+          />
+          {loading && <ActivityIndicator size="small" color="#1996D3" style={styles.loader} />}
+      
+      
+    {isInputActive && (
+  <View style={styles.locationList}>
+    {filteredLocations.map((item) => (
+      <TouchableOpacity
+        key={item.id}
+        onPress={()=>locationClicked(item)}
+      >
+        <Text style={styles.locationOption}>{item.name}</Text>
+      </TouchableOpacity>
+    ))}
+    {filteredLocations.length === 0 && (
+      <Text style={styles.locationOption}>No location options found</Text>
+    )}
+  </View>
+)}
+
+
         </View>
 
         {/* Description Section */}
@@ -190,15 +214,23 @@ const NewComplaintPage = ({ route, navigation }) => {
         {error &&
          <Text style={styles.errorMessage}>{error}</Text>}
       </ScrollView>
+
+     
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
-};const styles = StyleSheet.create({
+};
+
+
+const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    paddingBottom:40,
     backgroundColor: '#FFFFFF', // White background
   },
   container: {
-    padding: 20,
+    padding: 10,
+    paddingBottom:30
   },
   header: {
     fontSize: 24,
@@ -209,10 +241,9 @@ const NewComplaintPage = ({ route, navigation }) => {
   },
   section: {
     backgroundColor: '#FFFFFF', // White background
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#000000', // Black border color
-    marginBottom: 15,
+    padding: 8,
+    borderBottomWidth: .5,
+    borderBottomColor: 'gray', // Black border color
   },
   label: {
     fontSize: 16,
@@ -235,7 +266,7 @@ const NewComplaintPage = ({ route, navigation }) => {
     color: '#000000', // Black text in input
   },
   textarea: {
-    height: 100,
+    height: 70,
     textAlignVertical: 'top',
     color: '#000000', // Black font color
   },
@@ -283,8 +314,9 @@ const NewComplaintPage = ({ route, navigation }) => {
     marginTop: 10,
   },
   submitButton: {
-    backgroundColor: '#1996D3', // Glowing blue button color
+    backgroundColor: '#074B7C', // Glowing blue button color
     borderRadius: 8,
+    marginBottom:20,
     paddingVertical: 15,
     marginTop: 20,
     alignItems: 'center',

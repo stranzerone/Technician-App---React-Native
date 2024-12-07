@@ -145,7 +145,7 @@ const BuggyListCard = ({ item, onUpdateSuccess, WoUuId }) => {
   return (
     <View style={[styles.cardContainer, { backgroundColor: cardBackgroundColor }]}>
       {item.type === 'checkbox' ? (
-        <>
+        <View className="flex flex-row">
           <InputField
             WoUuId={WoUuId}
             item={item}
@@ -157,8 +157,7 @@ const BuggyListCard = ({ item, onUpdateSuccess, WoUuId }) => {
             pdfPreviewUrl={pdfPreview}
             onUpdateSuccess={onUpdateSuccess}
           />
-          <Text style={styles.title}>{item.title}</Text>
-        </>
+        </View>
       ) : (
         <>
           <Text className="pt-3 pb-2" style={styles.title}>{item.title}</Text>

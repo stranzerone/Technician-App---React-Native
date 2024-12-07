@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   TextInput,
   Text,
+  StyleSheet,
+  TouchableWithoutFeedback,
   TouchableOpacity,
+  Keyboard,
   Image,
   Modal,
 } from 'react-native';
+import RNPickerSelect from 'react-native-picker-select';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
@@ -18,6 +22,7 @@ import styles from './InputFieldStyleSheet';
 import { uplodPdfToServer } from '../../service/ImageUploads/ConvertPdfToUrl';
 import OptionsModal from '../DynamivPopUps/DynamicOptionsPopUp';
 
+
 const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, WoUuId, onUpdateSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -25,19 +30,18 @@ const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, WoUuId, 
   const [inputText, setInputText] = useState(inputValue);
   const [isEditing, setIsEditing] = useState(false);
   const { ppmAsstPermissions } = usePermissions();
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [options, setOptions] = useState([]);
-const [selectedOption,setSlectedOption]  = useState('')
-  useEffect(() => {
-    // Mapping the options properly to pass them as an array of objects
-    const listOptions = item.options?.map((option) => ({
+  const [isModalVisible,setIsModalVisible] = useState(false)
+  const [options,setOptions]  = useState([])
+
+
+     // Mapping the options properly to pass them as an array of objects
+     const listOptions = item.options?.map((option) => ({
       label: option,
       value: option,
     }));
-
+  
     // Setting the options to the state
     setOptions(listOptions);
-  }, [item]);
 
   const renderTextOrNumberInput = ({
     item,
@@ -69,7 +73,7 @@ const [selectedOption,setSlectedOption]  = useState('')
       ) : (
         <TouchableOpacity
           onPress={() => {
-            if (ppmAsstPermissions.some((permission) => permission.includes('U'))) {
+            if (ppmAsstPermissions.some(permission => permission.includes('U'))) {
               setIsEditing(true);
             }
           }}
@@ -79,56 +83,62 @@ const [selectedOption,setSlectedOption]  = useState('')
       )}
     </View>
   );
+  
+
+
+
 
   const handleTypeSelect = (type) => {
-    setInputValue(type);
+    setSelectedType(type);
+    onTypeSelect(type);
     setIsModalVisible(false);
   };
 
   const closeModal = () => {
-    console.log("closing model")
-
     setIsModalVisible(false);
   };
+
 
   const renderField = () => {
     switch (item.type) {
       case 'text':
-      case 'number':
-        return renderTextOrNumberInput({
-          item,
-          inputText,
-          setInputText,
-          isEditing,
-          setIsEditing,
-          setInputValue,
-          ppmAsstPermissions,
-        });
+        case 'number':
+          return renderTextOrNumberInput({
+            item,
+            inputText,
+            setInputText,
+            isEditing,
+            setIsEditing,
+            setInputValue,
+            ppmAsstPermissions,
+          });
+        
+     
 
-      case 'dropdown':
-        return item.options && item.options.length > 0 ? (
-          <View style={styles.inputContainer}>
-            <View style={styles.dropdownContainer}>
-              <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-                <View style={[styles.dropdown,{paddingVertical:7}]}>
-                  {item.result?
-                  <Text>
-                    {item.result}
-                  </Text>:
-                  <Text>Select Option</Text>
-
-                }
+          
+          case 'dropdown':
+       
+          
+            return item.options && item.options.length > 0 ? (
+              <View style={styles.inputContainer}>
+                <View style={styles.dropdownContainer}>
+                  <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+                    <View style={styles.dropdown}>
+                      <Text>Select Option</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.iconContainer}>
+                    <Ionicons name="chevron-down" size={24} color="#1996D3" />
+                  </TouchableOpacity>
                 </View>
-              
-              <View style={styles.iconContainer}>
-                <Ionicons name="chevron-down" size={24} color="#1996D3" />
               </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
-          <Text style={styles.errorText}>No options available</Text>
-        );
+            ) : (
+              <Text style={styles.errorText}>No options available</Text>
+            );
+          
+
+
+
 
       case 'checkbox':
         return renderCheckbox();
@@ -144,22 +154,26 @@ const [selectedOption,setSlectedOption]  = useState('')
     }
   };
 
+
+ 
+
   const renderCheckbox = () => (
     <TouchableOpacity
-      disabled={!ppmAsstPermissions.some((permission) => permission.includes('U'))}
+      disabled={!ppmAsstPermissions.some(permission => permission.includes('U'))}
       style={styles.checkboxContainer}
       onPress={() => setInputValue(inputValue === '1' ? '0' : '1')}
     >
       <View className="flex flex-row gap-2">
-        <View style={styles.middleCircle}>
-          <View
-            style={[styles.innerCircle, inputValue === '1' ? styles.checked : styles.unchecked]}
-          />
-        </View>
-        <Text className="mx-2" style={styles.title}>
-          {item.title}
-        </Text>
+      <View style={styles.middleCircle}>
+        <View
+          style={[styles.innerCircle, inputValue === '1' ? styles.checked : styles.unchecked]}
+        />
+
+       
       </View>
+      <Text className='mx-2' style={styles.title}>{item.title}</Text>
+
+     </View>
     </TouchableOpacity>
   );
 
@@ -200,9 +214,9 @@ const [selectedOption,setSlectedOption]  = useState('')
       <View style={styles.pdfButtonsContainer}>
         <TouchableOpacity onPress={handleDocumentPicker} style={[styles.button, styles.pdfButton]}>
           <Text style={styles.buttonText}>
-            <FontAwesome name="file-pdf-o" size={20} />
-            &nbsp; Choose PDF
-          </Text>
+            <FontAwesome name='file-pdf-o' size={20}  />
+            &nbsp;
+            Choose PDF</Text>
         </TouchableOpacity>
         {item.file && (
           <TouchableOpacity
@@ -218,14 +232,17 @@ const [selectedOption,setSlectedOption]  = useState('')
   );
 
   const handleDocumentPicker = async () => {
-    if (!ppmAsstPermissions.some((permission) => permission.includes('U'))) return;
-
+    console.log('document picker called',ppmAsstPermissions)
+    if (!ppmAsstPermissions.some(permission => permission.includes('U'))) return;
+console.log("clicked to upload pdf")
     setLoading(true);
     const result = await DocumentPicker.getDocumentAsync({
       type: ['application/pdf', 'image/*'],
     });
 
+    console.log(result.assets[0].uri,'uri')
     if (!result.canceled && result.assets[0].uri) {
+      console.log(result,'result')
       setSelectedFile(result);
       const uploadResponse = await uplodPdfToServer(result.assets[0], item.id, WoUuId);
       if (uploadResponse) onUpdateSuccess();
@@ -234,7 +251,7 @@ const [selectedOption,setSlectedOption]  = useState('')
   };
 
   const handleImagePicker = async () => {
-    if (!ppmAsstPermissions.some((permission) => permission.includes('U'))) return;
+    if (!ppmAsstPermissions.some(permission => permission.includes('U'))) return;
 
     setLoading(true);
     const result = await ImagePicker.launchCameraAsync({
@@ -274,12 +291,39 @@ const [selectedOption,setSlectedOption]  = useState('')
       </Modal>
       <OptionsModal
         visible={isModalVisible}
-        onClose={closeModal}
         options={options}
         onSelect={handleTypeSelect}
+        onClose={closeModal}
       />
     </>
   );
 };
 
-export default InputField;
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#1996D3',
+    borderRadius: 8,
+    color: 'black',
+    backgroundColor: '#f0f0f0',
+    marginTop: 8,
+    paddingRight: 30,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#1996D3',
+    borderRadius: 8,
+    color: 'black',
+    backgroundColor: '#f0f0f0',
+    marginTop: 8,
+    paddingRight: 30,
+  },
+});
+
+export default InputField; 

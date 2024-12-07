@@ -37,7 +37,7 @@ const uuid = await AsyncStorage.getItem('uuid');
       breakdown: false,
       Status: selectedFilter,
       page_no: 1,
-      per_page: 10,
+      per_page: 50,
       user_id: userId,
       'api-token': apiToken,
     };

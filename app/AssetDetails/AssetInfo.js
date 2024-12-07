@@ -30,8 +30,8 @@ const AssetInfo = ({ WoUuId }) => {
         if (data && data[0]?.pm?.AssignedTeam?.length && teams) {
           const teamId = data[0].pm.AssignedTeam[0];
           teams.forEach(element => {
-            console.log(element,"team")
-            if( element.e?._ID == teamId){
+        
+            if( element.t?._ID == teamId){
               console.log(element,"info of team")
               setTeamInfo(element)
             }
@@ -95,7 +95,7 @@ const AssetInfo = ({ WoUuId }) => {
             <DetailItem icon="wrench" label="Type" text={wo?.Type} />
             <DetailItem icon="tags" label="Category" text={category?.Name} />
             <DetailItem icon="users" label="Team" text={teamInfo?.t?.Name || 'Unknown Team'} />
-            <DetailItem icon="info-circle" label="Team Description" text={teamInfo?.t?.Description || 'No Description'} />
+            <DetailItem icon="info-circle" label="Team Description" text={teamInfo?.t?.Description  || 'No Description'} />
             <DetailItem icon="user" label="Assigned" text={assignedNames} isTag />
           </View>
         </View>
