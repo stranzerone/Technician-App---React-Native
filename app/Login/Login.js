@@ -1,0 +1,266 @@
+import React, { useLayoutEffect, useState } from 'react';
+import { SafeAreaView, View, TextInput, Image, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { loginApi } from '../../service/UserLoginApis/LoginApi'; 
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import technicianImage from '../../assets/SvgImages/Technician.png'; 
+import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
+import UserCard from './MultipleUserCards/MultipleUserCards'; 
+import { GetMyAccounts } from '../../service/UserLoginApis/GetMyAccountsApi';
+import { LogMeInWithOtp } from '../../service/LoginWithOtp/LoginMeInWithOtp';
+import { useDispatch } from 'react-redux';
+import {fetchAssets} from "../../utils/ReduxToolkitSetup/AssetSlice"
+const NewLoginScreen = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+  const [warningType, setWarningType] = useState(null);
+  const [multipleUsers, setMultipleUsers] = useState([]);
+  const [showUserCard, setShowUserCard] = useState(false);
+  const navigation = useNavigation();
+const dispatch = useDispatch()
+  useLayoutEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const userInfo = await AsyncStorage.getItem('userInfo');
+        if (userInfo) {
+          dispatch(fetchAssets())
+          navigation.navigate('Home'); 
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    };
+
+    checkLoginStatus();
+  }, [navigation]);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      setPopupMessage('Email and Password are required.');
+      setWarningType('warning');
+      setPopupVisible(true);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const data = { email, password };
+      const response = await loginApi(data);
+
+      if (response && response.status === 'success') {
+        setEmail('');
+        setPassword('');
+        navigation.navigate('Home');
+      } else if (Array.isArray(response.data) && response.data.length > 1) {
+        setMultipleUsers(response.data);
+        setShowUserCard(true);
+      } else {
+        setPopupMessage(response.message || 'Unknown error');
+        setWarningType('error');
+        setPopupVisible(true);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setPopupMessage('Login failed. Please try again.');
+      setWarningType('error');
+      setPopupVisible(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUserSelect = async (user) => {
+    try {
+      setLoading(true);
+      const data = { email, password, user };
+      const response = await loginApi(data);
+
+      if (response && response.status === 'success') {
+        setEmail('');
+        setPassword('');
+        dispatch(fetchAssets())
+        navigation.navigate('Home');
+      } else {
+        setPopupMessage(response.message || 'Unknown error');
+        setWarningType('error');
+        setPopupVisible(true);
+      }
+    } catch (error) {
+      console.error('Error logging in with selected user:', error);
+      setPopupMessage('Login failed. Please try again.');
+      setWarningType('error');
+      setPopupVisible(true);
+    } finally {
+      setLoading(false);
+      setShowUserCard(false);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Image
+          source={technicianImage}
+          style={styles.imageBackground}
+          resizeMode="contain"
+        />
+      </View>
+
+      <View style={styles.logoContainer}>
+        <Image
+          source={{ uri: 'https://factech.co.in/fronts/images/Final_Logo_grey.png' }} 
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
+      </View>
+
+      <View style={styles.formContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Email Or Phone Number"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+
+        <View style={styles.linkRowContainer}>
+          <TouchableOpacity onPress={() => navigation.navigate('OtpLogin')} style={styles.otpLoginLink}>
+            <Text style={styles.otpLinkText}>Login with OTP</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotPasswordLink}>
+            <Text style={styles.link}>Forgot Password?</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+          onPress={handleLogin}
+          disabled={loading} 
+        >
+          <Text style={styles.loginButtonText}>{loading ? 'Logging in...' : 'Login'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <DynamicPopup
+        visible={popupVisible}
+        message={popupMessage}
+        onClose={() => setPopupVisible(false)}
+        type={warningType}
+        onOk={() => setPopupVisible(false)}
+      />
+
+      {showUserCard && (
+        <UserCard
+          visible={showUserCard}
+          onClose={() => setShowUserCard(false)}
+          users={multipleUsers}
+          onSelectUser={handleUserSelect} 
+        />
+      )}
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'flex-start',
+  },
+  headerContainer: {
+    height: '30%',
+    borderBottomLeftRadius: 200,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    backgroundColor: '#1996D3',
+  },
+  imageBackground: {
+    position: 'relative',
+    left: 140,
+    height: '100%',
+    width: '80%',
+  },
+  logoContainer: {
+    height: '10%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoImage: {
+    width: 120,
+    height: 40,
+  },
+  formContainer: {
+    width: '100%',
+    height: '50%',
+    alignItems: 'center',
+    justifyContent: 'start',
+    paddingHorizontal: 20,
+  },
+  linkRowContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 16,
+    paddingHorizontal: 20,
+  },
+  otpLoginLink: {
+    alignSelf: 'flex-start',
+  },
+  otpLinkText: {
+    color: '#074B7C',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  forgotPasswordLink: {
+    alignSelf: 'flex-end',
+  },
+  input: {
+    width: Platform.OS === 'ios' ? '85%' : '100%',
+    color: '#074B7C',
+    padding: 12,
+    marginBottom: 16,
+    borderColor: '#1996D3',
+    borderWidth: 1,
+    borderRadius: 12,
+    backgroundColor: 'white',
+  },
+  loginButton: {
+    width: Platform.OS === 'ios' ? '80%' : '100%',
+    padding: 14,
+    backgroundColor: '#074B7C',
+    borderRadius: 12,
+    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loginButtonDisabled: {
+    backgroundColor: '#074B7C',
+  },
+  loginButtonText: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  link: {
+    color: '#074B7C',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+});
+
+export default NewLoginScreen;
