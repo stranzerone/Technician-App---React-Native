@@ -3,11 +3,12 @@ import { View,Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform, Anima
 import AssetCard from './AssetCards'; // Ensure correct import path
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const MainScreen = ({onSelectAsset}) => {
+const AssetSearch = ({onSelectAsset}) => {
   const [searchQuery, setSearchQuery] = useState(''); // State for search input
   const [showAssetCard, setShowAssetCard] = useState(false); // State to control visibility of AssetCard
   const [assetHeight, setAssetHeight] = useState(new Animated.Value(0)); // Animated height for the asset container
 
+  console.log("finding assets")
   // Function to handle the selection of an asset
   const handleSelectAsset = (assetName) => {
     console.log(assetName,"selected asset")
@@ -31,6 +32,8 @@ const MainScreen = ({onSelectAsset}) => {
       useNativeDriver: false, // Height animation doesn't support native driver
     }).start();
   };
+
+  console.log(searchQuery,"from seach page ")
 
   // Function to collapse the asset card
   const collapseAssetCard = () => {
@@ -76,7 +79,9 @@ const MainScreen = ({onSelectAsset}) => {
 const styles = StyleSheet.create({
 
   searchInput: {
+  
     width: '100%',
+    height:50,
     padding: 10,
     borderWidth: 1,
     borderColor: '#1996D3',
@@ -90,6 +95,7 @@ fontWeight:"bold"
   assetContainer: {
     overflow: 'hidden', // Hide overflow for smooth animation
   },
+ 
 });
 
-export default MainScreen;
+export default AssetSearch;

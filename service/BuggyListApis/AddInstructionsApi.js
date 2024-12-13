@@ -1,5 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '@env';
 
 export const AddInstructionApi = async (instructionData) => {
   console.log(instructionData, "values"); // Check the values being passed
@@ -15,7 +16,7 @@ export const AddInstructionApi = async (instructionData) => {
   if (userInfo) {
     const userId = parsedUserInfo.data.id
     const apiToken = parsedUserInfo.data.api_token
-    const apiUrl = 'https://nppm-api.isocietymanager.com/v3/inst';
+    const societyId =parsedUserInfo.data.societyId
 
     // Make sure your params are set correctly
     const params = {
@@ -45,14 +46,14 @@ export const AddInstructionApi = async (instructionData) => {
       'ism-auth': JSON.stringify({
         "api-token": apiToken, // Dynamic from AsyncStorage
         "user-id": userId,     // Dynamic from AsyncStorage
-        "site-id": 2           // If siteId is not available, fallback to default
+        "site-id": societyId          // If siteId is not available, fallback to default
       })
     };
+    // const apiUrl = 'https://nppm-api.isocietymanager.com/v3/inst';
 
     try {
       // Send the PUT request
-      const response = await axios.post(apiUrl, payload, { params, headers, withCredentials: true });
-console.log(response.data)
+      const response = await axios.post(`${API_URL}/v3/inst`, payload, { params, headers, withCredentials: true });
       // Check if the response is as expected
       if (response.data.status === 'success') {
         return true; // Return success

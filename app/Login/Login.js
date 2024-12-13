@@ -1,15 +1,12 @@
 import React, { useLayoutEffect, useState } from 'react';
 import { SafeAreaView, View, TextInput, Image, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { loginApi } from '../../service/UserLoginApis/LoginApi'; 
-import { useNavigation } from '@react-navigation/native';
+import { loginApi } from '../../service/UserLoginApis/LoginApi';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import technicianImage from '../../assets/SvgImages/Technician.png'; 
+import technicianImage from '../../assets/SvgImages/Technician.png';
 import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
-import UserCard from './MultipleUserCards/MultipleUserCards'; 
-import { GetMyAccounts } from '../../service/UserLoginApis/GetMyAccountsApi';
-import { LogMeInWithOtp } from '../../service/LoginWithOtp/LoginMeInWithOtp';
-import { useDispatch } from 'react-redux';
-import {fetchAssets} from "../../utils/ReduxToolkitSetup/AssetSlice"
+import UserCard from './MultipleUserCards/MultipleUserCards';
+
 const NewLoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,14 +17,18 @@ const NewLoginScreen = () => {
   const [multipleUsers, setMultipleUsers] = useState([]);
   const [showUserCard, setShowUserCard] = useState(false);
   const navigation = useNavigation();
-const dispatch = useDispatch()
+
   useLayoutEffect(() => {
     const checkLoginStatus = async () => {
       try {
         const userInfo = await AsyncStorage.getItem('userInfo');
         if (userInfo) {
-          dispatch(fetchAssets())
-          navigation.navigate('Home'); 
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Home' }], 
+            })
+          );
         }
       } catch (error) {
         console.error('Error fetching user info:', error);
@@ -49,15 +50,20 @@ const dispatch = useDispatch()
       setLoading(true);
       const data = { email, password };
       const response = await loginApi(data);
-
       if (response && response.status === 'success') {
         setEmail('');
         setPassword('');
-        navigation.navigate('Home');
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'Home' }],
+          })
+        );
       } else if (Array.isArray(response.data) && response.data.length > 1) {
         setMultipleUsers(response.data);
         setShowUserCard(true);
       } else {
+        console.log(response.message,"message on login")
         setPopupMessage(response.message || 'Unknown error');
         setWarningType('error');
         setPopupVisible(true);
@@ -81,8 +87,12 @@ const dispatch = useDispatch()
       if (response && response.status === 'success') {
         setEmail('');
         setPassword('');
-        dispatch(fetchAssets())
-        navigation.navigate('Home');
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'Home' }],
+          })
+        );
       } else {
         setPopupMessage(response.message || 'Unknown error');
         setWarningType('error');
@@ -111,13 +121,17 @@ const dispatch = useDispatch()
 
       <View style={styles.logoContainer}>
         <Image
-          source={{ uri: 'https://factech.co.in/fronts/images/Final_Logo_grey.png' }} 
+          source={{ uri: 'https://factech.co.in/fronts/images/Final_Logo_grey.png' }}
           style={styles.logoImage}
           resizeMode="contain"
         />
       </View>
 
       <View style={styles.formContainer}>
+        <TouchableOpacity onPress={() => navigation.navigate('OtpLogin')} style={styles.otpLoginLink}>
+          <Text style={styles.otpLinkText}>Login with OTP</Text>
+        </TouchableOpacity>
+
         <TextInput
           style={styles.input}
           placeholder="Email Or Phone Number"
@@ -136,22 +150,16 @@ const dispatch = useDispatch()
           onChangeText={setPassword}
         />
 
-        <View style={styles.linkRowContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate('OtpLogin')} style={styles.otpLoginLink}>
-            <Text style={styles.otpLinkText}>Login with OTP</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotPasswordLink}>
-            <Text style={styles.link}>Forgot Password?</Text>
-          </TouchableOpacity>
-        </View>
-
         <TouchableOpacity
           style={[styles.loginButton, loading && styles.loginButtonDisabled]}
           onPress={handleLogin}
-          disabled={loading} 
+          disabled={loading}
         >
           <Text style={styles.loginButtonText}>{loading ? 'Logging in...' : 'Login'}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotPasswordLink}>
+          <Text style={styles.link}>Forgot Password?</Text>
         </TouchableOpacity>
       </View>
 
@@ -168,7 +176,7 @@ const dispatch = useDispatch()
           visible={showUserCard}
           onClose={() => setShowUserCard(false)}
           users={multipleUsers}
-          onSelectUser={handleUserSelect} 
+          onSelectUser={handleUserSelect}
         />
       )}
     </SafeAreaView>
@@ -210,23 +218,15 @@ const styles = StyleSheet.create({
     justifyContent: 'start',
     paddingHorizontal: 20,
   },
-  linkRowContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 16,
-    paddingHorizontal: 20,
-  },
   otpLoginLink: {
+    borderRadius: 10,
     alignSelf: 'flex-start',
+    marginBottom: 16,
   },
   otpLinkText: {
     color: '#074B7C',
     fontWeight: 'bold',
     fontSize: 16,
-  },
-  forgotPasswordLink: {
-    alignSelf: 'flex-end',
   },
   input: {
     width: Platform.OS === 'ios' ? '85%' : '100%',
@@ -255,6 +255,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '600',
     fontSize: 16,
+  },
+  forgotPasswordLink: {
+    marginTop: 8,
   },
   link: {
     color: '#074B7C',

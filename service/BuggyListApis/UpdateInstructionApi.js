@@ -1,8 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '@env';
 
-export const UpdateInstructionApi = async ({id, value , remark,type},WoUuId) => {
-  console.log(id, value,remark,WoUuId, type,"values"); // Check the values being passed
+export const UpdateInstructionApi = async ({id, value , remark,type,WoUuId}) => {
+  console.log(id, value,remark,WoUuId, type,"values from PDF UPLoad"); // Check the values being passed
 
   // Fetch user info from AsyncStorage
   const userInfo = await AsyncStorage.getItem('userInfo');
@@ -10,47 +11,57 @@ export const UpdateInstructionApi = async ({id, value , remark,type},WoUuId) => 
   if (userInfo) {
     const userId = parsedUserInfo.data.id;
     const apiToken = parsedUserInfo.data.api_token
-    const apiUrl = 'https://nppm-api.isocietymanager.com/v3/inst';
-console.log(WoUuId,"at Update APi")
+    const societyId =parsedUserInfo.data.societyId
+
     // Make sure your params are set correctly
     const params = {
       ref_uuid: WoUuId,
       ref_type: "WO"
     };
 
-    console.log("Id",id,"Value",value,"Remark",remark,WoUuId,'payload')
-    let payload
+   
     // Construct the payload correctly
   
 
-    if(type == "image/jpeg"){
-       payload = {
-        id: id,      // Ensure this is the correct field your API expects
-        image: value ,// Ensure this is the correct field your API expects
-        remarks:remark
-      };
-    }else{
-      payload = {
+    // if(type == "image/jpeg"){
+    //    payload = {
+    //     id: id,      // Ensure this is the correct field your API expects
+    //     result: value ,// Ensure this is the correct field your API expects
+    //     remarks:remark
+    //   }
+    // }  
+    //  else if(type == "application/pdf"){
+     
+    //   payload = {
+    //     id: id,      // Ensure this is the correct field your API expects
+    //     result: value ,// Ensure this is the correct field your API expects
+    //     remarks:remark
+    //   }
+    // }
+    
+ 
+   const   payload = {
         id: id,      // Ensure this is the correct field your API expects
         result: value ,// Ensure this is the correct field your API expects
         remarks:remark
       };
-    }
-
+    
+console.log(payload,"this is payload for updating instructions")
 
     const headers = {
       'Content-Type': 'application/json',
       'ism-auth': JSON.stringify({
         "api-token": apiToken, // Dynamic from AsyncStorage
         "user-id": userId,     // Dynamic from AsyncStorage
-        "site-id": 2           // If siteId is not available, fallback to default
+        "site-id": societyId           // If siteId is not available, fallback to default
       })
     };
+    // const apiUrl = 'https://nppm-api.isocietymanager.com/v3/inst';
 
     try {
       // Send the PUT request
-      const response = await axios.put(apiUrl, payload, { params, headers, withCredentials: true });
-      console.log(response.data)
+      const response = await axios.put(`${API_URL}/v3/inst`, payload, { params, headers, withCredentials: true });
+      console.log(response.data,"response on updating card")
       // Check if the response is as expected
       if (response.data.status === 'success') {
         return true; // Return success

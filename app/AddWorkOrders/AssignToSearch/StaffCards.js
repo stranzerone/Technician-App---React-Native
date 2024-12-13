@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { filterAssets, selectFilteredAssets } from '../../../utils/ReduxToolkitSetup/AssetSlice'; // Adjust the import path
+import { filterAssets, selectFilteredAssets } from '../../../utils/Slices/AssetSlice.js'; // Adjust the import path
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 

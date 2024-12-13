@@ -1,25 +1,58 @@
-import React, { useLayoutEffect, useState } from 'react';
-import GetAssets from '../../../service/AddWorkOrderApis/FetchAssests';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import GetAssets from '../../../service/AddWorkOrderApis/FetchAssests';
 
 const AssetCard = ({ searchQuery, onClose, onSelect }) => {
-  const [assets, setAssets] = useState([]);
+  // State to store assets, loading, and error status
+  const [assets, setAssets] = useState([]); // Always initialize as an array
+  const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'succeeded' | 'failed'
+  const [error, setError] = useState(null);
 
-  // Fetch assets based on the search query
-  const getAssets = async (query) => {
-    const response = await GetAssets(query);
-    setAssets(response.data); 
-  };
+  // Log searchQuery for debugging
 
-  useLayoutEffect(() => {
-    getAssets(searchQuery);
-  }, [searchQuery]);
+  useEffect(() => {
+    const fetchAssetsData = async () => {
+      setStatus('loading');
+      try {
+        // If searchQuery is empty, you can decide whether to fetch all assets or skip the fetch
+        if (!searchQuery.trim()) {
+          setAssets([]);  // Or decide to fetch all assets without filtering
+          setStatus('succeeded');
+          return;
+        }
+
+        const data = await GetAssets(searchQuery); // Pass searchQuery directly to the API
+      console.log(data,"data on asset search")
+        setAssets(data.data || []); // Ensure that assets is always an array
+        setStatus('succeeded');
+      } catch (error) {
+        setError(error.message || 'Failed to fetch assets');
+        setStatus('failed');
+      }
+    };
+
+    fetchAssetsData(); // Fetch assets data whenever searchQuery changes
+  }, [searchQuery]); // Trigger re-fetch when searchQuery changes
+
+  // Filter assets based on the search query
+  const filteredAssets = Array.isArray(assets) ? assets.filter((item) =>
+    item.Name.toLowerCase().includes(searchQuery.toLowerCase())
+  ) : []; // Ensure assets is an array before filtering
 
   const handleSelectAsset = (asset) => {
-    onSelect(asset); // Call the onSelect function with the asset's name
+    onSelect(asset); // Call the onSelect function with the selected asset
     onClose(); // Close the card when an asset is selected
   };
+
+  // Conditional rendering for loading, error, and assets
+  if (status === 'loading') {
+    return <Text>Loading assets...</Text>;
+  }
+
+  if (status === 'failed') {
+    return <Text>Error: {error}</Text>;
+  }
 
   return (
     <View style={styles.cardContainer}>
@@ -28,11 +61,11 @@ const AssetCard = ({ searchQuery, onClose, onSelect }) => {
         <FontAwesome name="close" size={24} color="#B0BEC5" />
       </TouchableOpacity>
 
-      {assets && assets.length > 0 ? (
-        // Map through the assets array to render each item
-        assets.map((item) => (
+      {filteredAssets.length > 0 ? (
+        // Map through the filtered assets array to render each item
+        filteredAssets.map((item, index) => (
           <TouchableOpacity
-            key={item._ID} // Unique key for each item
+            key={index} // Unique key for each item
             style={styles.assetItem}
             onPress={() => handleSelectAsset(item)} // Handle asset selection
           >
@@ -53,7 +86,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
-    width:"100%",
+    width: "100%",
     padding: 15,
     borderWidth: 1,
     borderColor: '#1996D3',

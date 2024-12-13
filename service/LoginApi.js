@@ -1,9 +1,10 @@
 
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL2 } from '@env';
 
 // Base URL for the API (replace with your actual API URL)
-const BASE_URL = 'https://api.isocietymanager.com'; // Change this to your actual API URL
+// const BASE_URL = 'https://api.isocietymanager.com'; // Change this to your actual API URL
 
 // Login API call
 export const loginApi = async (email, password) => {
@@ -13,7 +14,7 @@ export const loginApi = async (email, password) => {
   
   try {
     // Call the API
-    const response = await axios.post(`${BASE_URL}/login`, {
+    const response = await axios.post(`${API_URL2}/login`, {
       identity: email,
       password: password,
     });

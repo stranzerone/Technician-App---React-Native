@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Import FontAwesome
 
-const DynamicPopup = ({ visible, type, message, onClose,onOk }) => {
+const DynamicPopup = ({ visible, type, message, onClose, onOk }) => {
   // Define icon names and colors based on the type
   const iconNames = {
     success: 'check-circle',
@@ -16,6 +16,7 @@ const DynamicPopup = ({ visible, type, message, onClose,onOk }) => {
     warning: 'exclamation-triangle',
     alert: 'exclamation-circle',
     hint: 'info-circle',
+    unauthorized: 'lock', // New type: lock icon for unauthorized
   };
 
   // Define colors for each type
@@ -25,6 +26,7 @@ const DynamicPopup = ({ visible, type, message, onClose,onOk }) => {
     warning: '#ffc107', // Yellow for warning
     alert: '#ff851b',   // Orange for alert
     hint: '#17a2b8',    // Teal for hint
+    unauthorized: '#6c757d', // Gray for unauthorized
   };
 
   return (
@@ -42,10 +44,18 @@ const DynamicPopup = ({ visible, type, message, onClose,onOk }) => {
             </TouchableOpacity>
           </View>
 
-          <Icon name={iconNames[type]} size={50} color={colors[type]} style={styles.icon} />
+          <Icon
+            name={iconNames[type]}
+            size={50}
+            color={colors[type]}
+            style={styles.icon}
+          />
           <Text style={styles.message}>{message}</Text>
 
-          <TouchableOpacity style={[styles.okButton, { backgroundColor: '#1996D3' }]} onPress={ onOk}>
+          <TouchableOpacity
+            style={[styles.okButton, { backgroundColor: '#1996D3' }]}
+            onPress={onOk}
+          >
             <Text style={styles.okButtonText}>OK</Text>
           </TouchableOpacity>
         </View>

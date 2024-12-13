@@ -1,5 +1,6 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from '@env';
 
 const GetAssets = async (text) => {
   console.log(text,"text received")
@@ -18,6 +19,7 @@ const GetAssets = async (text) => {
     // Extract userId and apiToken from parsed user info
     const userId = parsedUserInfo.data.id;
     const apiToken = parsedUserInfo.data.api_token;
+    const societyId =parsedUserInfo.data.societyId
 
     // Set up the headers for the API request
     const headers = {
@@ -25,22 +27,21 @@ const GetAssets = async (text) => {
       'ism-auth': JSON.stringify({
         "api-token": apiToken,
         "user-id": userId,
-        "site-id": 2
+        "site-id": societyId
       })
     };
 
     // Set up the parameters for the API request
     const params = {
-      site_id: "2", // Using site_id directly
+      site_id: societyId, // Using site_id directly
       str: text, // Empty string to fetch all assets
     };
 
     // Set up the base URL for the API request
-    const baseUrl = "https://nppm-api.isocietymanager.com/v3/asset/search";
+    // const baseUrl = "https://nppm-api.isocietymanager.com/v3/asset/search";
 
     // Make the API request using axios
-    const response = await axios.get(baseUrl, { params, headers });
-
+    const response = await axios.get(`${API_URL}/v3/asset/search?`, { params, headers });
     // Return the API response data
     return response.data;
   

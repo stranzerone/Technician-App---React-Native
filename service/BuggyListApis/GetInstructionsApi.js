@@ -1,5 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '@env';
 
 export const GetInstructionsApi = async (WoUuId) => {
   const userInfo = await AsyncStorage.getItem('userInfo');
@@ -10,6 +11,8 @@ export const GetInstructionsApi = async (WoUuId) => {
     const parsedUserInfo = JSON.parse(userInfo);
     const userId = parsedUserInfo.data.id
     const apiToken = parsedUserInfo.data.api_token
+    const societyId =parsedUserInfo.data.societyId
+
     const apiUrl = 'https://nppm-api.isocietymanager.com/v3/insts';
     const params = {
         ref_uuid:WoUuId,
@@ -23,7 +26,7 @@ console.log(params,"api parmas")
         'ism-auth': JSON.stringify({
           "api-token": apiToken,     // Dynamic from AsyncStorage
           "user-id": userId,         // Dynamic from AsyncStorage
-          "site-id":  2     // If siteId is not available, fallback to default
+          "site-id":  societyId    // If siteId is not available, fallback to default
         })
       };
 
@@ -31,7 +34,7 @@ console.log(params,"api parmas")
       const response = await axios.get(apiUrl, { params,headers, withCredentials: true });
       const data = response.data.data
   if(response.data.metadata.count){
-
+console.log("data sent for",WoUuId)
     return data; // Return the relevant data
 
   }else{

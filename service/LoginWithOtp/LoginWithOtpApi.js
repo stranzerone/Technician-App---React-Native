@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { API_URL2 } from '@env';
 
 export const otpLoginApi = async (phoneNumber) => {
-
+//https://api.isocietymanager.com/generateotp
   try {
-    const response = await axios.post('https://api.isocietymanager.com/generateotp', {
+    const response = await axios.post(`${API_URL2}/generateotp`, {
       identity: phoneNumber, // Use the phoneNumber passed to the function
       app_roles: ['admin', 'groundstaff', 'supervisor', 'master', 'partner', 'ism_admin'], // Correct array syntax
     });

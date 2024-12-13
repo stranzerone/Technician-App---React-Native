@@ -1,38 +1,30 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import WorkOrderPage from '../WorkOrders/WorkOrderScreen';
 import AccessDeniedScreen from './AccessDeniedScreen';
+import { usePermissions } from '../GlobalVariables/PermissionsContext';
 
 const WorkOrderHomeTab = () => {
-  const [uuid, setUuid] = useState(null);
+  const { ppmAsstPermissions } = usePermissions();
+  const navigation = useNavigation();
 
-  const fetchData = async () => {
-    const storedUuid = await AsyncStorage.getItem('uuid');
-    console.log('UUID checked: on double', storedUuid);
-    setUuid(storedUuid);
-  };
-
-  // Use useFocusEffect to fetch UUID whenever the screen comes into focus
+  // Refresh logic that will run every time the tab is focused
   useFocusEffect(
-    React.useCallback(() => {
-      fetchData(); // Fetch UUID when the component is focused
+    useCallback(() => {
+      console.log("refresh page");
+      // Add any other logic you need to refresh data here
     }, [])
   );
 
-  const handleRefresh = () => {
-    fetchData(); // Refresh the UUID when needed
-  };
-
-  console.log(uuid, "UUID checked");
-
   return (
     <View style={styles.container}>
-      {uuid ? (
-        <WorkOrderPage uuid={uuid} /> // Pass the stored UUID
+      {ppmAsstPermissions && ppmAsstPermissions.some(permission => permission.includes('R')) ? (
+        // Use paramUuId if present, otherwise use stored uuid
+        <WorkOrderPage nullUuId={null} />
       ) : (
-        <AccessDeniedScreen onRefresh={handleRefresh} /> // Pass the refresh function
+        <AccessDeniedScreen onRefresh={() => console.log("refresh page")} /> // Pass the refresh function
       )}
     </View>
   );

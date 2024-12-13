@@ -9,6 +9,8 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
+  ScrollView,
 } from 'react-native';
 import { WorkOrderAddComments } from '../../service/CommentServices/WorkOrderCommentsAddApi';
 import { WorkOrderComments } from "../../service/CommentServices/WorkOrderFetchCommentsApi";
@@ -19,6 +21,7 @@ const CommentsPage = ({ WoUuId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [newComment, setNewComment] = useState('');
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
 
   // Function to fetch comments
   const loadComments = async () => {
@@ -34,9 +37,21 @@ const CommentsPage = ({ WoUuId }) => {
     }
   };
 
-  // UseEffect to load comments on component mount
   useEffect(() => {
     loadComments();
+
+    // Handle keyboard events
+    const keyboardShowListener = Keyboard.addListener('keyboardDidShow', (e) =>
+      setKeyboardOffset(e.endCoordinates.height)
+    );
+    const keyboardHideListener = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardOffset(0)
+    );
+
+    return () => {
+      keyboardShowListener.remove();
+      keyboardHideListener.remove();
+    };
   }, []);
 
   // Handle comment submission
@@ -80,56 +95,50 @@ const CommentsPage = ({ WoUuId }) => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.keyboardAvoidingView}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : null}
     >
-      <View style={styles.container}>
-        <Text style={styles.title}>Comments</Text>
-        <FlatList
-          data={comments}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderComment}
-          contentContainerStyle={styles.commentsList}
-          ListEmptyComponent={
-            <View style={styles.emptyList}>
-              <Text style={styles.emptyText}>No comments available</Text>
-            </View>
-          }
-        />
-        <View style={styles.commentInputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Write a comment..."
-            value={newComment}
-            onChangeText={setNewComment}
-            multiline
-            numberOfLines={3}
-            maxLength={200}
-          />
-          <TouchableOpacity style={styles.button} onPress={handleCommentSubmit}>
-            <Text style={styles.buttonText}>Send</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <FlatList
+        data={comments}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderComment}
+        contentContainerStyle={styles.commentsList}
+        ListEmptyComponent={
+          <View style={styles.emptyList}>
+            <Text style={styles.emptyText}>No comments available</Text>
+          </View>
+        }
+      />
+<View
+  style={[
+    styles.commentInputContainer,
+    keyboardOffset > 0 ? { marginBottom: keyboardOffset  } : {}, // Apply margin only when the keyboard is open
+  ]}
+>
+  <TextInput
+    style={styles.input}
+    placeholder="Write a comment..."
+    value={newComment}
+    onChangeText={setNewComment}
+    multiline
+    numberOfLines={3}
+    maxLength={200}
+  />
+  <TouchableOpacity style={styles.button} onPress={handleCommentSubmit}>
+    <Text style={styles.buttonText}>Send</Text>
+  </TouchableOpacity>
+</View>
+
+
     </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  keyboardAvoidingView: {
-    flex: 1,
-  },
   container: {
     flex: 1,
-    padding: 3,
-    paddingTop: 10,
-    justifyContent: 'space-between',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    margin: 10,
+    padding: 10,
+    backgroundColor: '#fff',
   },
   loaderContainer: {
     justifyContent: 'center',
@@ -154,25 +163,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   commentInputContainer: {
+    paddingBottom:110,
     flexDirection: 'row',
     alignItems: 'flex-end',
-    padding: 15,
+    padding: 10,
     borderTopWidth: 1,
     borderTopColor: '#ccc',
     backgroundColor: '#fff',
+   
   },
   input: {
+   
+    flex: 1,
     borderColor: '#ccc',
-    width: '75%',
-    height: 40,
     borderWidth: 1,
     borderRadius: 8,
     padding: 10,
+    height:40,
     marginRight: 10,
     backgroundColor: '#f5f5f5',
     textAlignVertical: 'top',
   },
   button: {
+  
     backgroundColor: '#074B7C',
     borderRadius: 8,
     paddingVertical: 10,

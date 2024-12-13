@@ -1,5 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '@env';
 
 export const UpdateWorkOrderApi = async ({ siteUUID, description }) => {
   // Retrieve user information from AsyncStorage
@@ -7,7 +8,7 @@ export const UpdateWorkOrderApi = async ({ siteUUID, description }) => {
   const uuid = await AsyncStorage.getItem('uuid');
 
   if (userInfo) {
-    const { id: userId, api_token: apiToken, site_id: siteId } = JSON.parse(userInfo);
+    const { id: userId, api_token: apiToken, site_id: siteId,societyId:societyId } = JSON.parse(userInfo);
     console.log(userId, apiToken, siteUUID, description, "info");
 
     // Get current date and time in the required format (YYYY-MM-DD HH:mm:ss)
@@ -15,7 +16,7 @@ export const UpdateWorkOrderApi = async ({ siteUUID, description }) => {
     const formattedDate = currentDate.toISOString().slice(0, 19).replace('T', ' ');  // Format to "YYYY-MM-DD HH:mm:ss"
 
     // Define the API endpoint
-    const apiUrl = 'https://nppm-api.isocietymanager.com/v3/workorder';
+    // const apiUrl = 'https://nppm-api.isocietymanager.com/v3/workorder';
 
     // Prepare the payload for the API request
     const payload = {
@@ -33,7 +34,7 @@ export const UpdateWorkOrderApi = async ({ siteUUID, description }) => {
       'ism-auth': JSON.stringify({
         "api-token": apiToken,     // Dynamic from AsyncStorage
         "user-id": userId,         // Dynamic from AsyncStorage
-        "site-id": siteId || 2     // If siteId is not available, fallback to default
+        "site-id": societyId     // If siteId is not available, fallback to default
       })
     };
 
@@ -45,7 +46,7 @@ export const UpdateWorkOrderApi = async ({ siteUUID, description }) => {
 
     try {
       // Make the API request using axios, passing payload, params, and headers
-      const response = await axios.put(apiUrl, payload, {
+      const response = await axios.put(`${API_URL}/v3/workorder`, payload, {
         params,     // Pass params separately
         headers,    // Pass headers
         withCredentials: true     // Ensures cookies and other credentials are sent if required

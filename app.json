@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "FM",
-    "slug": "FM",
+    "name": "facilityM",
+    "slug": "facilityM",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,14 +19,14 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.stranzerone.FM"
+      "package": "com.stranzerone.facilityM"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "d5242b08-3eb2-4148-807d-1b7e32875ba5"
+        "projectId": "5f29bf81-8533-40a0-a8dc-f1e03652d8b2"
       }
     }
   }

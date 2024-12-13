@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   SafeAreaView,
   View,
@@ -12,42 +12,28 @@ import {
   ScrollView,
 } from 'react-native';
 import otpSvg from "../../../assets/SvgImages/otp.png";
-import validateOtp from '../../../service/LoginWithOtp/ValidateOtpApi'; // Adjust the path accordingly
-import {GetMyAccounts} from '../../../service/UserLoginApis/GetMyAccountsApi'; // Import the fetchMyAccounts API function
+import validateOtp from '../../../service/LoginWithOtp/ValidateOtpApi';
+import { GetMyAccounts } from '../../../service/UserLoginApis/GetMyAccountsApi';
 import { useNavigation } from '@react-navigation/native';
 import DynamicPopup from '../../DynamivPopUps/DynapicPopUpScreen';
-import UserCard from '../MultipleUserCards/MultipleUserCards'; // Import UserCard component
+import UserCard from '../MultipleUserCards/MultipleUserCards';
 import { LogMeInWithOtp } from '../../../service/LoginWithOtp/LoginMeInWithOtp';
 
 const OtpPage = ({ route }) => {
   const data = route.params.response.data;
+  console.log(data,"this is the data")
   const [otp, setOtp] = useState(['', '', '', '']);
   const [activeInputIndex, setActiveInputIndex] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(data.expire_in);
   const [attemptsRemaining, setAttemptsRemaining] = useState(data.try);
   const [popupVisible, setPopupVisible] = useState(false);
   const [popupData, setPopupData] = useState({ type: '', message: '' });
-  const [userCards, setUserCards] = useState([]); // To store user card data
-  const [showUserCard, setShowUserCard] = useState(false); // Control visibility of UserCard modal
+  const [userCards, setUserCards] = useState([]);
+  const [showUserCard, setShowUserCard] = useState(false);
   const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
-  const [token,setToken] =useState(null)
+  const [token, setToken] = useState(null);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const handleChangeText = (text, index) => {
+  const handleChangeText = useCallback((text, index) => {
     if (text.length > 1) return;
     const newOtp = [...otp];
     newOtp[index] = text;
@@ -57,31 +43,26 @@ const OtpPage = ({ route }) => {
     if (text && index < 3) {
       inputRefs[index + 1].current.focus();
     }
+  }, [otp]);
+
+  const handleUserSelect = async (user) => {
+    const response = await LogMeInWithOtp({ token: token, data: user });
+    if (response.status === "success") {
+      navigation.navigate('Home');
+    }
   };
-
-  const handleUserSelect = async(user)=>{
- const response = await  LogMeInWithOtp({token:token,data:user})
- console.log(response,"received on ui on log o")
- console.log(response.status ,"status for otp lgo")
- if(response.status == "success"){
-navigation.navigate('Home')
- }
-
-  }
 
   const handleVerifyOtp = async () => {
     const otpString = otp.join('');
     if (otpString.length === 4) {
       try {
         const response = await validateOtp(data.id, otpString);
-        if (response.status == 'success') {
-          setToken(response.data.token)
-          // Fetch accounts after successful OTP verification
+        if (response.status === 'success') {
+          setToken(response.data.token);
           const accountsResponse = await GetMyAccounts(response.data.token);
-          console.log(accountsResponse,"response on accounts")
           if (accountsResponse && accountsResponse.status === 'success') {
-            setUserCards(accountsResponse.data); // Set user cards data from response
-            setShowUserCard(true); // Show user card modal
+            setUserCards(accountsResponse.data);
+            setShowUserCard(true);
           } else {
             setPopupData({
               type: 'error',
@@ -112,12 +93,6 @@ navigation.navigate('Home')
       setPopupVisible(true);
       setAttemptsRemaining((prev) => Math.max(prev - 1, 0));
     }
-  };
-
-  const formatTimeLeft = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
   return (
@@ -151,14 +126,7 @@ navigation.navigate('Home')
                 maxLength={1}
                 value={digit}
                 onChangeText={(text) => handleChangeText(text, index)}
-                onFocus={() => {
-                  setActiveInputIndex(index);
-                  if (!digit) setOtp((prev) => {
-                    const newOtp = [...prev];
-                    newOtp[index] = '';
-                    return newOtp;
-                  });
-                }}
+                onFocus={() => setActiveInputIndex(index)}
                 onBlur={() => setActiveInputIndex(null)}
               />
             ))}
@@ -167,13 +135,12 @@ navigation.navigate('Home')
           <TouchableOpacity
             style={styles.verifyOtpButton}
             onPress={handleVerifyOtp}
-            disabled={timeLeft === 0 || attemptsRemaining === 0}
+            disabled={attemptsRemaining === 0}
           >
             <Text style={styles.verifyOtpButtonText}>Verify OTP</Text>
           </TouchableOpacity>
 
           <View style={styles.textContainer}>
-            <Text style={styles.timerText}>Expires in: {formatTimeLeft(timeLeft)}</Text>
             <Text style={styles.attemptsText}>Attempts remaining: {attemptsRemaining}</Text>
           </View>
         </ScrollView>
@@ -193,16 +160,17 @@ navigation.navigate('Home')
       {/* UserCard Modal for displaying fetched user accounts */}
       {showUserCard && (
         <UserCard
-          visible={showUserCard} // Control visibility of the modal
-          onClose={() => setShowUserCard(false)} // Function to close the modal
-          users={userCards} // Pass the list of user accounts
-          onSelectUser={handleUserSelect} // Pass the handleUserSelect function to UserCard
-
+          visible={showUserCard}
+          onClose={() => setShowUserCard(false)}
+          users={userCards}
+          onSelectUser={handleUserSelect}
         />
       )}
     </SafeAreaView>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {

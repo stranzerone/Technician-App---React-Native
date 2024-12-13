@@ -1,8 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL2 } from '@env';
 
 // Base URL for the API
-const BASE_URL = 'https://api.isocietymanager.com'; // Ensure this is the correct URL
+// const BASE_URL = 'https://api.isocietymanager.com'; // Ensure this is the correct URL
 
 // Login API call
 export const loginApi = async (user) => {
@@ -29,17 +30,30 @@ export const loginApi = async (user) => {
 
   try {
     // Call the API
-    const response = await axios.post(`${BASE_URL}/login`, payload);
+    const response = await axios.post(`${API_URL2}/login`, payload);
 
     // Debug: Log the full response to see the structure
 
     // Check if the login is successful
     if (response.data.message === 'Login Successful.') {
       // Store the token and user info in AsyncStorage
-      await AsyncStorage.setItem('userInfo', JSON.stringify(response.data));
 
+      await AsyncStorage.setItem('userInfo', JSON.stringify(response.data));
+      await AsyncStorage.setItem('user', JSON.stringify(user.user));
+
+
+      console.log(response.data.data.designation_name,'userinfo')
       // Return the entire response, not just the status
-      return response.data;
+
+      if(response.data.data.designation_name == 'Staff'  || response.data.data.designation_name == 'Admin' ){
+        return response.data;
+
+      }else{
+        return {
+          message: "You are not authorized to log in. Only Admins or Staff members are allowed."
+        };
+        
+      }
     } else {
       // Handle unsuccessful login attempts
       return response.data;

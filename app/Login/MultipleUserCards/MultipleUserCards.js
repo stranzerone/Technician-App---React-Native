@@ -7,21 +7,18 @@ import {
   StyleSheet,
   FlatList,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Import FontAwesome for profile and chevron icons
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const UserCard = ({ visible, onClose, users, onSelectUser }) => {
-  // Render each user in the list
   const renderUser = ({ item }) => (
     <TouchableOpacity style={styles.userCard} onPress={() => onSelectUser(item)}>
       <View style={styles.userInfo}>
-        {/* Profile icon */}
         <Icon name="user-circle" size={30} color="#074B7C" style={styles.profileIcon} />
         <View style={styles.userDetails}>
           <Text style={styles.userName}>{item.name}</Text>
           <Text style={styles.userSociety}>{item.society_name}</Text>
         </View>
       </View>
-      {/* Chevron icon for navigation */}
       <Icon name="chevron-right" size={20} color="#074B7C" />
     </TouchableOpacity>
   );
@@ -47,7 +44,8 @@ const UserCard = ({ visible, onClose, users, onSelectUser }) => {
           <FlatList
             data={users}
             renderItem={renderUser}
-            keyExtractor={(item) => item.user_id.toString()}
+            keyExtractor={(item) => item.name}
+            showsVerticalScrollIndicator={false}
           />
         </View>
       </View>
@@ -60,14 +58,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   popupContainer: {
     width: '80%',
+    maxHeight: '70%', // Limit modal height to make it scrollable
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 20,
-    alignItems: 'center',
   },
   header: {
     width: '100%',
@@ -75,16 +73,16 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     fontSize: 20,
-    color: '#074B7C', // Color for the close button
+    color: '#074B7C',
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#074B7C',
+    textAlign: 'center',
   },
   userCard: {
-    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

@@ -1,5 +1,6 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL2 } from '@env';
 
 const GetStaff = async (text) => {
   console.log(text, "text received");
@@ -13,18 +14,19 @@ const GetStaff = async (text) => {
     const parsedUserInfo = JSON.parse(userInfo);
     const userId = parsedUserInfo.data.id;
     const apiToken = parsedUserInfo.data.api_token;
+    const societyId =parsedUserInfo.data.societyId
 
     const headers = {
       'Content-Type': 'application/json',
       'ism-auth': JSON.stringify({
         "api-token": apiToken,
         "user-id": userId,
-        "site-id": 2
+        "site-id": societyId
       })
     };
 
-    const baseUrl = "https://api.isocietymanager.com/nonresidents";
-    const response = await axios.get(baseUrl, { headers });
+    // const baseUrl = "https://api.isocietymanager.com/nonresidents";
+    const response = await axios.get(`${API_URL2}/nonresidents`, { headers });
 
     // Check if text exists and is not an empty string
     if (text && text.trim()) {

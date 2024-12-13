@@ -1,97 +1,217 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useLayoutEffect, useState } from 'react';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Modal } from 'react-native';
 import * as Progress from 'react-native-progress';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { GetInstructionsApi } from '../../service/BuggyListApis/GetInstructionsApi';
-import { useFocusEffect } from '@react-navigation/native';
+import { usePermissions } from '../GlobalVariables/PermissionsContext';
+import { MarkAsCompleteApi } from '../../service/BuggyListApis/MarkAsCompleteApi';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { useNavigation } from '@react-navigation/native';
+import { CommonActions } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { updateWorkOrderStatus } from '../../utils/Slices/WorkOrderSlice';
+const ProgressPage = ({ data, wo }) => {
+  const [remark, setRemark] = useState('');
+  const [count, setCount] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false); // State to manage modal visibility
+  const { ppmAsstPermissions } = usePermissions();
+const navigation = useNavigation()
+const dispatch = useDispatch()
+  console.log(wo.Status, 'workorder details');
+  
+  useLayoutEffect(() => {
+    let tempCount = 0;
 
-const ProgressPage = ({setPercentages}) => {
-  const [percentage, setPercentage] = useState(0);
-  const [complete, setComplete] = useState(0); // Renamed variable for clarity
-
-  const getPercentage = async () => {
-    try {
-      console.log("Fetching instructions...");
-      // Retrieve the UUID from local storage
-      const uuid = await AsyncStorage.getItem('uuid'); // Replace 'uuid' with your actual key if different
-
-      // Fetch instructions with UUID if available
-      const items = uuid ? await GetInstructionsApi(uuid) : []; // Pass UUID to the API
-
-      // Assuming items is an array of instruction objects
-      const total = items.length;
-      let completedCount = 0; // Use a local variable to count completed items
-//  {"created_at": "2024-10-27 02:50:56", "created_by": "286420", "data": {"optional": true}, "file": null, "group": "Daily Morning Routine", "id": 133841894, "image": null, "options": null, "order": 7, "ref_type": "WO", "ref_uuid": "4573550f-ca12-459e-8f66-e932dcdfe939", "remarks": null, "result": "", "site_id": 2, "title": "Write down one goal for today:", "type": "text", "updated_at": null, "updated_by": "286420"} item
-      items.forEach(item => {
-        // Check if the item is complete based on the provided logic
-        if ((item.result !== null && item.remarks.trim() !== "") ||item.image !== null || item.file !== null || (item.remarks !== null && item.remarks.trim() !== "")) {
-          completedCount++; // Increment the local counter
-          console.log(item,"this is the item","image:",item.image,"file:",item.file,"remarks:",item.remarks);
+    // Count completed tasks
+    data &&
+      data.forEach((item) => {
+        if (
+          item.remarks ||
+          (item.type !== 'checkbox' && item.result && item.result.trim() !== '') ||
+          (item.type === 'checkbox' && item.result !== '0' && item.result !== '')
+        ) {
+          tempCount += 1;
         }
       });
 
-      const calculatedPercentage = total > 0 ? (completedCount / total) * 100 : 0;
-
-      console.log(total, "total", completedCount, "completed"); // Log completed count
-      setComplete(completedCount); // Update state with the completed count
-      setPercentage(calculatedPercentage); // Update percentage
-      setPercentages(calculatedPercentage)
+    setCount(tempCount);
+  }, [data]);
+  const handleComplete = async () => {
+    try {
+      const response = await MarkAsCompleteApi(wo,remark);
+      console.log(response, 'response from API for completion');
+      console.log('Marked as complete with remark:', remark);
+      
+      setRemark(''); // Reset the remark input
+      setModalVisible(false); // Close the modal
+  
+      console.log(wo, 'WO');
+  
+      if (response) {
+        // Dispatch the action to update work order status
+        await dispatch(updateWorkOrderStatus({ id: wo.uuid, status: 'COMPLETED' }));
+  
+        // Once the status update is successful, navigate
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'Work Orders' }], // Replace with the correct screen name
+          })
+        );
+      }
     } catch (error) {
-      console.error("Error fetching instructions:", error);
+      console.error('Error marking as complete:', error);
     }
   };
-
-  useFocusEffect(
-    React.useCallback(() => {
-      getPercentage(); // Fetch percentage when the screen is focused
-
-      // Optionally return a cleanup function if needed
-      return () => {
-        // Perform any cleanup if necessary when the screen is unfocused
-      };
-    }, [])
-  );
+  
+  // Calculate progress percentage
+  const progress = data.length > 0 ? count / data.length : 0; // Avoid division by zero
+  const progressPercentage = count + '/' + data.length;
+  const percentage = (count / data.length) * 100;
 
   return (
     <View style={styles.container}>
       <View style={styles.progressContainer}>
-        <Progress.Circle
-          size={70}
-          progress={percentage / 100}
-          color="#28a745"            // Green color for progress
-          unfilledColor="white"      // Light gray background color
-          borderWidth={0}            // No border
-          thickness={10}             // Thickness of the progress ring
-          showsText
-          formatText={() => `${Math.round(percentage)}%`} // Display the percentage in the center
-          textStyle={styles.progressText}     // Style for the center text
-          animated={true}            // Enable animation
-        />
+        {percentage === 100 ? (
+          <TouchableOpacity
+          className="flex  py-1 flex-row gap-1"
+            style={[
+              styles.tickContainer,
+              wo.Status === 'COMPLETED' && styles.disabledTickContainer, // Apply faint style if completed
+            ]}
+            onPress={() => wo.Status !== 'COMPLETED' && setModalVisible(true)} // Prevent opening modal if completed
+            disabled={wo.Status === 'COMPLETED'} // Disable button if completed
+          >
+
+            <View className="bg-green-500 p-1  rounded-full">
+            <Icon name="check" size={30} color={wo.Status === 'COMPLETED' ? '#d4d4d4' : 'white'} />
+             </View>
+
+
+             <Text className="text-white font-black">{wo.Status === 'COMPLETED'?' Completed':"Mark Complete"}</Text>
+
+          </TouchableOpacity>
+        ) : (
+          <Progress.Circle
+          className="ml-20 bg-[#074B7C] rounded-full mt-4"
+            size={55}
+            progress={progress}
+            color="#00b300"
+            unfilledColor="#e0e0e0"
+            borderWidth={0}
+            thickness={8}
+            showsText
+            formatText={() => `${progressPercentage}`}
+            textStyle={styles.progressText}
+            animated
+          />
+        )}
       </View>
+
+      {/* Bottom Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)} // Close modal on back press
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Enter Remark</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Add your remark"
+              value={remark}
+              onChangeText={setRemark}
+            />
+            <TouchableOpacity style={styles.completeButton} onPress={handleComplete}>
+              <Text style={styles.completeButtonText}>Mark as Complete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
+// Styles
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'start',
-    alignItems: 'start',
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
+    flexDirection: 'row',
+    width: 70,
+    height: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
   progressContainer: {
-    alignItems: 'start',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius:50,
+  },
+  tickContainer: {
+    width: 160,
+    height: 50,
+    backgroundColor: '#074B7C',
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'start',
+  },
+  disabledTickContainer: {
+    backgroundColor: 'lightgreen', // Faint green for completed
   },
   progressText: {
-    fontSize: 20,
-    color: '#074B7C',
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  modalContainer: {
+    flex: 1,
+    height:200,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dim background
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 15,
+  },
+  completeButton: {
+    backgroundColor: '#00b300',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  completeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    backgroundColor: 'gray',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: 'white',
     fontWeight: 'bold',
   },
 });

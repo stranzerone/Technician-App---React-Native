@@ -1,105 +1,108 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Import FontAwesome icons
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import AddWorkOrderScreen from '../AddWorkOrders/AddWorkOrderScreen';
+import { usePermissions } from '../GlobalVariables/PermissionsContext';
+import PMList from '../PmsUi/AllPms';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import BuggyListPage from '../BuggyList/BuggyListScreen';
 import AssetDetailsMain from '../AssetDetails/AssetDetailsScreen';
-import { useNavigation } from '@react-navigation/native'; // Import useNavigation
+import { useNavigation } from '@react-navigation/native';
 
-const WorkOrderTopTabs = ({ route }) => {
-  const navigation = useNavigation(); // Initialize navigation
-  const [activeTab, setActiveTab] = useState('instructions');
+const BuggyListTopTabs = ({  route  }) => {
+  const [selectedTab, setSelectedTab] = useState(0);
+  const { ppmAsstPermissions } = usePermissions();
   const uuid = route.params.workOrder;
+  const wo = route.params.wo
+  const hasPermission = ppmAsstPermissions.some((permission) =>
+    permission.includes('C')
+  );
 
-  console.log(uuid, "uuid at top tabs");
+  const navigation = useNavigation()
+  const renderScene = SceneMap({
+    BuggyList: () => <BuggyListPage   uuid={uuid}  wo={wo}/>,
+    Details: () => <AssetDetailsMain uuid={uuid} />,
+  });
 
-  // Function to render content based on the active tab
-  const renderContent = () => {
-    if (activeTab === 'instructions') {
-      return <BuggyListPage uuid={uuid} />;
-    } else if (activeTab === 'details') {
-      return <AssetDetailsMain uuid={uuid} />;
-    }
+  const renderTabBar = (props) => (
+    <TabBar
+      {...props}
+      indicatorStyle={styles.tabIndicator}
+      style={styles.tabBar}
+      labelStyle={styles.tabLabel}
+    />
+  );
+
+  const handleBackPress = () => {
+    navigation.goBack();
   };
 
-  return (
-    <View style={styles.container}>
-    
-
-      {/* Tab Section */}
-      <View style={styles.tabContainer}>
-          {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Icon name="arrow-left" size={20} color="#074B7C" />
-      </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'instructions' && styles.activeTab]}
-          onPress={() => setActiveTab('instructions')}
-        >
-          <Text style={[styles.tabText, activeTab === 'instructions' && styles.activeTabText]}>Instructions</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'details' && styles.activeTab]}
-          onPress={() => setActiveTab('details')}
-        >
-          <Text style={[styles.tabText, activeTab === 'details' && styles.activeTabText]}>Details</Text>
-        </TouchableOpacity>
+  if (hasPermission) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View style={styles.container}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+            <FontAwesome name="arrow-left" size={25} color="white" />
+          </TouchableOpacity>
+          <TabView
+            navigationState={{
+              index: selectedTab,
+              routes: [
+                { key: 'BuggyList', title: 'Instructions' },
+                { key: 'Details', title: 'Asset Details' },
+              ],
+            }}
+            renderScene={renderScene}
+            onIndexChange={setSelectedTab}
+            renderTabBar={renderTabBar}
+            swipeEnabled={true} // Allow swipe gestures
+            animationEnabled={true} // Enable smooth animations
+            initialLayout={{ width: 200 }} // Provide an initial layout to optimize rendering
+          />
+        </View>
+      </GestureHandlerRootView>
+    );
+  } else {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.notAuthorizedText}>You are not authorized to view this content.</Text>
       </View>
-
-      {/* Content Section */}
-      {renderContent()}
-    </View>
-  );
+    );
+  }
 };
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f0f4f7',
+    position: 'relative',
   },
   backButton: {
-    padding: 10,
-    alignItems: 'flex-start',
+    position: 'absolute',
+    top: 15,
+    left: 10,
+    zIndex: 10,
   },
-  tabContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    borderBottomWidth: 1,
-    borderBottomColor: '#cccccc',
+  tabBar: {
+    backgroundColor: '#074B7C',
+    paddingVertical:5
   },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  activeTab: {
-    borderBottomWidth: 4,
-    borderBottomColor: '#074B7C',
-  },
-  tabText: {
-    fontSize: 16,
-    color: '#888888',
-    fontWeight: '500',
-  },
-  activeTabText: {
-    color: '#074B7C', // Color of the active tab text
+  tabLabel: {
+    color: '#FF0000',
+    fontSize: 18,
     fontWeight: 'bold',
   },
-  contentContainer: {
-    alignItems: 'center',
-    padding: 16,
+  tabIndicator: {
+    height: 5,
+    backgroundColor: 'white',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#074B7C',
-    marginBottom: 8,
-  },
-  content: {
-    fontSize: 16,
+  notAuthorizedText: {
+    fontSize: 18,
+    color: '#ff0000',
     textAlign: 'center',
-    color: '#333',
+    marginTop: 20,
   },
 });
 
-export default WorkOrderTopTabs;
+export default BuggyListTopTabs;

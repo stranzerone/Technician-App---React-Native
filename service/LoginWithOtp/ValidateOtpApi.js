@@ -1,8 +1,10 @@
 import axios from 'axios';
+import { API_URL2 } from '@env';
 
 const validateOtp = async (id, otp) => {
   try {
-    const response = await axios.post('https://api.isocietymanager.com/validateotp', {
+    //https://api.isocietymanager.com/validateotp
+    const response = await axios.post(`${API_URL2}/validateotp`, {
       id: id,
       otp: otp,
     }, {

@@ -1,77 +1,145 @@
-import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet, TouchableOpacity, Image, Modal } from 'react-native';
-import RNPickerSelect from 'react-native-picker-select';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  Image,
+  Modal,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { uploadImageToServer } from '../../service/ImageUploads/ConvertImageToUrlApi';
-import handleDownload from "./FileDownloader"; // Import your file download logic
-import Loader from "../LoadingScreen/AnimatedLoader"
-const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, pdfPreviewUrl, WoUuId, onUpdateSuccess }) => {
+import handleDownload from './FileDownloader'; // Import your file download logic
+import Loader from '../LoadingScreen/AnimatedLoader';
+import { usePermissions } from '../GlobalVariables/PermissionsContext';
+import styles from './InputFieldStyleSheet';
+import { uplodPdfToServer } from '../../service/ImageUploads/ConvertPdfToUrl';
+import OptionsModal from '../DynamivPopUps/DynamicOptionsPopUp';
+
+const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, WoUuId, onUpdateSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [inputText, setInputText] = useState(inputValue);
+  const [isEditing, setIsEditing] = useState(false);
+  const { ppmAsstPermissions } = usePermissions();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [options, setOptions] = useState([]);
+  const [capturedImage,setCapturedImage]  = useState(null)
+
+  useEffect(() => {
+    // Mapping the options properly to pass them as an array of objects
+    const listOptions = item.options?.map((option) => ({
+      label: option,
+      value: option,
+    }));
+
+    // Setting the options to the state
+    setOptions(listOptions);
+  }, [item]);
+
+  const renderTextOrNumberInput = ({
+    item,
+    inputText,
+    setInputText,
+    isEditing,
+    setIsEditing,
+    setInputValue,
+    ppmAsstPermissions,
+  }) => (
+    <View style={styles.inputContainer}>
+      <Text style={styles.label}>{item.label || 'Input:'}</Text>
+      {isEditing ? (
+        <TextInput
+          style={styles.remarkInput}
+          placeholder={`Enter ${item.type === 'text' ? 'text' : 'number'}`}
+          value={inputText}
+          onChangeText={setInputText}
+          placeholderTextColor="#888"
+          keyboardType={item.type === 'number' ? 'numeric' : 'default'}
+          onBlur={() => {
+            setIsEditing(false);
+            if (inputText.trim()) {
+              setInputValue(inputText);
+            }
+          }}
+          autoFocus
+        />
+      ) : (
+        <TouchableOpacity
+          onPress={() => {
+            if (ppmAsstPermissions.some((permission) => permission.includes('U'))) {
+              setIsEditing(true);
+            }
+          }}
+        >
+          <Text style={styles.remarkText}>{inputText || 'Enter Value or Text'}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
+  const handleTypeSelect = (type) => {
+    setInputValue(type);
+    setIsModalVisible(false);
+  };
+
+  const closeModal = () => {
+    console.log("closing model")
+
+    setIsModalVisible(false);
+  };
 
   const renderField = () => {
     switch (item.type) {
       case 'text':
-        return (
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Text Input:</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Enter text"
-              value={inputValue}
-              onChangeText={setInputValue}
-              placeholderTextColor="#B0BEC5"
-            />
-          </View>
-        );
       case 'number':
-        return (
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Number Input:</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Enter number"
-              value={inputValue}
-              keyboardType="numeric"
-              onChangeText={setInputValue}
-              placeholderTextColor="#B0BEC5"
-            />
-          </View>
-        );
-    
+        return renderTextOrNumberInput({
+          item,
+          inputText,
+          setInputText,
+          isEditing,
+          setIsEditing,
+          setInputValue,
+          ppmAsstPermissions,
+        });
+
       case 'dropdown':
         return item.options && item.options.length > 0 ? (
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Dropdown:</Text>
             <View style={styles.dropdownContainer}>
-              <View style={styles.dropdown}>
-                <RNPickerSelect
-                  onValueChange={(value) => setInputValue(value)}
-                  items={item.options.map((option) => ({ label: option, value: option }))}
-                  placeholder={{ label: 'Select an option', value: null }}
-                  value={inputValue}
-                  useNativeAndroidPickerStyle={false}
-                  style={pickerSelectStyles}
-                />
-              </View>
-              <TouchableOpacity style={styles.iconContainer}>
+              <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+                <View style={[styles.dropdown,{paddingVertical:7}]}>
+                  {item.result?
+                  <Text>
+                    {item.result}
+                  </Text>:
+                  <Text>Select Option</Text>
+
+                }
+                </View>
+              
+              <View style={styles.iconContainer}>
                 <Ionicons name="chevron-down" size={24} color="#1996D3" />
+              </View>
               </TouchableOpacity>
             </View>
           </View>
         ) : (
           <Text style={styles.errorText}>No options available</Text>
         );
-      
+
       case 'checkbox':
         return renderCheckbox();
-      case 'imageAttachment':
+
+      case 'file':
         return renderImageAttachment();
-      case 'fileAttachment':
+
+      case 'document':
         return renderFileAttachment();
+
       default:
         return null;
     }
@@ -79,23 +147,31 @@ const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, pdfPrevi
 
   const renderCheckbox = () => (
     <TouchableOpacity
+      disabled={!ppmAsstPermissions.some((permission) => permission.includes('U'))}
       style={styles.checkboxContainer}
       onPress={() => setInputValue(inputValue === '1' ? '0' : '1')}
     >
-      <View style={styles.middleCircle}>
-        <View style={[styles.innerCircle, inputValue === '1' ? styles.checked : styles.unchecked]} />
+      <View className="flex flex-row gap-2">
+        <View style={styles.middleCircle}>
+          <View
+            style={[styles.innerCircle, inputValue === '1' ? styles.checked : styles.unchecked]}
+          />
+        </View>
+        <Text className="mx-2 w-[87%]" style={styles.title}>
+          {item.title}
+        </Text>
       </View>
-      {inputValue === '1' ? <Text className="text-blue-900" style={styles.checkboxLabel}> Checked</Text> : <Text style={styles.checkboxLabel}> Check Me</Text>}
     </TouchableOpacity>
   );
+
   const renderImageAttachment = () => (
     <View style={styles.imageAttachmentContainer}>
       <View style={styles.imagePreviewContainer}>
         {loading ? (
-         <Loader />
-        ) : imagePreviewUrl ? (
+          <Loader />
+        ) : item.result || capturedImage? (
           <TouchableOpacity onPress={() => setModalVisible(true)}>
-            <Image source={{ uri: imagePreviewUrl }} style={styles.image} />
+            <Image source={{ uri: capturedImage || item.result }} style={styles.image} />
           </TouchableOpacity>
         ) : (
           <View style={styles.imagePlaceholder}>
@@ -109,318 +185,100 @@ const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, pdfPrevi
           <Ionicons name="camera" size={24} color="white" />
           <Text style={styles.buttonText}>Camera</Text>
         </TouchableOpacity>
-<TouchableOpacity onPress={handleDocumentPicker} style={[styles.cameraButton]}>
-  <Ionicons name="folder-open-outline" size={24} color="white" />
-  <Text style={styles.buttonText}>Choose Image</Text>
-</TouchableOpacity>
-
+  
       </View>
     </View>
   );
-  
+
   const renderFileAttachment = () => (
     <View style={styles.inputContainer}>
       {selectedFile && (
         <Text style={styles.selectedFileText}>PDF Selected: {selectedFile.name}</Text>
       )}
-
       <View style={styles.pdfButtonsContainer}>
-      <TouchableOpacity onPress={handleDocumentPicker} style={[styles.button,styles.pdfButton]}>
-        <Text style={styles.buttonText}>Choose PDF</Text>
-      </TouchableOpacity>
-
-
-      {item.file && (
-        <TouchableOpacity onPress={() => handleDownload(item.file)} style={[styles.button,styles.pdfButton]}>
-          <Ionicons name="download-outline" size={20} color="white" />
-          <Text style={styles.buttonText}>Download PDF</Text>
+        <TouchableOpacity onPress={handleDocumentPicker} style={[styles.button, styles.pdfButton]}>
+          <Text style={styles.buttonText}>
+            <FontAwesome name="file-pdf-o" size={20} />
+            &nbsp; Choose PDF
+          </Text>
         </TouchableOpacity>
-      )}
-
+        {item.result && (
+          <TouchableOpacity
+            onPress={() => handleDownload({ file: item.result })}
+            style={[styles.button, styles.pdfButton]}
+          >
+            <Ionicons name="download-outline" size={20} color="white" />
+            <Text style={styles.buttonText}>Download PDF</Text>
+          </TouchableOpacity>
+        )}
       </View>
-      
- 
     </View>
   );
 
   const handleDocumentPicker = async () => {
+    if (!ppmAsstPermissions.some((permission) => permission.includes('U'))) return;
+
     setLoading(true);
     const result = await DocumentPicker.getDocumentAsync({
       type: ['application/pdf', 'image/*'],
     });
-console.log(result,"document selected")
-    if (result.assets[0].uri) {
+
+    if (!result.canceled && result.assets[0].uri) {
       setSelectedFile(result);
-      const uploadResponse = await uploadImageToServer(result.assets[0], item.id, WoUuId);
-      if (uploadResponse) {
-        onUpdateSuccess();
-      }
+      const uploadResponse = await uplodPdfToServer(result.assets[0], item.id, WoUuId);
+      if (uploadResponse) onUpdateSuccess();
     }
     setLoading(false);
   };
 
-
   const handleImagePicker = async () => {
+    if (!ppmAsstPermissions.some((permission) => permission.includes('U'))) return;
+
     setLoading(true);
-  
-    try {
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: false,
-        quality: 1,
-      });
-  
-      if (!result.canceled && result.assets && result.assets[0].uri) {
-        const imageUri = result.assets[0].uri;
-  
-        // Construct the file data to ensure it's in JPEG format
-        const fileData = {
-          uri: imageUri,
-          fileName: `photo_${Date.now()}.jpeg`, // Generate unique filename in JPEG format
-          mimeType: 'image/jpeg', // Set the MIME type explicitly to JPEG
-        };
-  
-        // Upload the image to the server
-        const uploadResponse = await uploadImageToServer(fileData, item.id, WoUuId);
-  
-        if (uploadResponse) {
-          onUpdateSuccess(); // Call the success handler if upload is successful
-        } else {
-          console.error("Upload failed");
-        }
-      }
-    } catch (error) {
-      console.error("Error capturing or uploading image:", error);
-    } finally {
-      setLoading(false);
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: .5,
+    });
+
+    if (!result.canceled && result.assets && result.assets[0].uri) {
+      const imageUri = result.assets[0].uri;
+      const fileData = {
+        uri: imageUri,
+        fileName: `photo_${Date.now()}.jpeg`,
+        mimeType: 'image/jpeg',
+      };
+      setCapturedImage(imageUri)
+      const uploadResponse = await uploadImageToServer(fileData, item.id, WoUuId);
+      if (uploadResponse) onUpdateSuccess();
     }
+    setLoading(false);
   };
-  
+
   return (
     <>
       {renderField()}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
+      <Modal animationType="slide" transparent={true} visible={modalVisible}>
         <View style={styles.modalContainer}>
-          <TouchableOpacity style={styles.modalCloseButton} onPress={() => setModalVisible(false)}>
+          <TouchableOpacity
+            style={[styles.modalCloseButton, { zIndex: 1 }]}
+            onPress={() => setModalVisible(false)}
+          >
             <Ionicons name="close" size={30} color="white" />
           </TouchableOpacity>
-          {imagePreviewUrl && (
-            <Image source={{ uri: imagePreviewUrl }} style={styles.modalImage} resizeMode="contain" />
+          {item.result  && (
+            <Image source={{ uri: item.result }} style={styles.modalImage} resizeMode="contain" />
           )}
         </View>
       </Modal>
+      <OptionsModal
+        visible={isModalVisible}
+        onClose={closeModal}
+        options={options}
+        onSelect={handleTypeSelect}
+      />
     </>
   );
 };
-
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: '#1996D3',
-    borderRadius: 8,
-    color: 'black',
-    backgroundColor: '#f0f0f0',
-    marginTop: 8,
-    paddingRight: 30, // Add padding to the right for the icon
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: '#1996D3',
-    borderRadius: 8,
-    color: 'black',
-    backgroundColor: '#f0f0f0',
-    marginTop: 8,
-    paddingRight: 30, // Add padding to the right for the icon
-  },
-});
-
-
-const styles = StyleSheet.create({
-  inputContainer: {
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#CED4DA',
-    borderRadius: 10,
-    padding: 12,
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.5,
-    elevation: 5,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#074B7C',
-    marginBottom: 8,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#CED4DA',
-    borderRadius: 8,
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-    color: '#212529',
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  middleCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#1996D3',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  innerCircle: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: 'white',
-  },
-  unchecked: {
-    backgroundColor: 'white',
-  },
-  checked: {
-    backgroundColor: '#074B7C',
-  },
-  checkboxLabel: {
-    fontSize: 14,
-    fontWeight: "bold",
-    // color: '#074B7C',
-  },
-  pdfButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonContainer: {
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  imageAttachmentContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start', // Align items to the start of the container
-    justifyContent: 'space-between', // Space between image and buttons
-    marginTop: 8, // Add some margin at the top
-  },
-
-  buttonContainer: {
-    flexDirection: 'column',
-    gap:10,
-    marginTop:10,
-    justifyContent: 'center', // Center buttons vertically
-    alignItems: 'flex-start', // Align buttons to the start
-  },
-  cameraButton: {
-    backgroundColor: '#074B7C',
-    padding: 10,
-    minWidth:130,
-    borderRadius: 5,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 5,
-  },
-  button: {
-    flex:1,
-    backgroundColor: '#1996D3',
-    padding: 6,
-    borderRadius: 5,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pdfButton: {
-    flex:1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 0.48, // Make both buttons take up almost equal width
-    padding: 10,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 12,
-    marginLeft: 5,
-  },
-  image: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  imagePlaceholder: {
-    padding: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#CED4DA',
-    marginTop: 10,
-    width: 100,
-    height: 100,
-  },
-  loadingIndicator: {
-    marginTop: 10,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  },
-  modalCloseButton: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-  },
-  modalImage: {
-    width: '90%',
-    height: '90%',
-    borderRadius: 10,
-  },
-  selectedFileText: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#074B7C',
-  },
-  downloadButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#1996D3',
-    padding: 6,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  iconContainer: {
-    position: 'absolute',
-    right: 10,  // Position the icon to the right
-    top: '50%',  // Vertically center the icon
-    marginTop: -12,  // Adjust based on icon size (24px / 2)
-  },
-});
 
 export default InputField;

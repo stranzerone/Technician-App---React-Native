@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,22 +7,35 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity,
 } from 'react-native';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
-import { WorkOrderInfoApi } from "../../service/WorkOrderInfoApi";
-import ProgressPage from './ProgressBar';
+import { useSelector } from 'react-redux';
+import { WorkOrderInfoApi } from '../../service/WorkOrderInfoApi';
 
 const AssetInfo = ({ WoUuId }) => {
   const [workOrder, setWorkOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [percentage, setPercentage] = useState(0); // Fixed spelling from precentage to percentage
+  const [teamInfo, setTeamInfo] = useState(null);
 
+  // Fetch user and team data from Redux
+  const users = useSelector((state) => state.users.data);
+  const teams = useSelector((state) => state.teams.data);
+
+  // Fetch work order data
   useEffect(() => {
     const loadWorkOrderData = async () => {
       try {
         const data = await WorkOrderInfoApi(WoUuId);
         setWorkOrder(data);
+
+        if (data && data[0]?.pm?.AssignedTeam?.length && teams) {
+          const teamId = data[0].pm.AssignedTeam[0];
+          teams.forEach(element => {
+            if (element.t?._ID == teamId) {
+              setTeamInfo(element);
+            }
+          });
+        }
       } catch (error) {
         console.error('Error fetching work order:', error);
       } finally {
@@ -31,8 +44,15 @@ const AssetInfo = ({ WoUuId }) => {
     };
 
     loadWorkOrderData();
-  }, [WoUuId]);
+  }, [WoUuId, teams]);
 
+  // Function to convert UTC to system time
+  const convertToSystemTime = (utcDate) => {
+    const date = new Date(utcDate);
+    return date.toLocaleString(); // You can format this as required
+  };
+
+  // Show loading indicator while fetching data
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -41,17 +61,21 @@ const AssetInfo = ({ WoUuId }) => {
     );
   }
 
+  // Show error message if no data is found
   if (!workOrder || workOrder.length === 0) {
     return <Text style={styles.errorText}>No work order data found.</Text>;
   }
 
-  // Extracting necessary data from the work order
-  const {
-    asset,
-    wo,
-    category,
-    pm,
-  } = workOrder[0];
+  // Extract work order and asset details
+  const { asset, wo, category } = workOrder[0];
+
+  // Map user IDs to user names for assigned users
+  const mapIdsToNames = (ids) =>
+    ids
+      ?.map((id) => users.find((user) => user.user_id === id)?.name || 'Unknown User')
+      .join(', ') || 'None';
+
+  const assignedNames = mapIdsToNames(wo?.Assigned);
 
   return (
     <KeyboardAvoidingView
@@ -61,21 +85,9 @@ const AssetInfo = ({ WoUuId }) => {
     >
       <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <View style={styles.progressContainer}>
-            <ProgressPage setPercentages={setPercentage} />
-          </View>
           <View style={styles.textContainer}>
-            <Text style={styles.headerText}>{wo?.["Sequence No"]}</Text>
+            <Text style={styles.headerText}>{wo?.['Sequence No']}</Text>
             <Text style={styles.headerSubText}>{wo?.Name}</Text>
-            <View style={styles.buttonContainer}>
-              <CustomButton
-                icon="check-circle"
-                text="Mark Complete"
-                onPress={() => console.log("Mark as Complete")}
-                disabled={percentage < 100} // Disable if percentage is less than 100
-              />
-              {/* <CustomButton icon="edit" text="Change Status" onPress={() => console.log("Change Status")} /> */}
-            </View>
           </View>
         </View>
 
@@ -83,12 +95,13 @@ const AssetInfo = ({ WoUuId }) => {
           {/* Work Order Details */}
           <View style={styles.detailsContainer}>
             <DetailItem icon="assignment" label="Asset Name" text={asset?.Name} />
-            <DetailItem icon="hashtag" label="Asset ID" text={asset?.["Sequence No"]} />
-            <DetailItem icon="calendar" label="Deadline" text={wo?.["Due Date"]} />
+            <DetailItem icon="hashtag" label="Asset ID" text={asset?.['Sequence No']} />
+            <DetailItem icon="calendar" label="Deadline" text={convertToSystemTime(wo?.['Due Date']) || 'No Deadline Provided'} />
             <DetailItem icon="wrench" label="Type" text={wo?.Type} />
-            <DetailItem icon="tags" label="Category" text={category?.Name} />
-            <DetailItem icon="users" label="Team" text={pm?.AssignedTeam.join(', ')} isTag />
-            <DetailItem icon="user" label="Assigned" text={wo?.Assigned.join(', ')} isTag />
+            <DetailItem icon="tags" label="Category Of Wo" text={category?.Name} />
+            <DetailItem icon="users" label="Assigned Team " text={teamInfo?.t?.Name || 'Unknown Team'} />
+            <DetailItem icon="info-circle" label="Team Description" text={teamInfo?.t?.Description || 'No Description'} />
+            <DetailItem icon="user" label="Assigned To " text={assignedNames} isTag />
           </View>
         </View>
 
@@ -106,22 +119,10 @@ const AssetInfo = ({ WoUuId }) => {
   );
 };
 
-// CustomButton component definition remains unchanged
-const CustomButton = ({ icon, text, onPress, disabled }) => (
-  <TouchableOpacity
-    style={[styles.button, disabled && styles.disabledButton]} // Apply faint green when disabled
-    onPress={!disabled ? onPress : null} // Prevent onPress when disabled
-    disabled={disabled} // Disable the button to prevent touch events
-  >
-    <FontAwesome name={icon} size={16} color={disabled ? "#A9A9A9" : "#fff"} style={styles.buttonIcon} />
-    <Text style={[styles.buttonText, disabled && styles.disabledText]}>{text}</Text>
-  </TouchableOpacity>
-);
-
 const DetailItem = ({ icon, label, text, isTag }) => (
   <View style={styles.detailItem}>
     <View style={styles.iconContainer}>
-      {icon === "assignment" ? (
+      {icon === 'assignment' ? (
         <MaterialIcons name={icon} size={24} color="#074B7C" />
       ) : (
         <FontAwesome name={icon} size={24} color="#074B7C" />
@@ -133,8 +134,6 @@ const DetailItem = ({ icon, label, text, isTag }) => (
     </View>
   </View>
 );
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -155,12 +154,7 @@ const styles = StyleSheet.create({
     gap: 40,
     marginBottom: 16,
   },
-  progressContainer: {
-    width: '40%',
-    justifyContent: 'center',
-  },
   textContainer: {
-    width: '60%',
     justifyContent: 'center',
     paddingLeft: 8,
   },
@@ -173,50 +167,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1996D3',
   },
-  buttonContainer: {
-    flexDirection: 'column',
-    marginTop: 8,
-  },
-  button: {
-    width:120,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor:  '#28a745',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 5,
-   
-  },
-  disabledButton: {
-    backgroundColor: '#d1f7e7', // Faint green background for disabled state
-  },
-  disabledText: {
-    color: '#A9A9A9', // Gray text for disabled state
-  },
-  buttonIcon: {
-    marginRight: 6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  errorText: {
-    textAlign: 'center',
-    color: '#FF0000',
-    fontSize: 16,
-    marginTop: 20,
-  },
   infoContainer: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 4,
-    marginBottom: 16,
     padding: 16,
+    marginBottom: 16,
   },
   detailsContainer: {
     marginBottom: 12,
@@ -225,14 +180,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#e7f1ff',
-    borderRadius: 10,
+    borderWidth: 0.3,
+    borderRadius: 1,
     padding: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 2,
-    elevation: 1,
+    marginBottom: 0,
   },
   iconContainer: {
     marginRight: 10,
@@ -247,40 +198,38 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 14,
     color: '#333',
+    fontWeight: 'bold',
     marginTop: 4,
   },
   tagText: {
-    backgroundColor: '#f1f5f9',
-    borderRadius: 12,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    color: '#074B7C',
-    marginLeft: 8,
-    fontWeight: 'normal',
+    fontSize: 12,
+    color: '#1996D3',
+    fontWeight: 'bold',
   },
   descriptionContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   descriptionTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#074B7C',
-    marginBottom: 8,
   },
   descriptionBox: {
     backgroundColor: '#fff',
+    borderRadius: 8,
     padding: 16,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 4,
+    marginTop: 8,
+    borderColor: '#d3d3d3',
+    borderWidth: 1,
   },
   descriptionText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
-    lineHeight: 22,
+  },
+  errorText: {
+    textAlign: 'center',
+    color: 'red',
+    fontSize: 18,
   },
 });
 

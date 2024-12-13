@@ -1,42 +1,43 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { API_URL } from '@env';
 export const fetchServiceRequests = async (selectedFilter) => {
   try {
     // Fetch user info and uuid from AsyncStorage
     const userInfo = await AsyncStorage.getItem('userInfo');
 const uuid = await AsyncStorage.getItem('uuid');
 
-
-    if (!userInfo || !uuid) {
+console.log(API_URL,"this is url called for fetching wo")
+    if (!userInfo ) {
       throw new Error('User information or UUID not found in AsyncStorage');
     }
 
     // Parse userInfo and access data object inside it
     const parsedUserInfo = JSON.parse(userInfo);
-    console.log(parsedUserInfo.data.id,"userInfo")
+
 
       // Extract user_id (id) and api_token
       const userId = parsedUserInfo.data.id; 
       const apiToken = parsedUserInfo.data.api_token;
+      const societyId = parsedUserInfo.data.societyId
     // const { id: userId, api_token: apiToken } = parsedUserInfo; // Corruserectly access the data object
-//https://nppm-api.isocietymanager.com/v3/workorder/filter
-    const apiUrl =` https://nppm-api.isocietymanager.com/v3/workorder/filter`
+    //https://nppm-api.isocietymanager.com/v3/workorder/filter
+    // const apiUrl =` https://nppm-api.isocietymanager.com/v3/workorder/filter`
     // 'https://nppm-api.isocietymanager.com/v3/workorder/assigned/asset';
     
     // Log the selected filter for debugging
-    console.log(selectedFilter, "Filter");
+
 
     // Define the parameters for the API call
     const params = {
-      site_id: 2,
+      site_id: societyId,
       breakdown1:false,
       breakdown2:false,
       asset_uuid: uuid,
       breakdown: false,
       Status: selectedFilter,
       page_no: 1,
-      per_page: 10,
+      per_page: 50,
       user_id: userId,
       'api-token': apiToken,
     };
@@ -47,11 +48,11 @@ const uuid = await AsyncStorage.getItem('uuid');
       'ism-auth': JSON.stringify({
         "api-token": apiToken,     // Dynamic from AsyncStorage
         "user-id": userId,         // Dynamic from AsyncStorage
-        "site-id":  2     // If siteId is not available, fallback to default
+        "site-id":  societyId    // If siteId is not available, fallback to default
       })
     };
     // Make the API request
-    const response = await axios.get(apiUrl, { params,headers,withCredentials: true });
+    const response = await axios.get(`${API_URL}/v3/workorder/filter`, { params,headers,withCredentials: true });
 
     // Check the response data
     const data = response.data.data;

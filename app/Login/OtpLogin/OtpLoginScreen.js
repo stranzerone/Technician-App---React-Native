@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   SafeAreaView,
   View,
@@ -6,8 +6,9 @@ import {
   TouchableOpacity,
   Text,
   StyleSheet,
-  Animated,
   Image,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { otpLoginApi } from '../../../service/LoginWithOtp/LoginWithOtpApi';
 import otpSvg from '../../../assets/SvgImages/otp.png'; // Ensure the path to your image is correct
@@ -19,17 +20,6 @@ const PhoneNumberPage = ({ navigation }) => {
   const [popupVisible, setPopupVisible] = useState(false); // State for controlling popup visibility
   const [popupMessage, setPopupMessage] = useState(''); // State for storing popup message
 
-  const iconAnimation = useRef(new Animated.Value(0)).current;
-
-  const shakeIcon = () => {
-    Animated.sequence([
-      Animated.timing(iconAnimation, { toValue: 1, duration: 100, useNativeDriver: true }),
-      Animated.timing(iconAnimation, { toValue: -1, duration: 100, useNativeDriver: true }),
-      Animated.timing(iconAnimation, { toValue: 1, duration: 100, useNativeDriver: true }),
-      Animated.timing(iconAnimation, { toValue: 0, duration: 100, useNativeDriver: true }),
-    ]).start();
-  };
-
   const handleSendOtp = async () => {
     console.log(phoneNumber, 'Phone Number');
     if (phoneNumber.length !== 10) {
@@ -38,19 +28,24 @@ const PhoneNumberPage = ({ navigation }) => {
       return;
     }
 
+    // Dismiss the keyboard before processing OTP request
+    Keyboard.dismiss();
+
     setLoading(true);
     try {
-      shakeIcon();
-      // Call the otpLoginApi and pass the phone number
       const response = await otpLoginApi(phoneNumber);
-      console.log(response, 'data for ui');
-      if (response.status === 'success') {
-        // OTP successfully sent, navigate to OTP entry page
-        navigation.navigate('OtpEnter', { response });
-      } else {
-        setPopupMessage(response.message);
-        setPopupVisible(true);
-      }
+            console.log(response, 'data for ui');
+      
+      // Delay navigation to allow keyboard to dismiss
+      setTimeout(() => {
+        if (response.status === 'success') {
+          // OTP successfully sent, navigate to OTP entry page
+          navigation.navigate('OtpEnter', { response });
+        } else {
+          setPopupMessage(response.message);
+          setPopupVisible(true);
+        }
+      }, 200); // Delay to ensure keyboard has time to dismiss
     } catch (error) {
       console.error('OTP API Error:', error);
       setPopupMessage('Something went wrong. Please try again.');
@@ -61,53 +56,55 @@ const PhoneNumberPage = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Top Blue Container */}
-      <View style={styles.topContainer} />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={styles.container}>
+        {/* Top Blue Container */}
+        <View style={styles.topContainer} />
 
-      <View style={styles.imageUriContainer}>
-        <Image source={otpSvg} style={styles.imageUri} resizeMode="contain" />
-      </View>
+        <View style={styles.imageUriContainer}>
+          <Image source={otpSvg} style={styles.imageUri} resizeMode="contain" />
+        </View>
 
-      <View style={styles.textContainer}>
-        <Text style={styles.headingOTP}>OTP VERIFICATION</Text>
-        <Text style={styles.paraOTP}>
-          Enter OTP for Verification for direct Login to the Dashboard
-        </Text>
-      </View>
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter Phone Number"
-          keyboardType="phone-pad"
-          maxLength={10}
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-        />
-        <TouchableOpacity
-          style={[styles.sendOtpButton, loading && styles.sendOtpButtonDisabled]}
-          onPress={handleSendOtp}
-          disabled={loading} // Disable the button while loading
-        >
-          <Text style={styles.sendOtpButtonText}>
-            {loading ? 'Sending OTP...' : 'Send OTP'}
+        <View style={styles.textContainer}>
+          <Text style={styles.headingOTP}>OTP VERIFICATION</Text>
+          <Text style={styles.paraOTP}>
+            Enter OTP for Verification for direct Login to the Dashboard
           </Text>
-        </TouchableOpacity>
-      </View>
+        </View>
 
-      {/* Dynamic Popup for displaying messages */}
-      <DynamicPopup
-        visible={popupVisible}
-        message={popupMessage}
-        onClose={() => setPopupVisible(false)}
-        type="warning"
-        onOk={() => setPopupVisible(false)}
-      />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter Phone Number"
+            keyboardType="phone-pad"
+            maxLength={10}
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+          />
+          <TouchableOpacity
+            style={[styles.sendOtpButton, loading && styles.sendOtpButtonDisabled]}
+            onPress={handleSendOtp}
+            disabled={loading} // Disable the button while loading
+          >
+            <Text style={styles.sendOtpButtonText}>
+              {loading ? 'Sending OTP...' : 'Send OTP'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* Bottom Blue Container */}
-      <View style={styles.bottomContainer} />
-    </SafeAreaView>
+        {/* Dynamic Popup for displaying messages */}
+        <DynamicPopup
+          visible={popupVisible}
+          message={popupMessage}
+          onClose={() => setPopupVisible(false)}
+          type="warning"
+          onOk={() => setPopupVisible(false)}
+        />
+
+        {/* Bottom Blue Container */}
+        <View style={styles.bottomContainer} />
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 };
 

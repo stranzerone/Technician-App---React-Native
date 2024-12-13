@@ -30,13 +30,7 @@ export default function QrScanner({onRefresh}) {
 
     // Store UUID in AsyncStorage
     try {
-      await AsyncStorage.setItem('uuid', uuid);
-      console.log(uuid, "UUID stored successfully!");
-
-      // Call onRefresh if provided
-      if (onRefresh) {
-        onRefresh();
-      }
+   
 
   
     console.log(uuid,"sending to route")
@@ -44,7 +38,7 @@ export default function QrScanner({onRefresh}) {
 if(data.includes('app.factech')){
   setScanned(false); // Reset scanned to allow scanning again
 
-  navigation.navigate("DynamicWo", { paramUuId : uuid });
+  navigation.navigate("ScannedWo", { uuid : uuid });
 }else{
 console.log(data,"not contain")
 setScanned(false); // Reset scanned to allow scanning again

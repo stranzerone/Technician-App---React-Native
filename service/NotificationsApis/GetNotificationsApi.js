@@ -1,44 +1,68 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL2 } from '@env';
 
-export const GetNotificationsApi = async (page = 1) => { // Default page to 1 if not provided
+export const GetNotificationsApi = async (page = 1) => {
   try {
     const userInfo = await AsyncStorage.getItem('userInfo');
-    
+    let getOldNotifications = await AsyncStorage.getItem('oldNotifications');
+    let getNewNotifications = await AsyncStorage.getItem('newNotifications');
+
+    console.log('called api notifications api')
+    // Initialize notifications if not set
+    if (!getNewNotifications) {
+      await AsyncStorage.setItem('newNotifications', '0');
+      getNewNotifications = '0';
+    }
+
+    if (!getOldNotifications) {
+      await AsyncStorage.setItem('oldNotifications', '0');
+      getOldNotifications = '0';
+    }
 
     if (userInfo) {
       const parsedUserInfo = JSON.parse(userInfo);
       const userId = parsedUserInfo.data.id;
       const apiToken = parsedUserInfo.data.api_token;
+      const societyId = parsedUserInfo.data.societyId;
 
-      const apiUrl = 'https://api.isocietymanager.com/getmynotifications';
-      
-      // Set up query parameters
+      // const apiUrl = 'https://api.isocietymanager.com/getmynotifications';
+
       const params = {
         "api-token": apiToken,
         "user-id": userId,
-        "site-id": 2, // If siteId is not available, fallback to default
-        "per_page": 10,
-        "page_no": page // Use the page parameter passed to the function
+        "site-id": societyId,
+        "per_page": 1000,
+        "page_no": page,
       };
 
-      // Make the API request
-      const response = await axios.get(apiUrl, {
+      const response = await axios.get(`${API_URL2}/getmynotifications`, {
         headers: {
           'Content-Type': 'application/json',
         },
-        params, // Use params to set query parameters
-        withCredentials: true
+        params,
+        withCredentials: true,
       });
 
       const data = response.data;
-      return data; // Return the relevant data
+      if (data) {
+        const fetchedTotal = data.data.length;
+
+        if (fetchedTotal > getOldNotifications) {
+          const newCount = fetchedTotal - getOldNotifications;
+          const newNotificationsCount = getNewNotifications ? parseInt(getNewNotifications, 10) + newCount : newCount;
+          await AsyncStorage.setItem('newNotifications', newNotificationsCount.toString());
+          await AsyncStorage.setItem('oldNotifications', fetchedTotal.toString());
+        }
+      }
+
+      return data;
     } else {
       console.error("User info not found in AsyncStorage");
       throw new Error("User info not found");
     }
   } catch (error) {
-    console.error('Error fetching data:', error);
-    throw error; // Throw error to handle it later
+    console.error('Error fetching notifications:', error);
+    throw error;
   }
 };

@@ -1,14 +1,14 @@
 import axios from 'axios';
+import { API_URL2 } from '@env';
 
 export const GetMyAccounts = async (token) => {
-  const baseUrl = 'https://api.isocietymanager.com/getmyaccounts';
+  // const baseUrl = 'https://api.isocietymanager.com/getmyaccounts';
 
   try {
     // Base URL
 
     // Construct the request URL with query parameters
-    const requestUrl = `${baseUrl}?token=${token}`;
-console.log(baseUrl+"?token="+token)
+    const requestUrl = `${API_URL2}/getmyaccounts?token=${token}`;
     // Make the GET request
     const response = await axios.get(requestUrl);
     console.log(response.data, "API data on OTP login get accounts");

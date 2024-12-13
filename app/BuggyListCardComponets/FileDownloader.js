@@ -2,40 +2,39 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
 
-const handleDownload = async () => {
+const handleDownload = async ({ file }) => {
+  console.log(file, 'PDF file URL');
+
   try {
-    // Your AWS S3 PDF link
-    const pdfUrl = 'https://ismdoc.s3.amazonaws.com/public/application/pdf/2/6710fbb717e3f_xJwb82AaFhOfYLhdS5NN2024101717_random';
-    
-    // Define the local path where you want to save the file
-    const fileUri = FileSystem.documentDirectory + 'downloadedFile.pdf';
+    // Define the local path where the file will be saved
+    const fileUri = `${FileSystem.documentDirectory}${file.split('/').pop()}`;
 
     // Download the file from AWS S3
     const downloadResumable = FileSystem.createDownloadResumable(
-      pdfUrl,
+      file, // This is the URL passed as a prop
       fileUri
     );
 
     // Execute the download
-    const { uri, headers } = await downloadResumable.downloadAsync();
+    const { uri } = await downloadResumable.downloadAsync();
 
-    // Check if the file was downloaded successfully
-    const fileExists = await FileSystem.getInfoAsync(uri);
-    if (fileExists.exists) {
-      // Ensure the downloaded file is recognized as a PDF
-      const contentType = headers['content-type'];
-      if (contentType === 'application/pdf') {
-        // Use the Sharing API to share the downloaded PDF file
-        await Sharing.shareAsync(uri);
+    // Check if the file exists at the specified location
+    const fileInfo = await FileSystem.getInfoAsync(uri);
+    if (fileInfo.exists) {
+      console.log('File downloaded successfully:', uri);
+
+      // Check if the file can be shared
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri); // Share the downloaded PDF file
         Alert.alert('Download complete', 'PDF has been downloaded and shared.');
       } else {
-        Alert.alert('Error', 'The downloaded file is not a PDF.');
+        Alert.alert('Sharing not available', 'PDF downloaded but cannot be shared.');
       }
     } else {
       Alert.alert('Error', 'The downloaded file does not exist.');
     }
   } catch (error) {
-    console.error(error);
+    console.error('Error downloading file:', error);
     Alert.alert('Download failed', 'Unable to download the PDF. Please try again later.');
   }
 };

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import {API_URL} from '@env';
 
 
 export const WorkOrderComments = async (WoUuId) => {
@@ -13,7 +13,7 @@ export const WorkOrderComments = async (WoUuId) => {
   if (userInfo) {
     const userId = parsedUserInfo.data.id
     const apiToken = parsedUserInfo.data.api_token
-    const apiUrl = 'https://nppm-api.isocietymanager.com/v3/comments?';
+    const societyId =parsedUserInfo.data.societyId
 
     const params = {
  
@@ -37,13 +37,16 @@ export const WorkOrderComments = async (WoUuId) => {
       'ism-auth': JSON.stringify({
         "api-token": apiToken,     // Dynamic from AsyncStorage
         "user-id": userId,         // Dynamic from AsyncStorage
-        "site-id":  2     // If siteId is not available, fallback to default
+        "site-id":  societyId     // If siteId is not available, fallback to default
       })
     };
 
+    console.log(API_URL,"THis is url")
+
+    // const apiUrl = 'https://nppm-api.isocietymanager.com/v3/comments?';
 
     try {
-      const response = await axios.get(apiUrl, { params,headers,withCredentials:true});
+      const response = await axios.get(`${API_URL}/v3/comments?`, { params,headers,withCredentials:true});
       const data = response.data.data
 console.log(response.data.data[0])
 

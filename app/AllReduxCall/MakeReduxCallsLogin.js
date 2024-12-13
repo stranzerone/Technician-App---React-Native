@@ -1,0 +1,19 @@
+// app/utils/fetchAllData.js
+import { fetchAllUsers } from '../../utils/Slices/UsersSlice';
+import { fetchAllTeams } from '../../utils/Slices/TeamSlice';
+import { fetchAssets } from '../../utils/Slices/AssetSlice';
+import { fetchAllPms } from '../../utils/Slices/PmsSlice';
+import {fetchWorkOrders} from "../../utils/Slices/WorkOrderSlice"
+/**
+ * Function to dispatch all Redux actions for fetching data
+ * @param {function} dispatch - Redux dispatch function
+ */
+export const fetchAllReduxData = async (dispatch) => {
+  await Promise.all([
+    dispatch(fetchAllUsers()),
+    dispatch(fetchAllTeams()),
+    dispatch(fetchAssets()),
+    dispatch(fetchAllPms()),
+  ]);
+  console.log('All Redux data fetched successfully.');
+};
