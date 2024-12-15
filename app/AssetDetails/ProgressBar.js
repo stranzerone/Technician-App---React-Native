@@ -86,7 +86,7 @@ const dispatch = useDispatch()
              </View>
 
 
-             <Text className="text-white font-black">{wo.Status === 'COMPLETED'?' Completed':"Mark Complete"}</Text>
+             <Text  className="text-white text-xs font-black">{wo.Status === 'COMPLETED'?' Completed':"Mark Complete"}</Text>
 
           </TouchableOpacity>
         ) : (

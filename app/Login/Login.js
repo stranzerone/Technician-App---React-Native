@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import technicianImage from '../../assets/SvgImages/Technician.png';
 import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 import UserCard from './MultipleUserCards/MultipleUserCards';
+import { fetchAllReduxData } from '../AllReduxCall/MakeReduxCallsLogin';
 
 const NewLoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -87,6 +88,7 @@ const NewLoginScreen = () => {
       if (response && response.status === 'success') {
         setEmail('');
         setPassword('');
+      
         navigation.dispatch(
           CommonActions.reset({
             index: 0,

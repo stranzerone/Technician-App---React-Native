@@ -23,7 +23,8 @@ export const PermissionsProvider = ({ children }) => {
               .filter(item => item.startsWith('PPMASST.'))
               .map(item => item.split('.')[1]);
 
-            setPpmAsstPermissions(filteredPermissions); // Set permissions
+            // setPpmAsstPermissions(filteredPermissions); // Set permissions
+            setPpmAsstPermissions(["CUD"])
           }
         }
 
@@ -41,7 +42,7 @@ export const PermissionsProvider = ({ children }) => {
         await fetchNotificationCount();
 
         // Set interval to fetch notifications every 1 minute (60000 milliseconds)
-        const intervalId = setInterval(fetchNotificationCount, 60000); 
+        // const intervalId = setInterval(fetchNotificationCount, 60000); 
 
         // Cleanup function to clear the interval when component unmounts
         return () => clearInterval(intervalId);

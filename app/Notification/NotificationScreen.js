@@ -7,6 +7,7 @@ import { fetchNotifications } from '../../utils/Slices/NotificationsSlice'; // A
 import { useFocusEffect } from '@react-navigation/native';
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
 import { GetNotificationsApi } from '../../service/NotificationsApis/GetNotificationsApi';
+import Loader from '../LoadingScreen/AnimatedLoader';
 
 const NotificationMainPage = () => {
   const [notifications, setNotifications] = useState([]);
@@ -70,7 +71,10 @@ const NotificationMainPage = () => {
       {status === 'loading' ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#0000ff" />
-          <Text style={styles.loadingText}>Loading notifications...</Text>
+          <Text style={styles.loadingText}>
+
+            <Loader />
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -80,7 +84,10 @@ const NotificationMainPage = () => {
           contentContainerStyle={styles.listContainer}
           ListEmptyComponent={
             status === 'loading' ? (
-              <Text style={styles.loadingText}>Loading notifications...</Text>
+              <Text style={styles.loadingText}>
+
+                <Loader />
+              </Text>
             ) : (
               <Text style={styles.emptyText}>No notifications available</Text>
             )
@@ -96,7 +103,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7F7F7',
     paddingTop: 5,
-    marginBottom: 20,
+    marginBottom: 35,
   },
   errorContainer: {
     flex: 1,

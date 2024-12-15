@@ -7,6 +7,7 @@ import InputField from './InputField';
 import convertUrlToBase64 from '../../service/ImageUploads/BlobImageConvert';
 import { uploadImageToServer } from '../../service/ImageUploads/ConvertImageToUrlApi';
 import convertPdfUrlToBase64 from "./ConvertToPdfDownload";
+import { usePermissions } from '../GlobalVariables/PermissionsContext';
 
 const BuggyListCard = ({ item, onUpdateSuccess, WoUuId }) => {
   const [inputValue, setInputValue] = useState(item.result || '');
@@ -17,9 +18,10 @@ const BuggyListCard = ({ item, onUpdateSuccess, WoUuId }) => {
   const [pdfPreview, setPdfPreview] = useState(null);
   // Convert image URL to base64 for preview
  
-
+const {ppmAsstPermissions}  = usePermissions()
   // Save the instruction when inputValue changes
   useEffect(() => {
+
 
    
     const saveInstruction = async () => {
@@ -150,7 +152,7 @@ const BuggyListCard = ({ item, onUpdateSuccess, WoUuId }) => {
 
       <View style={styles.remarkContainer}>
         <Text style={styles.label}>Remark:</Text>
-        {editingRemark ? (
+        {ppmAsstPermissions.some((permission) => permission.includes('U')) && editingRemark ? (
           <TextInput
             style={styles.remarkInput}
             placeholder="Enter remark"

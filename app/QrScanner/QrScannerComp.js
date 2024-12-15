@@ -38,7 +38,7 @@ export default function QrScanner({onRefresh}) {
 if(data.includes('app.factech')){
   setScanned(false); // Reset scanned to allow scanning again
 
-  navigation.navigate("ScannedWo", { uuid : uuid });
+  navigation.navigate("ScannedWoTag", { uuid : uuid });
 }else{
 console.log(data,"not contain")
 setScanned(false); // Reset scanned to allow scanning again

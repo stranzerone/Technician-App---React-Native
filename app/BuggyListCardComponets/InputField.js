@@ -238,7 +238,7 @@ const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, WoUuId, 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
-      quality: .5,
+      quality: .7,
     });
 
     if (!result.canceled && result.assets && result.assets[0].uri) {

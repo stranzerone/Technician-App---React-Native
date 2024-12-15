@@ -1,12 +1,26 @@
 import React, { useState, useLayoutEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView, SafeAreaView, Platform, KeyboardAvoidingView, Keyboard, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+  ScrollView,
+  SafeAreaView,
+  Platform,
+  KeyboardAvoidingView,
+  Keyboard,
+  Alert,
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { GetComplaintLocations } from '../../service/ComplaintApis/GetComplaintLocations';
 import { ComplaintImageUploadApi } from '../../service/ComplaintApis/ComplaintImageUpload';
 import { CreateComplaintApi } from '../../service/ComplaintApis/CreateComplaintApi';
 import { useNavigation } from '@react-navigation/native';
-
+import DynamicPopup from "../DynamivPopUps/DynapicPopUpScreen"
 const NewComplaintPage = ({ route }) => {
   const { subCategory } = route.params;
   const [location, setLocation] = useState('');
@@ -18,16 +32,17 @@ const NewComplaintPage = ({ route }) => {
   const [imageLoading, setImageLoading] = useState(false);
   const [error, setError] = useState('');
   const [isInputActive, setInputActive] = useState(false);
- const [imageUrl,setImageUrl] = useState('')
-
- const navigation = useNavigation()
+  const [imageUrl, setImageUrl] = useState('');
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupType, setPopupType] = useState('');
+  const [popupMessage, setPopupMessage] = useState('');
+  const navigation = useNavigation();
   // Fetch all location options on mount
   useLayoutEffect(() => {
     const fetchAllLocations = async () => {
       try {
         setLoading(true);
         const response = await GetComplaintLocations();
-        console.log(response,"this is locations response")
         setAllLocations(response); // Store all locations
         setFilteredLocations(response); // Display all options initially
       } catch (error) {
@@ -52,171 +67,217 @@ const NewComplaintPage = ({ route }) => {
     }
   };
 
+
   const pickImage = async () => {
-    setImageLoading(true); // Set loading state for image pick
+    setImageLoading(true); // Start the loading indicator when the user selects an image
   
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.6,
     });
   
     if (!result.canceled) {
-      setImage(result.assets[0]); // Set the image immediately
-      setImageLoading(false); // Stop loading state immediately after setting image
+      setImage(result.assets[0].uri); // Immediately show the image preview
   
-      // Upload image in the background (non-blocking)
       try {
+        // Upload image and get the URL
         const ImageResponse = await ComplaintImageUploadApi(result.assets[0]);
-        setImageUrl(ImageResponse.data.url)
+        setImageUrl(ImageResponse.data.url); // Set image URL after successful upload
       } catch (uploadError) {
         console.error('Error uploading image:', uploadError);
+        Alert.alert('Error', 'Failed to upload the image.');
+      } finally {
+        setImageLoading(false); // End loading once the process is complete
       }
     } else {
-      setImageLoading(false); // Reset loading if no image is selected
+      setImageLoading(false); // End loading if no image was selected
+    }
+  };
+    
+
+  
+  const submitComplaint = async () => {
+    setLoading(true); // Show loader during API request
+    setPopupVisible(false); // Ensure popup is hidden before submission
+  
+    const data = {
+      data: subCategory,
+      society: location.id,
+      description: description,
+      image: imageUrl,
+    };
+  
+    try {
+      const response = await CreateComplaintApi(data);
+  
+      if (response.status === 'success') {
+        setPopupType('success');
+        setPopupMessage('Complaint submitted successfully!');
+        setPopupVisible(true);
+  
+        // Navigate after a delay to allow user to see the success message
+        setTimeout(() => {
+          setPopupVisible(false);
+          navigation.navigate('Service Request');
+        }, 2000);
+      } else {
+        throw new Error('Something went wrong. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting complaint:', error);
+      setPopupType('error');
+      setPopupMessage('Failed to submit complaint. Please try again.');
+      setPopupVisible(true);
+    } finally {
+      setLoading(false); // Hide loader after API request
     }
   };
   
-  const submitComplaint= async()=>{
-
-const data ={
-  data:subCategory,
-  society:location.id,
-  description:description,
-  image:imageUrl
-}
-
-const response = await CreateComplaintApi(data)
-
-
-if(response.status == 'success'){
-
-  navigation.navigate('Service Request')
-}else{
-  window.alert("something went wrong")
-}
-  }
-
-
 
   // Disable submit button if any field is missing
   const isSubmitDisabled = !location || !description || !imageUrl;
 
-const locationClicked = (item)=>{
-
-          setLocation(item); // Dynamically set the selected location
-          setInputActive(false); // Hide the dropdown list
-
-}
-
-
+  const locationClicked = (item) => {
+    setLocation(item); // Dynamically set the selected location
+    setInputActive(false); // Hide the dropdown list
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-       <KeyboardAvoidingView
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 40} // Adjust this value to move input above keyboard
       >
-      <ScrollView style={styles.container}>
+        <ScrollView style={styles.container}>
+          {/* Category Section */}
+          <View style={styles.section}>
+            <Text style={styles.label}>Category</Text>
+            <Text style={styles.valueText}>
+              {subCategory.complaint_category || 'Not selected'}
+            </Text>
+          </View>
 
-        {/* Location Section */}
-      
+          {/* Sub-Category Section */}
+          <View style={styles.section}>
+            <Text style={styles.label}>Sub Category</Text>
+            <Text style={styles.valueText}>
+              {subCategory.name || 'Not selected'}
+            </Text>
+          </View>
 
-        {/* Category Section */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Category</Text>
-          <Text style={styles.valueText}>{subCategory.complaint_category || 'Not selected'}</Text>
-        </View>
+          {/* Location Section */}
+          <View style={styles.section}>
+            <Text style={styles.label}>Location</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter location"
+              value={location.name || location}
+              onFocus={() => setInputActive(true)}
+              onChangeText={handleLocationInput}
+            />
+            {loading && (
+              <ActivityIndicator
+                size="small"
+                color="#1996D3"
+                style={styles.loader}
+              />
+            )}
 
-        {/* Sub-Category Section */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Sub Category</Text>
-          <Text style={styles.valueText}>{subCategory.name || 'Not selected'}</Text>
-        </View>
+            {isInputActive && (
+              <View style={styles.locationList}>
+                {filteredLocations.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    onPress={() => locationClicked(item)}
+                  >
+                    <Text style={styles.locationOption}>{item.name}</Text>
+                  </TouchableOpacity>
+                ))}
+                {filteredLocations.length === 0 && (
+                  <Text style={styles.locationOption}>
+                    No location options found
+                  </Text>
+                )}
+              </View>
+            )}
+          </View>
 
+          {/* Description Section */}
+          <View style={styles.section}>
+            <Text style={styles.label}>Description</Text>
+            <TextInput
+              style={[styles.input, styles.textarea]}
+              placeholder="Enter description"
+              value={description}
+              onChangeText={setDescription}
+              multiline
+            />
+          </View>
 
-        <View style={styles.section}>
-          <Text style={styles.label}>Location</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter location"
-            value={location.name}
-            onFocus={() => setInputActive(true)}
-            onChangeText={handleLocationInput}
-          />
-          {loading && <ActivityIndicator size="small" color="#1996D3" style={styles.loader} />}
-      
-      
-    {isInputActive && (
-  <View style={styles.locationList}>
-    {filteredLocations.map((item) => (
-      <TouchableOpacity
-        key={item.id}
-        onPress={()=>locationClicked(item)}
-      >
-        <Text style={styles.locationOption}>{item.name}</Text>
-      </TouchableOpacity>
-    ))}
-    {filteredLocations.length === 0 && (
-      <Text style={styles.locationOption}>No location options found</Text>
+          {/* Image Section */}
+{/* Image Section */}
+<View className="flex flex-row items-center justify-between p-2 space-x-4 bg-white border-b border-gray-300">
+  {image ? (
+    // Display the locally captured image preview
+    <Image source={{ uri: image }} className="w-24 h-24 rounded-lg" />
+  ) : (
+    <Text className="text-sm text-[#074B7C]">No image selected</Text>
+  )}
+  <TouchableOpacity
+    className="flex flex-row items-center justify-center px-4 py-2 border border-[#1996D3] rounded-lg"
+    onPress={pickImage}
+    disabled={imageLoading}
+  >
+    {imageLoading ? (
+      <ActivityIndicator size="small" color="#1996D3" />
+    ) : (
+      <>
+        <Text className="mr-2 text-sm text-[#1996D3]">Capture Image</Text>
+        <FontAwesome name="camera" size={20} color="#1996D3" />
+      </>
     )}
-  </View>
+  </TouchableOpacity>
+</View>
+
+          {/* Submit Button */}
+         {/* Submit Button */}
+<View style={styles.section}>
+  <TouchableOpacity
+    style={[
+      styles.submitButton,
+      isSubmitDisabled && styles.submitButtonDisabled,
+    ]}
+    onPress={submitComplaint}
+    disabled={isSubmitDisabled || loading}
+  >
+    {loading ? (
+      <ActivityIndicator color="#fff" />
+    ) : (
+      <Text style={styles.submitText}>Submit</Text>
+    )}
+  </TouchableOpacity>
+</View>
+
+{/* Dynamic Popup */}
+{popupVisible && (
+  <DynamicPopup
+    type={popupType} // 'success' or 'error'
+    message={popupMessage}
+    onClose={() => setPopupVisible(false)} // Close popup handler
+  />
 )}
 
-
-        </View>
-
-        {/* Description Section */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Description</Text>
-          <TextInput
-            style={[styles.input, styles.textarea]}
-            placeholder="Enter description"
-            value={description}
-            onChangeText={setDescription}
-            multiline
-          />
-        </View>
-
-        {/* Image Section */}
-        <View className='flex flex-row items-center justify-between' style={styles.section}>
-        
-          {imageLoading ? (
-            <ActivityIndicator size="large" color="#074B7C" style={styles.imageLoading} />
-          ) : image ? (
-            <Image source={{ uri: image.uri }} style={styles.previewImage} />
-          ) : (
-            <Text style={styles.noImageText}>No image selected</Text>
-          )}
-            <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-            <Text style={styles.imagePickerText}>Capture Image</Text>
-            <FontAwesome name="camera" size={20} color="#1996D3" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Submit Button */}
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={[styles.submitButton, isSubmitDisabled && styles.submitButtonDisabled]}
-            onPress={submitComplaint}
-            disabled={isSubmitDisabled || loading}
-          >
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitText}>Submit</Text>}
-          </TouchableOpacity>
-        </View>
-
-        {/* Error Message */}
-        {error &&
-         <Text style={styles.errorMessage}>{error}</Text>}
-      </ScrollView>
-
-     
+          {/* Error Message */}
+          {error && <Text style={styles.errorMessage}>{error}</Text>}
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
+
 
 
 const styles = StyleSheet.create({
@@ -298,6 +359,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   previewImage: {
+    backgroundColor:"red",
     width: 100,
     height: 100,
     marginTop: 10,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, FlatList, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 'react-native';
 import { GetInstructionsApi } from '../../service/BuggyListApis/GetInstructionsApi';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import BuggyListCard from "../BuggyListCardComponets/BuggyListCard";
@@ -231,8 +231,8 @@ const styles = StyleSheet.create({
   progressBarContainer: {
    
     position: 'relative',
-    bottom: 70, // Attach to the bottom
-    left: 180, // Attach to the right
+    bottom: Platform.OS=='android'? 70: 80, // Attach to the bottom
+    left: Platform.OS == 'android'?  180 : 210, // Attach to the right
     height: 50,
     width:200,
     justifyContent: 'center',

@@ -6,6 +6,7 @@ export const fetchAllUsers = createAsyncThunk(
   'allUsers/fetchAllUsers',
   async (_, { rejectWithValue }) => {
     try {
+      console.log('fetching all users')
       const response = await getAllUsersApi();
       return response.data; // Adjust according to your API response structure
     } catch (error) {

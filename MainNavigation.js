@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import OtpLogin from './app/Login/OtpLogin/OtpLoginScreen';
 import OtpEnterPage from './app/Login/OtpLogin/OtpEnterPage';
 import { PermissionsProvider } from './app/GlobalVariables/PermissionsContext';
+import FilteredWorkOrderPage from './app/WorkOrders/ScannedWorkOrder';
 import WorkOrderPage from "./app/WorkOrders/WorkOrderScreen"
 import SubComplaint from './app/RaiseComplaint/SubComplaintItem';
 import NewComplaintPage from './app/RaiseComplaint/CompaintInput';
@@ -17,6 +18,8 @@ const Stack = createNativeStackNavigator();
 
 export default function MainNavigation() {
 
+
+  
 
 
 
@@ -46,6 +49,12 @@ export default function MainNavigation() {
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           <Stack.Screen name="OtpLogin" component={OtpLogin} />
           <Stack.Screen name="OtpEnter" component={OtpEnterPage} />
+          <Stack.Screen
+      name="ScannedWoTag"
+      component={FilteredWorkOrderPage}
+      options={{ headerShown: false }}
+    />
+         
           {/* <Stack.Screen name="WorkOrderPage" component={WorkOrderPage} />
           <Stack.Screen 
           name="subComplaint"

@@ -14,7 +14,6 @@ import { store, persistor } from './utils/Store/Store.js';
 import MainNavigation from './MainNavigation.js';
 import NfcManager, { NfcEvents } from 'react-native-nfc-manager';
 import  GetUuIdForTag  from './service/NfcTag/GetUuId.js';
-// Pre-step, call this before any NFC operations
 NfcManager.start();
 
 const App = () => {
@@ -22,58 +21,41 @@ const App = () => {
   const [nfcDetected, setNfcDetected] = useState(false);
   const [showNfcModal, setShowNfcModal] = useState(false);
 
-  // useEffect(() => {
-  //   const checkNfcStatus = async () => {
-  //     try {
-  //       const isSupported = await NfcManager.isSupported();
-  //       if (!isSupported) {
-  //         console.log('NFC is not supported on this device.');
-  //         return;
-  //       }
+  useEffect(() => {
+    const checkNfcStatus = async () => {
+      try {
+        const isSupported = await NfcManager.isSupported();
+        if (!isSupported) {
+          console.log('NFC is not supported on this device.');
+          return;
+        }
 
-  //       const isEnabled = await NfcManager.isEnabled();
-  //       setNfcEnabled(isEnabled);
+        const isEnabled = await NfcManager.isEnabled();
+        setNfcEnabled(isEnabled);
 
-  //       if (!isEnabled) {
-  //         setShowNfcModal(true); // Show the modal if NFC is not enabled
-  //       }
+        if (!isEnabled) {
+          setShowNfcModal(true); // Show the modal if NFC is not enabled
+        }
 
-  //       await NfcManager.setEventListener(NfcEvents.DiscoverTag, onTagDetected);
-  //       await NfcManager.registerTagEvent(); // Start listening for NFC tags
-  //     } catch (error) {
-  //       console.error('Error checking NFC status:', error);
-  //     }
-  //   };
+      } catch (error) {
+        console.error('Error checking NFC status:', error);
+      }
+    };
 
-  //   checkNfcStatus();
+    checkNfcStatus();
 
-  //   // Cleanup NFC manager when component unmounts
-  //   return () => {
+    // Cleanup NFC manager when component unmounts
+    return () => {
      
-  //   };
-  // }, []);
+    };
+  }, []);
 
-  // const onTagDetected = async(tag) => {
-
-  //   try{
-  //     const response = await GetUuIdForTag(tag.id)
-  //     console.log('NFC tag detected:', tag.id,response);
-  
-  //   }catch(error){
-  //     console.log(error)
-  //   }finally{
-  //   setNfcDetected(true); // Show warning when tag is detected
-  
-  //   setTimeout(() => setNfcDetected(false), 3000); // Hide warning after 3 seconds
-  //   }
-  // };
-
+ 
   const handleEnableNfc = () => {
     if (Platform.OS === 'android') {
       NfcManager.goToNfcSetting();
       setShowNfcModal(false); // Close the modal after opening NFC settings
     } else {
-      alert('Please enable NFC from your iPhone settings.');
       setShowNfcModal(false); // Close the modal after showing the alert
     }
   };
