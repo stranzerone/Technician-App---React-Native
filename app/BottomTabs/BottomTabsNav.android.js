@@ -134,16 +134,16 @@ const MyTabs = () => {
   const navigation = useNavigation();
   const { setPpmAsstPermissions,notificationsCount } = usePermissions(); // Extract context permissions function
   const [user,setUser] = useState({})
-  const [siteLogo,setSiteLogo]  = useState('')
+  const [siteLogo,setSiteLogo]  = useState(null)
   useEffect(() => {
     const loadPermissions = async () => {
       try {
         const savedPermissions = await AsyncStorage.getItem('userInfo');
         const user = await AsyncStorage.getItem('user')
-        const societyString = await AsyncStorage.getItem('society');
+        // const societyString = await AsyncStorage.getItem('society');
         
-        const societyData = JSON.parse(societyString);
-        setSiteLogo(societyData.logo)
+        // const societyData = JSON.parse(societyString);
+        // setSiteLogo(societyData.logo)
         if (savedPermissions) {
           const userInfo = JSON.parse(savedPermissions); // Parse the stored string into an object
           const userData = JSON.parse(user); // Parse the stored string into an object
@@ -173,6 +173,28 @@ const MyTabs = () => {
 
 
   }, [setPpmAsstPermissions]); // Dependency array includes setPpmAsstPermissions
+
+
+  useEffect(() => {
+    // Define the fetchLogo function inside useEffect
+    const fetchLogo = async () => {
+      try {
+        const societyString = await AsyncStorage.getItem('userInfo');
+       
+        if (societyString) {
+          const societyData = JSON.parse(societyString); // Parse the data
+          const parsedImages = JSON.parse(societyData.data.society.data)
+          setSiteLogo(parsedImages.logo); // Set the logo URL
+        } else {
+          console.log('No society data found.');
+        }
+      } catch (error) {
+        console.error('Error fetching society data:', error);
+      }
+    };
+
+    fetchLogo(); // Call the function to fetch logo
+  }, []); // Empty dependency array ensures this runs once when the component mounts
 
 
 
