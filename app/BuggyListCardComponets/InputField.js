@@ -238,7 +238,7 @@ const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, WoUuId, 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
-      quality: .7,
+      quality: .6,
     });
 
     if (!result.canceled && result.assets && result.assets[0].uri) {
@@ -267,7 +267,7 @@ const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, WoUuId, 
             <Ionicons name="close" size={30} color="white" />
           </TouchableOpacity>
           {item.result  && (
-            <Image source={{ uri: item.result }} style={styles.modalImage} resizeMode="contain" />
+            <Image source={{ uri: capturedImage || item.result }} style={styles.modalImage} resizeMode="contain" />
           )}
         </View>
       </Modal>

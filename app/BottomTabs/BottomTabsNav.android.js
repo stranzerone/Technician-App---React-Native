@@ -29,6 +29,7 @@ import NewComplaintPage from '../RaiseComplaint/CompaintInput';
 import { useDispatch } from 'react-redux';
 import FilteredWorkOrderPage from '../WorkOrders/ScannedWorkOrder';
 import BuggyListTopTabs from '../BuggyListTopTabs/BuggyListTopTabs';
+import { Image } from 'react-native'; 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -133,12 +134,16 @@ const MyTabs = () => {
   const navigation = useNavigation();
   const { setPpmAsstPermissions,notificationsCount } = usePermissions(); // Extract context permissions function
   const [user,setUser] = useState({})
-  const dispatch = useDispatch(0)
+  const [siteLogo,setSiteLogo]  = useState('')
   useEffect(() => {
     const loadPermissions = async () => {
       try {
         const savedPermissions = await AsyncStorage.getItem('userInfo');
         const user = await AsyncStorage.getItem('user')
+        const societyString = await AsyncStorage.getItem('society');
+        
+        const societyData = JSON.parse(societyString);
+        setSiteLogo(societyData.logo)
         if (savedPermissions) {
           const userInfo = JSON.parse(savedPermissions); // Parse the stored string into an object
           const userData = JSON.parse(user); // Parse the stored string into an object
@@ -270,9 +275,20 @@ const MyTabs = () => {
             <View style={styles.societyNameContainer}>
               <Text style={styles.societyNameText}>{user?.society_name}</Text>
             </View>
-          ) : undefined,
+          ) : () => (
+            <View style={styles.logoContainer}>
+            
+               <Image
+              source={{ uri: siteLogo}}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            </View>
+          ),
+          headerTitle: Platform.OS === "ios" ? "" : null, // Hide title on Android
+
           headerStyle: { backgroundColor: '#1996D3' },
-          headerTintColor: 'white',
+          headerTintColor: 'transparent',
           headerTitleStyle: {
             fontWeight: 'bold', // Make text bold
           },
@@ -365,6 +381,18 @@ const styles = StyleSheet.create({
     width: 40,
     borderRadius: 20,
     backgroundColor: 'transparent',
+  },
+  logoContainer: {
+    width: 90, 
+    height: 70,   
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  logo: {
+    height: "100%", // Image will scale to the container's height
+    width: "100%",  // Image will scale to the container's width
+    borderRadius: 30, // Keeps rounded edges
+    marginLeft:20
   },
   activeIconContainer: {
     backgroundColor: '#074B7C',
