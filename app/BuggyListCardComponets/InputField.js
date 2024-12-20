@@ -53,7 +53,7 @@ const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, WoUuId, 
       <Text style={styles.label}>{item.label || 'Input:'}</Text>
       {isEditing ? (
         <TextInput
-          style={styles.remarkInput}
+          style={styles.dropdownContainer}
           placeholder={`Enter ${item.type === 'text' ? 'text' : 'number'}`}
           value={inputText}
           onChangeText={setInputText}

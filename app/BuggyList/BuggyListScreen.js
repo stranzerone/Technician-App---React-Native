@@ -8,6 +8,7 @@ import ProgressPage from '../AssetDetails/ProgressBar';
 import CommentsPage from '../WoComments/WoCommentsScreen';
 import { FontAwesome5 } from '@expo/vector-icons';
 import {WorkOrderInfoApi} from '../../service/WorkOrderInfoApi';
+import CardRenderer from '../BuggyNewCardComp/CardsMainScreen';
 
 const BuggyListPage = ({ uuid, wo }) => {
   const [data, setData] = useState([]);
@@ -18,6 +19,7 @@ const BuggyListPage = ({ uuid, wo }) => {
   const animation = useState(new Animated.Value(0))[0]; // Initialize animation state
   const navigate = useNavigation();
   // Function to fetch buggy list data
+  console.log(uuid,"at buggyscreen")
   const loadBuggyList = async () => {
     setLoading(true); // Set loading to true before fetching data
     try {
@@ -57,7 +59,7 @@ const BuggyListPage = ({ uuid, wo }) => {
   };
 
   const renderCard = ({ item, index }) => (
-    <BuggyListCard
+    <CardRenderer
       item={item}
       onUpdateSuccess={handleRefreshData} // Pass the refresh function as a prop
       index={index} // Pass the index for displaying

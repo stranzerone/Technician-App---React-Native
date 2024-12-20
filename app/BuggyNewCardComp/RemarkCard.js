@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-
-const RemarkCard = ({  item, onRemarkChange }) => {
+import { View, Text, TextInput, TouchableOpacity, Keyboard } from "react-native";
+import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
+import { UpdateInstructionApi } from "../../service/BuggyListApis/UpdateInstructionApi";
+import Icon from "react-native-vector-icons/FontAwesome";
+const RemarkCard = ({ item }) => {
   // Initialize the remark state based on item.remark, if exists
   const [isEditing, setIsEditing] = useState(false);
   const [remark, setRemark] = useState(item.remarks || ""); // Default to empty string if no remark
@@ -14,30 +16,53 @@ const RemarkCard = ({  item, onRemarkChange }) => {
   // Handle text input change
   const handleRemarkChange = (text) => {
     setRemark(text);
-    onRemarkChange(item.id, text); // Update the remark in the parent component (if needed)
+  };
+
+  // Handle blur event to stop editing and save the remark
+  const handleBlur = async () => {
+    setIsEditing(false); // Close the input field
+
+    const payload = {
+      id: item.id,
+      remark: remark.trim(), // Send trimmed value
+      WoUuId: item.ref_uuid,
+      image: false,
+    };
+
+    try {
+      // Call the API to update the remark value
+      const response = await UpdateInstructionApi(payload);
+      console.log(response, "response for remark");
+    } catch (error) {
+      console.error("Error updating remark:", error);
+    }
+
+    // Dismiss the keyboard
+    Keyboard.dismiss(); 
   };
 
   return (
-    <View className="flex-row items-center p-3 border border-gray-300 rounded-lg mb-3 bg-white shadow-sm">
-      {/* Render title */}
-    
-
-      {/* Render remark input or text based on isEditing state */}
-      <View className="ml-4 flex-grow">
-        {isEditing ? (
-          <TextInput
-            value={remark}
-            onChangeText={handleRemarkChange}
-            placeholder="Enter your remark"
-            className="border border-gray-300 rounded p-2 mt-2"
-            autoFocus
-          />
-        ) : (
-          <TouchableOpacity onPress={handleTitleClick}>
-            <Text className="text-sm text-gray-600 mt-2">{remark || "Click to add remark"}</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+    <View className="ml-4 flex-grow">
+      {isEditing ? (
+        <TextInput
+          style={styles.inputContainer}
+          value={remark}
+          onChangeText={handleRemarkChange}
+          placeholder="Enter your remark"
+          className="border border-gray-300 rounded p-2 mt-2"
+          autoFocus
+          onBlur={handleBlur} // Close editing, save, and dismiss keyboard when focus is lost
+          onEndEditing={handleBlur} // Optional: Ensure API is called when editing ends
+        />
+      ) : (
+        <TouchableOpacity onPress={handleTitleClick}>
+          <Text className="text-sm font-bold text-gray-600 mt-2">
+          <Icon name="pencil" size={16} color="#074B7C" /> 
+          {'  '}
+           Remark: {remark || "Click to add remark"}
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

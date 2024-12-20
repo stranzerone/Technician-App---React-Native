@@ -1,110 +1,131 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, TextInput } from 'react-native';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';  // Importing FontAwesome from react-native-vector-icons
-import Ionicons from 'react-native-vector-icons/Ionicons'; // For camera icon
-import { RNCamera } from 'react-native-camera'; // Importing the camera module
+import React, { useState, useEffect } from "react";
+import { View, Text, Image, TouchableOpacity, Alert, Modal } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
+import { uploadImageToServer } from "../../service/ImageUploads/ConvertImageToUrlApi";
 import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
-import Loader from '../LoadingScreen/AnimatedLoader'; // Importing loader
+import RemarkCard from "./RemarkCard";
 
-const FileCard = ({ item }) => {
-  const [remark, setRemark] = useState(item.remark || '');
-  const [capturedImage, setCapturedImage] = useState(null);
-  const [loading, setLoading] = useState(false); // State for loader
-  const [isCameraOpen, setIsCameraOpen] = useState(false); // State to toggle camera view
-  const cameraRef = useRef(null); // Camera reference for capturing the image
+const FileCard = ({ item,onUpdate ,editable}) => {
+  const [capturedImage, setCapturedImage] = useState(item.result || null); // Use item.result as initial value
+  const [hasPermission, setHasPermission] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false); // State to control modal visibility
 
-  const handleRemarkChange = (text) => {
-    setRemark(text);
-  };
+  useEffect(() => {
+    (async () => {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      setHasPermission(status === "granted");
+    })();
+  }, []);
 
   const handleCaptureImage = async () => {
-    if (cameraRef.current) {
-      setLoading(true);
-      try {
-        const data = await cameraRef.current.takePictureAsync({ quality: 0.7 });
-        setCapturedImage(data.uri); // Capture the image and update state
-      } catch (error) {
-        console.error("Error capturing image: ", error);
-      } finally {
-        setLoading(false); // Stop loader once image is captured
+    if (!hasPermission) {
+      Alert.alert("Permission Required", "Camera permissions are required to capture an image.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaType,
+        allowsEditing: false,
+        quality: 0.6,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0].uri) {
+        const imageUri = result.assets[0].uri;
+
+        const fileData = {
+          uri: imageUri,
+          fileName: `photo_${Date.now()}.jpeg`,
+          mimeType: "image/jpeg",
+        };
+
+        // Upload image to the server
+        const uploadResponse = await uploadImageToServer(fileData, item.id, item.ref_uuid);
+
+        onUpdate()
+        // Update capturedImage with uploaded image URI
+        setCapturedImage(imageUri);
       }
+    } catch (error) {
+      console.error("Error capturing image:", error);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const renderFileContent = () => {
-    if (capturedImage) {
-      return <Image source={{ uri: capturedImage }} style={styles.image} />;
-    }
-    if (item.fileType === 'pdf') {
-      return <FontAwesome name="file-pdf-o" size={50} color="#D32F2F" />;
-    }
-    if (item.fileType === 'doc') {
-      return <FontAwesome name="file-word-o" size={50} color="#1976D2" />;
-    }
-    return <Text>No file attached</Text>;
-  };
-
-  const toggleCamera = () => {
-    setIsCameraOpen(!isCameraOpen);
   };
 
   return (
-    <View style={styles.card}>
-      <View style={styles.imageAttachmentContainer}>
-        {/* Left side - Image Preview */}
-        <View style={styles.imagePreviewContainer}>
+    <View
+      className={`shadow-md rounded-lg p-4 mb-4 `}
+      
+      style={[styles.inputContainer, item.result || capturedImage ? { backgroundColor: "#DFF6DD" } : null,]}
+
+   >
+      <Text style={styles.title} className="text-lg font-semibold text-[#074B7C]">{item.title}</Text>
+
+      <View className="flex flex-row">
+        {/* Image Preview Section */}
+        <View className="w-1/2 flex items-center justify-center">
           {loading ? (
-            <Loader /> // Show loader while capturing image
+            <Text className="text-gray-500">Loading...</Text>
           ) : capturedImage ? (
-            <TouchableOpacity onPress={() => console.log("View Full Image")}>
-              <Image source={{ uri: capturedImage }} style={styles.image} />
+            <TouchableOpacity disabled={!editable} onPress={() => setModalVisible(true)}>
+              <Image style={styles.imageAttachmentContainer} source={{ uri: capturedImage }} className="w-32 h-32 rounded-md" />
             </TouchableOpacity>
           ) : (
-            <View style={styles.imagePlaceholder}>
-              <Ionicons name="image-outline" size={50} color="#CED4DA" />
-              <Text>No image selected</Text>
+            <View className="w-32 h-32 border border-blue-900 bg-gray-200 rounded-md flex items-center justify-center">
+              <Ionicons name="image-outline" size={40} color="#CED4DA" />
+              <Text className="text-gray-500 text-xs mt-2">No image selected</Text>
             </View>
           )}
         </View>
 
-        {/* Right side - Capture Image Button */}
-        <View style={styles.buttonContainer}>
-          {isCameraOpen ? (
-            <RNCamera
-              ref={cameraRef}
-              style={styles.cameraView}
-              type={RNCamera.Constants.Type.back}
-              captureAudio={false}
-            >
-              <View style={styles.captureContainer}>
-                <TouchableOpacity onPress={handleCaptureImage} style={styles.cameraButton}>
-                  <Ionicons name="camera" size={24} color="white" />
-                  <Text style={styles.buttonText}>Capture</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={toggleCamera} style={styles.cameraButton}>
-                  <Text style={styles.buttonText}>Close Camera</Text>
-                </TouchableOpacity>
-              </View>
-            </RNCamera>
-          ) : (
-            <TouchableOpacity onPress={toggleCamera} style={styles.cameraButton}>
-              <Ionicons name="camera" size={24} color="white" />
-              <Text style={styles.buttonText}>Open Camera</Text>
-            </TouchableOpacity>
-          )}
+        {/* Capture Image Section */}
+        <View className="w-1/2 flex items-center justify-center">
+          <TouchableOpacity
+          style={styles.cameraButton}
+            className="bg-blue-600 py-2 px-4 rounded-md flex items-center justify-center"
+            onPress={handleCaptureImage}
+          >
+            <Ionicons name="camera" size={24} color="white" />
+            <Text className="text-white text-sm mt-1">Capture Image</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Remarks Section */}
-      <View style={styles.remarkContainer}>
-        <Text style={styles.remarkLabel}>Remark</Text>
-        <TextInput
-          style={styles.textInput}
-          value={remark}
-          onChangeText={handleRemarkChange}
-          placeholder="Add your remark here"
-        />
+      <View className="mt-4"> 
+      <RemarkCard
+      className="mt-4"
+        item={item}
+        onRemarkChange={(id, newRemark) =>
+          console.log(`Remark updated for ${id}: ${newRemark}`)
+        }
+      />
       </View>
+      {/* Modal to View Full Image */}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+          <View className="bg-white p-2 rounded-lg relative w-full ">
+            <TouchableOpacity
+              className="absolute top-2 right-2 bg-gray-600 p-2 rounded-full"
+              onPress={() => setModalVisible(false)}
+            >
+              <Ionicons name="close" size={30} color="white" />
+            </TouchableOpacity>
+            <Image
+              source={{ uri: capturedImage }}
+              className="w-full mt-12 h-80 object-contain"
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

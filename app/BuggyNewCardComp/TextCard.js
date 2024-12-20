@@ -1,37 +1,67 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import RemarkCard from './RemarkCard'; // Assuming you have a RemarkCard component
+import React, { useState } from "react";
+import { View, Text, TextInput, Alert } from "react-native";
+import RemarkCard from "./RemarkCard"; // Assuming you have a RemarkCard component
+import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
+import { UpdateInstructionApi } from "../../service/BuggyListApis/UpdateInstructionApi";
 
-const TextCard = ({ item, onUpdate }) => {
-  const [value, setValue] = useState(item.result || '');
+const TextCard = ({ item, onUpdate , editable }) => {
+  const [value, setValue] = useState(item.result || "");
 
-  const handleBlur = () => {
-    onUpdate(item.id, value);
+  const handleBlur = async () => {
+    try {
+      // Prepare the payload
+      const payload = {
+        id: item.id,
+        value: value.trim(), // Send trimmed value
+        WoUuId: item.ref_uuid,
+        image: false,
+      };
+
+      // Call the API to update the value
+      await UpdateInstructionApi(payload);
+      onUpdate()
+    } catch (error) {
+      console.error("Error updating instruction:", error);
+      Alert.alert("Error", "Failed to update instruction.");
+    }
   };
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.inputContainer,
+        value ? { backgroundColor: "#DFF6DD" } : null, // Light green if value is not empty
+      ]}
+    >
+      {/* Title */}
       <Text style={styles.title}>{item.title}</Text>
-      
+
       {/* Text input for value */}
+
+    {editable?
+    
+  
       <TextInput
-        style={styles.input}
+        style={styles.inputContainer}
         value={value}
         onChangeText={setValue}
-        onBlur={handleBlur}
+        onBlur={handleBlur} // Call API when input loses focus
         placeholder="Enter your text"
       />
-
+:
+<Text style={styles.inputContainer}>
+  {item.result}
+</Text>
+}
       {/* RemarkCard placed below the text input */}
-      <RemarkCard item={item} onRemarkChange={(id, newRemark) => console.log(id, newRemark)} />
+      <RemarkCard
+        item={item}
+        onRemarkChange={(id, newRemark) =>
+          console.log(`Remark updated for ${id}: ${newRemark}`)
+        }
+      />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: { padding: 10, margin: 10, backgroundColor: '#f9f9f9', borderRadius: 10 },
-  title: { fontSize: 16, marginBottom: 10 },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 8, borderRadius: 5, marginBottom: 10 },
-});
 
 export default TextCard;
