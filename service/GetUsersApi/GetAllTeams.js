@@ -32,6 +32,8 @@ console.log("get all Teams")
 
     try {
       const response = await axios.get(`${API_URL}/v3/teams?`, { params,headers, withCredentials: true });
+    
+    console.log(response.data,'this is data for teams')
       return response.data
 
 

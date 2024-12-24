@@ -69,10 +69,11 @@ const AssetInfo = ({ WoUuId }) => {
   // Extract work order and asset details
   const { asset, wo, category } = workOrder[0];
 
+  console.log(users,"this are the users")
   // Map user IDs to user names for assigned users
   const mapIdsToNames = (ids) =>
     ids
-      ?.map((id) => users.find((user) => user.user_id === id)?.name || 'Unknown User')
+      ?.map((id) => users?.find((user) => user.user_id === id)?.name || 'Unknown User')
       .join(', ') || 'None';
 
   const assignedNames = mapIdsToNames(wo?.Assigned);

@@ -30,6 +30,8 @@ import { useDispatch } from 'react-redux';
 import FilteredWorkOrderPage from '../WorkOrders/ScannedWorkOrder';
 import BuggyListTopTabs from '../BuggyListTopTabs/BuggyListTopTabs';
 import { Image } from 'react-native'; 
+import { clearAllTeams } from '../../utils/Slices/TeamSlice';
+import { clearAllUsers } from '../../utils/Slices/UsersSlice';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -76,9 +78,12 @@ const WorkOrderStack = () => (
 const QRCodeStack = () => (
   <Stack.Navigator>
     <Stack.Screen
+    
       name="NewScanPage"
       component={NewScanPage}
-      options={{ headerShown: false }}
+      options={{
+        title:'',
+        headerShown: false }}
     />
 
 <Stack.Screen
@@ -104,7 +109,9 @@ const ServiceRequestStack = () => (
     <Stack.Screen
       name="Service Request"
       component={ComplaintsScreen}
-      options={{ headerShown: false }}
+      options={{ 
+      
+        headerShown: false }}
     />
      <Stack.Screen 
           name="subComplaint"
@@ -117,7 +124,9 @@ const ServiceRequestStack = () => (
            component={NewComplaintPage}
            options={{ title: 'Report Complaint', headerShown: true }}
            />
-          <Stack.Screen name="CloseComplaint" component={ComplaintCloseScreen} />
+          <Stack.Screen
+          options={{title:'Close Complaint'}}
+          name="CloseComplaint" component={ComplaintCloseScreen} />
           <Stack.Screen 
           name="RaiseComplaint"
            component={ComplaintDropdown} 
@@ -135,19 +144,23 @@ const MyTabs = () => {
   const { setPpmAsstPermissions,notificationsCount } = usePermissions(); // Extract context permissions function
   const [user,setUser] = useState({})
   const [siteLogo,setSiteLogo]  = useState(null)
+  const dispatch = useDispatch();
   useEffect(() => {
     const loadPermissions = async () => {
       try {
         const savedPermissions = await AsyncStorage.getItem('userInfo');
-        const user = await AsyncStorage.getItem('user')
         // const societyString = await AsyncStorage.getItem('society');
         
         // const societyData = JSON.parse(societyString);
         // setSiteLogo(societyData.logo)
         if (savedPermissions) {
           const userInfo = JSON.parse(savedPermissions); // Parse the stored string into an object
-          const userData = JSON.parse(user); // Parse the stored string into an object
-         setUser(userData)
+        
+        console.log(userInfo.data.society.name,"this is name of society in bottom tabs")
+        // console.log(userInfo.data.society.name,"this is userinfo in bottomTabs")
+          setUser(userInfo.data.society)
+
+          
           // Check if permissions exist in the userInfo object
           if (userInfo.data && userInfo.data.permissions) {
             // Filter permissions that start with 'PPMASST'
@@ -156,7 +169,7 @@ const MyTabs = () => {
               .map(item => item.split('.')[1]); // Split at the first dot and take the second part
             
               console.log('setting permissions')
-   setPpmAsstPermissions(filteredPermissions); // Set permissions in context
+              setPpmAsstPermissions(filteredPermissions); // Set permissions in context
          }
         }
       } catch (error) {
@@ -223,7 +236,8 @@ const MyTabs = () => {
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('userInfo');
-      await AsyncStorage.removeItem('uuid');
+      await dispatch(clearAllTeams())
+      await dispatch(clearAllUsers())
       navigation.replace("Login");
     } catch (error) {
       console.error('Error clearing local storage', error);
@@ -232,13 +246,12 @@ const MyTabs = () => {
   };
   const renderLogoutButton = () => (
     <View
-      className="flex flex-row items-center gap-4 p-4  rounded-lg shadow-md"
+      className="flex  flex-row items-center gap-4 p-4  rounded-lg shadow-md"
     >
-      <View className="flex flex-row items-center bg-slate-700 rounded-lg p-2">
+      <View className=" bg-slate-700  rounded-lg p-2">
         {Platform.OS === "android" && ( // Conditionally render society name for Android
-          <Text className="truncate w-24 h-5 text-white ml-2 text-sm font-semibold">
-            <Icon name="home" size={20} color="white" />
-            {user?.society_name}
+          <Text className="  text-center h-5 text-white px-0 text-sm font-semibold">
+            {user?.name}
           </Text>
         )}
       </View>
@@ -339,22 +352,23 @@ const MyTabs = () => {
           },
         })}
       >
-        <Tab.Screen name="Work Orders" options={{ title: 'Work List' }} component={WorkOrderStack} />
+        <Tab.Screen name="Work Orders" options={{ title: '' }} component={WorkOrderStack} />
         {/* <Tab.Screen name="MyComplaints" options={{ title: 'Complaints' }} component={ComplaintsScreen} /> */}
 
-        <Tab.Screen name="QRCode" options={{ title: 'QR Scanner' }} component={QRCodeStack} />
-        <Tab.Screen name="ServiceRequests" options={{ title: 'Service Request' }} component={ServiceRequestStack} />
+        <Tab.Screen name="QRCode" options={{ title: '' }} component={QRCodeStack} />
+        <Tab.Screen name="ServiceRequests" options={{ title: '' }} component={ServiceRequestStack} />
 
         <Tab.Screen 
           name="Notifications" 
           // component={NotificationMainPage}
           component={NotificationMainPage}
           options={{
-            tabBarBadge: totalNotifications, // Show badge only if there's unread notifications
+            title:'',
+            tabBarBadge: totalNotifications, 
             tabBarBadgeStyle: {
-              backgroundColor: 'red',    // Badge color
-              color: 'white',            // Text color of the badge
-              fontSize: 14,              // Badge font size
+              backgroundColor: 'red',    
+              color: 'white',           
+              fontSize: 14,             
               fontWeight: 'bold',        // Badge font weight
               borderRadius: 15,         // Make badge circular
               minWidth: 20,             // Ensure the badge width is large enough for one or two digits

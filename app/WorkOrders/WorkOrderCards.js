@@ -27,14 +27,15 @@ const getStatusColor = (status) => {
 const getPriorityColor = (priority) => {
   switch (priority) {
     case 'Emergency':
-      return 'red';
+      return '#FF6B6B'; // Soft red for emergency
     case 'High':
-      return 'orange'; 
+      return '#FFA94D'; // Muted orange for high priority
     case 'Normal':
-      return '#3182ce'; 
+      return '#1996D3'; // Faint blue for normal priority
     default:
-      return '#a0aec0'; 
+      return '#CBD5E0'; // Neutral gray for default
   }
+  
 };
 
 const WorkOrderCard = ({ workOrder }) => {
@@ -57,8 +58,14 @@ const WorkOrderCard = ({ workOrder }) => {
     .map((userId) => {
    
       
-      const user = users?.find(user => user.user_id == userId);
-      return user ? user.name : 'Unknown User';
+      if(users[0]=="success"){
+        const user = users[1]?.find(user => user.user_id == userId);
+        console.log(user,userId,"this is the user on card ")
+        return user ? user.name : 'Unknown User';
+      }else{
+        return 'User Not Found'
+      }
+ 
     })
     .join(', ');
   
@@ -74,7 +81,7 @@ const WorkOrderCard = ({ workOrder }) => {
 
     return assignedTeamIds
       .map((teamId) => {
-        const team = teams.find((team) => team.t._ID == teamId);
+        const team = teams?.find((team) => team.t._ID == teamId);
         return team ? team.t.Name : 'Unknown Team';
       })
       .join(', ');
@@ -87,7 +94,7 @@ const WorkOrderCard = ({ workOrder }) => {
     <TouchableOpacity
       className="bg-white border p-4 rounded-md my-2 shadow-lg relative"
       style={{
-        borderColor: priorityColor,
+        borderColor: "darkblue",
       }}
       onPress={() => {
         navigation.navigate('BuggyListTopTabs', { workOrder: workOrder.wo.uuid, wo: workOrder.wo });

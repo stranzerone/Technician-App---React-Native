@@ -23,6 +23,7 @@ const NewLoginScreen = () => {
     const checkLoginStatus = async () => {
       try {
         const userInfo = await AsyncStorage.getItem('userInfo');
+        console.log(userInfo,"this is user")
         if (userInfo) {
           navigation.dispatch(
             CommonActions.reset({
@@ -51,6 +52,7 @@ const NewLoginScreen = () => {
       setLoading(true);
       const data = { email, password };
       const response = await loginApi(data);
+      console.log(response,"this is login response 1")
       if (response && response.status === 'success') {
         setEmail('');
         setPassword('');

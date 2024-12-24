@@ -39,7 +39,6 @@ export const WorkOrderInfoApi = async (WoUuId) => {
     try {
       // Make the API request using axios
       const response = await axios.get(`${API_URL}/v4/workorder`, { params});
-     console.log(response)
       if(response){
         return response.data.data
       }

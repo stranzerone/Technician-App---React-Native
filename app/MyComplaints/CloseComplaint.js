@@ -32,6 +32,7 @@ const ComplaintCloseScreen = ({ route }) => {
   const navigation = useNavigation();
 const {ppmAsstPermissions} = usePermissions()
 
+console.log(complaint,"complaint")
   useEffect(() => {
     fetchComments();
   }, []);

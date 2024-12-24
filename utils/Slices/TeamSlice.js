@@ -3,16 +3,20 @@ import { getAllTeams } from '../../service/GetUsersApi/GetAllTeams';
 
 // Async thunk to fetch all Teams
 export const fetchAllTeams = createAsyncThunk(
-  'allTeams/fetchAllTeams',
+  'teams/fetchAllTeams',
   async (_, { rejectWithValue }) => {
     try {
       const response = await getAllTeams();
-      return response.data; // Adjust according to your API response structure
+      const teamsArray = Array.isArray(response.data)
+        ? response.data
+        : Object.values(response.data || {});
+      return teamsArray; // Ensure the payload is an array
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to fetch Teams');
     }
   }
 );
+
 
 const allTeamsSlice = createSlice({
   name: 'allTeams',
@@ -26,14 +30,6 @@ const allTeamsSlice = createSlice({
       state.data = [];
       state.error = null;
     },
-    getTeamNameById: (state, action) => {
-      // Extract team_id from action.payload
-      const teamId = action.payload;
-      // Find the Team in the current state
-      const Team = state.data.find((Team) => Team.team_id === teamId);
-      // Return the Team's name or a fallback value
-      return Team ? Team.name : 'Unknown Team';
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -43,15 +39,23 @@ const allTeamsSlice = createSlice({
       })
       .addCase(fetchAllTeams.fulfilled, (state, action) => {
         state.loading = false;
-        state.data = action.payload;
+        state.data = action.payload; // Store fetched team data
       })
       .addCase(fetchAllTeams.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload; // Capture any errors
       });
   },
 });
 
-export const { clearAllTeams, getTeamNameById } = allTeamsSlice.actions;
+// Selector to get a team name by ID
+export const selectTeamNameById = (state, teamId) => {
+  const team = state.allTeams.data.find((team) => team.team_id === teamId);
+  return team ? team.name : 'Unknown Team';
+};
 
+// Export actions
+export const { clearAllTeams } = allTeamsSlice.actions;
+
+// Export reducer
 export default allTeamsSlice.reducer;

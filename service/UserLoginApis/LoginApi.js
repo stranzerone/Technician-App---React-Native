@@ -35,14 +35,14 @@ export const loginApi = async (user) => {
     // Debug: Log the full response to see the structure
 
     // Check if the login is successful
+    console.log(response.data.message,"message for login")
+  
     if (response.data.message === 'Login Successful.') {
       // Store the token and user info in AsyncStorage
+     await AsyncStorage.setItem('userInfo', JSON.stringify(response.data));
+      // await AsyncStorage.setItem('user', JSON.stringify(user.user));
 
-      await AsyncStorage.setItem('userInfo', JSON.stringify(response.data));
-      await AsyncStorage.setItem('user', JSON.stringify(user.user));
 
-
-      console.log(response.data.data.designation_name,'userinfo')
       // Return the entire response, not just the status
 
       if(response.data.data.designation_name == 'Staff'  || response.data.data.designation_name == 'Admin' ){

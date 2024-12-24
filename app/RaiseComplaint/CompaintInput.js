@@ -72,11 +72,10 @@ const NewComplaintPage = ({ route }) => {
     setImageLoading(true); // Start the loading indicator when the user selects an image
   
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      aspect: [4, 3],
-      quality: 0.6,
-    });
+           mediaTypes: ImagePicker.MediaType,
+           allowsEditing: false,
+           quality: 1,
+         });
   
     if (!result.canceled) {
       setImage(result.assets[0].uri); // Immediately show the image preview

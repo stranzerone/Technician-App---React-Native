@@ -12,23 +12,32 @@ import { GetSingleWorkOrders } from '../../service/WorkOrderApis/GetSingleWorkOr
 import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 import Loader from '../LoadingScreen/AnimatedLoader';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { getLocationWorkOrder } from '../../service/WorkOrderApis/GetLocationWo';
 
 const FilteredWorkOrderPage = ({ route, uuids: passedUuid }) => {
   const [loading, setLoading] = useState(false);
   const [filteredWorkOrders, setFilteredWorkOrders] = useState([]);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const uuid = route?.params?.uuid || passedUuid;
+  const type = route?.params?.type;
   const navigation = useNavigation();
 
-  console.log(uuid, 'this is the uuid received in wororder screen');
+  console.log(uuid, type,'this is the uuid received in wororder screen');
 
   // Fetch work orders if not present in Redux
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await GetSingleWorkOrders(uuid);
+console.log(type,"type")
+let response ;
+      if(type == 'LC'){
+        console.log("inside location")
+     response = await getLocationWorkOrder(uuid)
+      }else{
+        console.log("inside asset")
+      response = await GetSingleWorkOrders(uuid);
       console.log(response, 'this is response for scanned wo');
-
+      }
       if (response && response.length > 0) {
         setFilteredWorkOrders(response);
       } else {

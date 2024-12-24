@@ -2,7 +2,7 @@
   "name": "facilitym",
   "version": "1.0.0",
   "scripts": {
-    "start": "set NODE_ENV=development && react-native run-android",
+    "start": "react-native run-android",
     "startIos": "set NODE_ENV=development && react-native run-ios",
     "android": "expo run:android",
     "ios": "expo run:ios",

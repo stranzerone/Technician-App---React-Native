@@ -55,16 +55,13 @@ const CheckboxCard = ({ title, item, onUpdate,editable }) => {
       {/* Render the RemarkCard component */}
       <RemarkCard
         item={item}
-        onRemarkChange={(id, newRemark) =>
-          console.log(`Remark updated for ${id}: ${newRemark}`)
-        }
+     
       />
     </View>
   );
 };
 
 const CircularCheckbox = ({ isChecked, onPress,editable }) => {
-  console.log(editable,'editable for checkbox')
   return (
     <TouchableOpacity disabled={!editable} onPress={onPress} className="flex items-center justify-center">
       <View

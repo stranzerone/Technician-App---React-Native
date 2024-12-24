@@ -25,8 +25,9 @@ export default function QrScanner({onRefresh}) {
   const handleBarcodeScanned = async ({ data }) => {
     setScanned(true);
     console.log(data,'uuid data')
+    const type = data.split("=")[1];
     const uuid = data.split("=")[2];
-    console.log(`Scanned data: ${uuid}`);
+    console.log(`Scanned data: ${uuid} type = ${type}`);
 
     // Store UUID in AsyncStorage
     try {
@@ -38,7 +39,7 @@ export default function QrScanner({onRefresh}) {
 if(data.includes('app.factech')){
   setScanned(false); // Reset scanned to allow scanning again
 
-  navigation.navigate("ScannedWoTag", { uuid : uuid });
+  navigation.navigate("ScannedWoTag", { uuid : uuid ,type:type});
 }else{
 console.log(data,"not contain")
 setScanned(false); // Reset scanned to allow scanning again
