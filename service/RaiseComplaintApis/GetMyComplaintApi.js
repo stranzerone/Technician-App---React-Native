@@ -27,7 +27,7 @@ export const GetMyComplaints = async () => {
     };
 
     const response = await axios.get(`${API_URL2}/staff/mycomplaints`, { params });
-    return response.data.data;
+    return response.data;
 
   } catch (error) {
     console.error('Error fetching complaints data:', error);

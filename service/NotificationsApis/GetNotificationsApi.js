@@ -32,7 +32,7 @@ export const GetNotificationsApi = async (page = 1) => {
         "api-token": apiToken,
         "user-id": userId,
         "site-id": societyId,
-        "per_page": 1000,
+        "per_page": 100,
         "page_no": page,
       };
 

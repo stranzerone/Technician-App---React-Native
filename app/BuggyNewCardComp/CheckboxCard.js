@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import RemarkCard from "./RemarkCard"; // Import RemarkCard component
 import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
 import { UpdateInstructionApi } from "../../service/BuggyListApis/UpdateInstructionApi";
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-const CheckboxCard = ({ title, item, onUpdate,editable }) => {
+const CheckboxCard = ({ title, item, onUpdate, editable }) => {
   // Set the initial checkbox state based on item.result
   const [isChecked, setIsChecked] = useState(item.result === "1");
+
+  // Directly determine background color based on the checkbox state
+  const backgroundColor = isChecked ? "#DFF6DD" : "#FFFFFF"; // Light green when checked, white when unchecked
 
   const handleCheckboxPress = async () => {
     const newState = !isChecked;
@@ -21,9 +25,8 @@ const CheckboxCard = ({ title, item, onUpdate,editable }) => {
     };
 
     try {
-    const response =  await UpdateInstructionApi(payload); // Call API to update state
-       
-    onUpdate()
+      await UpdateInstructionApi(payload); // Call API to update state
+      onUpdate();
     } catch (error) {
       console.error("Error updating instruction:", error);
     }
@@ -35,10 +38,7 @@ const CheckboxCard = ({ title, item, onUpdate,editable }) => {
 
   return (
     <View
-      style={[
-        styles.inputContainer,
-        isChecked && { backgroundColor: "#DFF6DD" }, // Light green if checked
-      ]}
+      style={[styles.inputContainer, { backgroundColor }]} // Apply the background color immediately
       className="p-5 border border-gray-200 rounded-lg mb-4 bg-white shadow-md"
     >
       {/* Checkbox and title container */}
@@ -47,27 +47,37 @@ const CheckboxCard = ({ title, item, onUpdate,editable }) => {
         <CircularCheckbox editable={editable} isChecked={isChecked} onPress={handleCheckboxPress} />
 
         {/* Title */}
-        <TouchableOpacity disabled={!editable} onPress={handleTitlePress} className="ml-4">
-          <Text style={styles.title}>{item.title}</Text>
+        <TouchableOpacity disabled={!editable} onPress={handleTitlePress} className="ml-4 flex-1">
+          <Text
+            style={[styles.title, { flexWrap: 'wrap', overflow: 'hidden' }]} // Make sure text wraps
+            numberOfLines={0} // Allow multiple lines
+          >
+            {item.title}
+          </Text>
         </TouchableOpacity>
       </View>
 
       {/* Render the RemarkCard component */}
-      <RemarkCard
-        item={item}
-     
-      />
+      <RemarkCard item={item} />
+
+      {/* Optional info section */}
+      {item?.data?.optional && (
+        <View className="flex-1 bg-transparent justify-end py-4">
+          <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
+            <Icon name="info-circle" size={16} color="red" />
+            <Text className="text-sm text-black mr-2">Optional</Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 };
 
-const CircularCheckbox = ({ isChecked, onPress,editable }) => {
+const CircularCheckbox = ({ isChecked, onPress, editable }) => {
   return (
     <TouchableOpacity disabled={!editable} onPress={onPress} className="flex items-center justify-center">
       <View
-        className={`w-7 h-7 rounded-full border-2 ${
-          isChecked ? "border-[#074B7C]" : "border-[#1996D3]"
-        } flex items-center justify-center`}
+        className={`w-7 h-7 rounded-full border-2 ${isChecked ? "border-[#074B7C]" : "border-[#1996D3]"} flex items-center justify-center`}
       >
         {isChecked && <View className="w-4 h-4 rounded-full bg-[#074B7C]" />}
       </View>

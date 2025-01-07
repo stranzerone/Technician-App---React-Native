@@ -10,6 +10,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const UserCard = ({ visible, onClose, users, onSelectUser }) => {
+  console.log(users, 'users');
   const renderUser = ({ item }) => (
     <TouchableOpacity style={styles.userCard} onPress={() => onSelectUser(item)}>
       <View style={styles.userInfo}>
@@ -44,7 +45,7 @@ const UserCard = ({ visible, onClose, users, onSelectUser }) => {
           <FlatList
             data={users}
             renderItem={renderUser}
-            keyExtractor={(item) => item.name}
+            keyExtractor={(item) => item.user_id}
             showsVerticalScrollIndicator={false}
           />
         </View>

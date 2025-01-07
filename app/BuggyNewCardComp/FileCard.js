@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { uploadImageToServer } from "../../service/ImageUploads/ConvertImageToUrlApi";
 import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
 import RemarkCard from "./RemarkCard";
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const FileCard = ({ item,onUpdate ,editable}) => {
   const [capturedImage, setCapturedImage] = useState(item.result || null); // Use item.result as initial value
@@ -103,6 +104,18 @@ const FileCard = ({ item,onUpdate ,editable}) => {
           console.log(`Remark updated for ${id}: ${newRemark}`)
         }
       />
+
+
+        {item?.data?.optional &&   
+            <View className="flex-1 bg-transparent justify-end py-4 ">
+            <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
+           
+              <Icon name="info-circle" size={16} color="red" />
+              <Text className="text-sm text-black mr-2">
+                Optional
+              </Text>
+            </View>
+          </View>}
       </View>
       {/* Modal to View Full Image */}
       <Modal

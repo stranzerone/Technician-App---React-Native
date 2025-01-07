@@ -4,6 +4,8 @@ import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
 import OptionsModal from "../DynamivPopUps/DynamicOptionsPopUp";
 import RemarkCard from "./RemarkCard"; // Assuming RemarkCard is available
 import { UpdateInstructionApi } from "../../service/BuggyListApis/UpdateInstructionApi";
+import Icon from "react-native-vector-icons/FontAwesome"; // Import FontAwesome
+
 
 const DropdownCard = ({ item, onUpdate,editable }) => {
   const [selectedValue, setSelectedValue] = useState(item.result || "");
@@ -46,7 +48,8 @@ const DropdownCard = ({ item, onUpdate,editable }) => {
 
       {/* Touchable dropdown button */}
       <View style={styles.dropdownContainer}>
-        <TouchableOpacity
+       <TouchableOpacity
+       className="flex flex-row items-center justify-between"
         disabled={!editable}
           style={styles.inputContainer}
           onPress={() => setModalVisible(true)}
@@ -54,6 +57,13 @@ const DropdownCard = ({ item, onUpdate,editable }) => {
           <Text style={styles.dropdownText}>
             {selectedValue || "Select an option"}
           </Text>
+          
+          <Icon
+            name="caret-down"
+            size={20}
+            color="#074B7C"
+            className="ml-2" // Adds space between text and icon
+          />
         </TouchableOpacity>
       </View>
 
@@ -75,6 +85,18 @@ const DropdownCard = ({ item, onUpdate,editable }) => {
           console.log(`Remark updated for ${id}: ${newRemark}`)
         }
       />
+
+
+        {item?.data?.optional &&   
+            <View className="flex-1 bg-transparent justify-end py-4 ">
+            <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
+           
+              <Icon name="info-circle" size={16} color="red" />
+              <Text className="text-sm text-black mr-2">
+                Optional
+              </Text>
+            </View>
+          </View>}
     </View>
   );
 };

@@ -36,9 +36,7 @@ const RequestServiceTabs = ({ navigation }) => {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-            <FontAwesome name="arrow-left" size={30} color="white" />
-          </TouchableOpacity>
+        
           <TabView
             navigationState={{
               index: selectedTab,
@@ -74,6 +72,9 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
+    height:"100%",
+    width:"200%",
+    backgroundColor:'red',
     top: 10,
     left: 10,
     zIndex: 10,

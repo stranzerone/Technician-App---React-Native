@@ -11,11 +11,14 @@ import {
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { WorkOrderInfoApi } from '../../service/WorkOrderInfoApi';
+import useConvertToSystemTime from '../TimeConvertot/ConvertUtcToIst';
 
 const AssetInfo = ({ WoUuId }) => {
   const [workOrder, setWorkOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [teamInfo, setTeamInfo] = useState(null);
+  const [namesAssigned, setNames] = useState([]);
+  const [timeInfo, setTimeInfo] = useState("1");
 
   // Fetch user and team data from Redux
   const users = useSelector((state) => state.users.data);
@@ -28,14 +31,15 @@ const AssetInfo = ({ WoUuId }) => {
         const data = await WorkOrderInfoApi(WoUuId);
         setWorkOrder(data);
 
-        if (data && data[0]?.pm?.AssignedTeam?.length && teams) {
-          const teamId = data[0].pm.AssignedTeam[0];
-          teams.forEach(element => {
-            if (element.t?._ID == teamId) {
-              setTeamInfo(element);
-            }
-          });
-        }
+        // if (data && data[0]?.pm?.AssignedTeam?.length && teams) {
+        //   const teamId = data[0].pm.AssignedTeam[0];
+        //   teams.forEach(element => {
+        //     if (element.t?._ID == teamId) {
+        //       setTeamInfo(element);
+        //     }
+        //   });
+        // }
+
       } catch (error) {
         console.error('Error fetching work order:', error);
       } finally {
@@ -46,11 +50,19 @@ const AssetInfo = ({ WoUuId }) => {
     loadWorkOrderData();
   }, [WoUuId, teams]);
 
-  // Function to convert UTC to system time
-  const convertToSystemTime = (utcDate) => {
-    const date = new Date(utcDate);
-    return date.toLocaleString(); // You can format this as required
-  };
+  // Map user IDs to user names for assigned users
+  useEffect(() => {
+    if (users[0] !== 'error' && workOrder && workOrder[0]?.wo?.Assigned) {
+      const assignedUserIds = workOrder[0].wo.Assigned;
+      const assignedNames = assignedUserIds
+        ?.map((id) => {
+          const user = users[1]?.find((user) => user.user_id === id);
+          return user ? user.name : 'Unknown User';
+        })
+        .join(', ') || 'None';
+      setNames(assignedNames);
+    }
+  }, [users, workOrder]);
 
   // Show loading indicator while fetching data
   if (loading) {
@@ -69,15 +81,6 @@ const AssetInfo = ({ WoUuId }) => {
   // Extract work order and asset details
   const { asset, wo, category } = workOrder[0];
 
-  console.log(users,"this are the users")
-  // Map user IDs to user names for assigned users
-  const mapIdsToNames = (ids) =>
-    ids
-      ?.map((id) => users?.find((user) => user.user_id === id)?.name || 'Unknown User')
-      .join(', ') || 'None';
-
-  const assignedNames = mapIdsToNames(wo?.Assigned);
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -92,20 +95,6 @@ const AssetInfo = ({ WoUuId }) => {
           </View>
         </View>
 
-        <View style={styles.infoContainer}>
-          {/* Work Order Details */}
-          <View style={styles.detailsContainer}>
-            <DetailItem icon="assignment" label="Asset Name" text={asset?.Name} />
-            <DetailItem icon="hashtag" label="Asset ID" text={asset?.['Sequence No']} />
-            <DetailItem icon="calendar" label="Deadline" text={convertToSystemTime(wo?.['Due Date']) || 'No Deadline Provided'} />
-            <DetailItem icon="wrench" label="Type" text={wo?.Type} />
-            <DetailItem icon="tags" label="Category Of Wo" text={category?.Name} />
-            <DetailItem icon="users" label="Assigned Team " text={teamInfo?.t?.Name || 'Unknown Team'} />
-            <DetailItem icon="info-circle" label="Team Description" text={teamInfo?.t?.Description || 'No Description'} />
-            <DetailItem icon="user" label="Assigned To " text={assignedNames} isTag />
-          </View>
-        </View>
-
         {/* Description Section */}
         <View style={styles.descriptionContainer}>
           <Text style={styles.descriptionTitle}>Work Order Description</Text>
@@ -113,6 +102,23 @@ const AssetInfo = ({ WoUuId }) => {
             <Text style={styles.descriptionText}>
               {wo?.Description || 'No description available for this work order.'}
             </Text>
+          </View>
+        </View>
+
+        <View style={styles.infoContainer}>
+          {/* Work Order Details */}
+          <View style={styles.detailsContainer}>
+            <DetailItem icon="assignment" label="Asset Name" text={asset?.Name} />
+            <DetailItem icon="hashtag" label="Asset ID" text={asset?.['Sequence No']} />
+            <DetailItem icon="calendar" label="Deadline" text={workOrder[0].wo["Due Date"] || 'No Deadline Provided'} />
+            <DetailItem icon="wrench" label="Type" text={wo?.Type} />
+            <DetailItem icon="tags" label="Category Of Wo" text={category?.Name} />
+            <DetailItem icon="clock-o" label="Estimated Time" text={workOrder[0].wo['Estimated Time'] + "  hours"} isTag />
+
+            {/* Assigned To */}
+            {namesAssigned && (
+              <DetailItem icon="user" label="Assigned To" text={namesAssigned} isTag />
+            )}
           </View>
         </View>
       </ScrollView>
@@ -230,7 +236,7 @@ const styles = StyleSheet.create({
   errorText: {
     textAlign: 'center',
     color: 'red',
-    fontSize: 18,
+    fontSize: 16,
   },
 });
 

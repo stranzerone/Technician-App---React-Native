@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 'react-native';
+import {
+  View,
+  FlatList,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  ScrollView,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard
+} from 'react-native';
 import { GetInstructionsApi } from '../../service/BuggyListApis/GetInstructionsApi';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import BuggyListCard from "../BuggyListCardComponets/BuggyListCard";
@@ -7,21 +18,25 @@ import Loader from '../LoadingScreen/AnimatedLoader';
 import ProgressPage from '../AssetDetails/ProgressBar';
 import CommentsPage from '../WoComments/WoCommentsScreen';
 import { FontAwesome5 } from '@expo/vector-icons';
-import {WorkOrderInfoApi} from '../../service/WorkOrderInfoApi';
+import { WorkOrderInfoApi } from '../../service/WorkOrderInfoApi';
 import CardRenderer from '../BuggyNewCardComp/CardsMainScreen';
+import { Platform } from 'react-native';
 
 const BuggyListPage = ({ uuid, wo }) => {
   const [data, setData] = useState([]);
-  const [assetDescription, setAssetDescription] = useState(''); // State for asset description
+  const [assetDescription, setAssetDescription] = useState(''); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [expanded, setExpanded] = useState(false); // State for managing expand/collapse
-  const animation = useState(new Animated.Value(0))[0]; // Initialize animation state
+  const [expanded, setExpanded] = useState(false); 
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const animation = useState(new Animated.Value(0))[0];
+  const [canComplete,setCancomplete]  = useState(false)
   const navigate = useNavigation();
+
   // Function to fetch buggy list data
-  console.log(uuid,"at buggyscreen")
+  console.log(wo.Name, "at buggyscreen");
   const loadBuggyList = async () => {
-    setLoading(true); // Set loading to true before fetching data
+    setLoading(true); 
     try {
       const result = await GetInstructionsApi(uuid);
       setData(result);
@@ -35,7 +50,7 @@ const BuggyListPage = ({ uuid, wo }) => {
   // Function to fetch asset description
   const loadAssetDescription = async () => {
     try {
-      const response = await WorkOrderInfoApi(uuid); // Call the asset info API using uuid
+      const response = await WorkOrderInfoApi(uuid); 
       setAssetDescription(response[0].wo.Description || 'No description available.');
     } catch (error) {
       setError(error.message || 'Error fetching asset description.');
@@ -44,51 +59,50 @@ const BuggyListPage = ({ uuid, wo }) => {
 
   useEffect(() => {
     loadBuggyList();
-    loadAssetDescription(); // Fetch asset description on mount
+    loadAssetDescription(); 
   }, [uuid]);
 
   useFocusEffect(
     React.useCallback(() => {
-      loadBuggyList(); // Call loadBuggyList when the screen is focused
-      loadAssetDescription(); // Re-fetch description when screen is focused
-    }, [uuid]) // Depend on uuid to refetch if it changes
+      loadBuggyList(); 
+      loadAssetDescription(); 
+    }, [uuid])
   );
 
   const handleRefreshData = async () => {
-    await loadBuggyList(); // Re-fetch data from API
+    await loadBuggyList(); 
   };
 
   const renderCard = ({ item, index }) => (
     <CardRenderer
       item={item}
-      onUpdateSuccess={handleRefreshData} // Pass the refresh function as a prop
-      index={index} // Pass the index for displaying
+      onUpdateSuccess={handleRefreshData} 
+      index={index}
       WoUuId={uuid}
     />
   );
 
   const toggleExpand = () => {
-    const finalValue = expanded ? 0 : 1; // 0 is collapsed, 1 is expanded
+    const finalValue = expanded ? 0 : 1; 
     setExpanded(!expanded);
 
-    // Animate the expansion/collapse
     Animated.timing(animation, {
       toValue: finalValue,
-      duration: 300, // Animation duration in milliseconds
-      useNativeDriver: false, // `false` because height is being animated
+      duration: 300,
+      useNativeDriver: false, 
     }).start();
   };
 
   const commentsHeight = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 500], // Adjust the expanded height as needed
+    outputRange: [0, 400], 
     extrapolate: 'clamp',
   });
 
   const handleAddInstruction = () => {
-    const lastItem = data[data.length - 1]; // Get the last item from the data array
+    const lastItem = data[data.length - 1];
     if (lastItem && lastItem.order) {
-      navigate.navigate('AddInstructions', { order: lastItem.order }); // Pass the order of the last item
+      navigate.navigate('AddInstructions', { order: lastItem.order });
     }
   };
 
@@ -107,7 +121,7 @@ const BuggyListPage = ({ uuid, wo }) => {
     return <Loader />;
   }
 
-  if(!data){
+  if (!data) {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>No instructions available.</Text>
@@ -116,48 +130,96 @@ const BuggyListPage = ({ uuid, wo }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.descriptionContainer}>
-        <Text style={styles.assetDescription}>{assetDescription}</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.scrollViewContainer}>
+          {/* Description Section */}
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.assetDescription}>{assetDescription}</Text>
+          </View>
+          
+          {/* List of Cards */}
+          <FlatList
+            data={data}
+            renderItem={renderCard}
+            keyExtractor={(item) => item.id.toString()}
+            scrollEnabled={false} 
+            contentContainerStyle={styles.listContainer}
+          />
+          
+          {/* Comments Section */}
+      
+
+          {/* Bottom Controls */}
+        </ScrollView>
+      </TouchableWithoutFeedback>
+
+      {/* Comment input button */}
+      <View style={styles.expandButtonContainer}>
+        <KeyboardAvoidingView>
+        <Animated.View style={[styles.commentsContainer, { height: commentsHeight }]}>
+            <CommentsPage WoUuId={uuid} />
+        </Animated.View>
+        </KeyboardAvoidingView>
+     
+        <TouchableOpacity style={styles.expandButton} onPress={toggleExpand}>
+          <FontAwesome5 name={expanded ? 'comments' : 'comments'} size={20} color="#fff" />
+        </TouchableOpacity>
       </View>
-      <FlatList
-        data={data}
-        renderItem={renderCard}
-        keyExtractor={(item) => item.id.toString()} // Use item.id for key extraction
-        contentContainerStyle={styles.listContainer}
-      />
-      <Animated.View style={[styles.commentsContainer, { height: commentsHeight }]}>
-        <CommentsPage WoUuId={uuid} />
-      </Animated.View>
-
-      {/* Comments Expand Button */}
-      <TouchableOpacity style={styles.expandButton} onPress={toggleExpand}>
-        <FontAwesome5
-          name={expanded ? 'comments' : 'comments'} // Using FontAwesome5 icons
-          size={20}
-          color="#fff" // Set icon color to white for contrast
-        />
-      </TouchableOpacity>
-
-      {/* Progress Bar Container */}
-      <View style={styles.progressBarContainer}>
+      <View    className="w-[70%] "  style={[styles.progressBarContainer, { right:canComplete?70:10,bottom:70 }]}>
       <ProgressPage 
-      data={data}
-      wo={wo}
-       
-       />
+        data={data}
+        wo={wo}
+        canComplete={setCancomplete}
+      />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E1F2FE',
   },
+  scrollViewContainer: {
+    paddingBottom: 100,
+  },
   listContainer: {
     padding: 10,
-    paddingBottom: 80, // Ensure space for the expand button
+    paddingBottom: 0,
+  },
+  expandButtonContainer: {
+bottom: 80,
+left:10,
+  },
+  expandButton: {
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#074B7C',
+    borderRadius: 25,
+  },
+  commentsContainer: {
+    position: 'absolute',
+    bottom: 80,
+    width: '95%',
+    backgroundColor: 'white',
+    overflow: 'hidden',
+  },
+  descriptionContainer: {
+    backgroundColor: 'white',
+    padding: 10,
+    marginBottom: 10,
+  },
+  assetDescription: {
+    fontSize: 14,
+    color: '#333',
+    textAlign: 'center',
   },
   errorContainer: {
     flex: 1,
@@ -166,60 +228,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: 'red',
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  descriptionContainer: {
-    borderTopWidth:.1,
-    borderBottomWidth:.5,
-    padding: 10, // Increased padding for better spacing
-    backgroundColor: '#fff', // White background for clarity
-    marginBottom: 0, // Space between description and next component
-    shadowColor: '#000', // Shadow color for iOS
-    shadowOffset: { width: 0, height: 4 }, // Shadow offset for iOS
-    shadowOpacity: 0.1, // Light shadow opacity for subtle effect
-    shadowRadius: 6, // Blur radius for the shadow
-    elevation: 5, // Shadow for Android
-  },
-  assetDescription: {
-    fontSize: 14, // Slightly larger font size for readability
-    fontWeight: '600', // Make the text bolder
-    color: '#333', // Darker text color for contrast
-    textAlign: 'center', // Center-align the text
-    lineHeight: 24, // Improved line height for readability
-  },
-  expandButton: {
-    marginBottom: 60,
-    position: 'absolute',
-    bottom: 10, // Attach to the bottom with a small margin
-    left: 10, // Attach to the left with a small margin
-    width: 50, // Set width equal to height for a perfect circle
-    height: 50, // Set height equal to width for a perfect circle
-    justifyContent: 'center',
-    alignItems: 'center', // Center the content inside the button
-    backgroundColor: '#074B7C',
-    borderRadius: 25, // Half of the width/height for a circular shape
-    elevation: 5, // Add shadow for better visibility (on Android)
-    shadowColor: '#000', // Shadow color for iOS
-    shadowOffset: { width: 0, height: 2 }, // Shadow offset for iOS
-    shadowOpacity: 0.25, // Shadow opacity for iOS
-    shadowRadius: 3.84, // Shadow blur radius for iOS
-  },
-  expandText: {
-    fontSize: 16,
-    color: 'white',
-    marginRight: 8, // Add some space between text and icon
-  },
-  refreshButton: {
-    padding: 10,
-    backgroundColor: '#1996D3',
-    borderRadius: 5,
-  },
-  refreshButtonText: {
-    color: '#fff',
-  },
-  commentsContainer: {
-    overflow: 'hidden', // Ensures content is hidden when collapsed
   },
   emptyContainer: {
     flex: 1,
@@ -227,24 +235,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 16,
-    color: '#666',
-  },
-  progressBarContainer: {
-   
-    position: 'relative',
-    bottom: Platform.OS=='android'? 70: 80, // Attach to the bottom
-    left: Platform.OS == 'android'?  180 : 210, // Attach to the right
-    height: 50,
-    width:200,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 25,
-  
-  },
-  progressButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    color: '#888',
   },
 });
+
 export default BuggyListPage;

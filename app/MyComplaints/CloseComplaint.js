@@ -257,11 +257,11 @@ console.log(complaint,"complaint")
 
       {/* OTP Modal */}
       <Modal visible={isOtpMode} transparent animationType="slide">
-        <View className="flex-1 bg-black bg-opacity-50 justify-center items-center">
-          <View className="bg-white w-4/5 p-5 rounded-lg shadow-lg">
-            <Text className="text-lg font-bold mb-4">Enter OTP</Text>
+        <View className="flex-1 bg-transparent bg-opacity-20 justify-center items-center">
+          <View className="bg-[#094879] w-4/5 p-5 rounded-lg shadow-lg">
+            <Text className="text-lg text-white font-bold mb-4">Enter OTP</Text>
             <TextInput
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 text-center"
+              className="w-full border bg-white border-gray-300 rounded-lg px-3 py-2 mb-4 text-center"
               placeholder="Enter 4-digit OTP"
               keyboardType="numeric"
               maxLength={4}

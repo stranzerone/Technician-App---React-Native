@@ -6,6 +6,7 @@ import { API_URL2 } from '@env';
 // const BASE_URL = 'https://api.isocietymanager.com'; // Ensure this is the correct URL
 
 // Login API call
+console.log("login api called")
 export const loginApi = async (user) => {
   console.log(user);
 
@@ -26,7 +27,6 @@ export const loginApi = async (user) => {
     };
   }
 
-  console.log(payload, "payload for login");
 
   try {
     // Call the API
@@ -35,7 +35,7 @@ export const loginApi = async (user) => {
     // Debug: Log the full response to see the structure
 
     // Check if the login is successful
-    console.log(response.data.message,"message for login")
+    console.log(response.data,"message for login")
   
     if (response.data.message === 'Login Successful.') {
       // Store the token and user info in AsyncStorage
@@ -45,7 +45,7 @@ export const loginApi = async (user) => {
 
       // Return the entire response, not just the status
 
-      if(response.data.data.designation_name == 'Staff'  || response.data.data.designation_name == 'Admin' ){
+      if(response.data.data.designation_name == 'Staff'  || response.data.data.designation_name == 'Admin' ||   response.data.data.designation_name == 'Supervisor' ){
         return response.data;
 
       }else{

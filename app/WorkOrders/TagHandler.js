@@ -54,7 +54,20 @@ try{
         if(response.metadata.count =='0'){
           Alert.alert("No Asset Found Related to Tag")
         }
-        navigation.navigate('ScannedWoTag', { uuid: response.data[0].site_uuid});
+        
+     if(response.data[0]._LABELS.includes('LOCATION')){
+      navigation.navigate('ScannedWoTag', {uuid: response.data[0].site_uuid,type:"LC"});
+
+     }else{
+      navigation.navigate('ScannedWoTag', {uuid: response.data[0].site_uuid,type:"AS"});
+
+
+     }
+
+ 
+
+
+        // navigation.navigate('ScannedWoTag', {uuid: response.data[0].site_uuid});
       } else {
         console.log('Invalid NFC tag or response');
       }

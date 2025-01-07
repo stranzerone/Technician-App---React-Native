@@ -6,8 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import technicianImage from '../../assets/SvgImages/Technician.png';
 import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 import UserCard from './MultipleUserCards/MultipleUserCards';
-import { fetchAllReduxData } from '../AllReduxCall/MakeReduxCallsLogin';
-
+import { APP_VERSION } from '@env';
 const NewLoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,7 +22,7 @@ const NewLoginScreen = () => {
     const checkLoginStatus = async () => {
       try {
         const userInfo = await AsyncStorage.getItem('userInfo');
-        console.log(userInfo,"this is user")
+      
         if (userInfo) {
           navigation.dispatch(
             CommonActions.reset({
@@ -165,6 +164,9 @@ const NewLoginScreen = () => {
         <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotPasswordLink}>
           <Text style={styles.link}>Forgot Password?</Text>
         </TouchableOpacity>
+
+
+        <Text className='text-gray-500 text-center mt-10'>{APP_VERSION}</Text>
       </View>
 
       <DynamicPopup

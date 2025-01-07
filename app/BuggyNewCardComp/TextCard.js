@@ -3,6 +3,7 @@ import { View, Text, TextInput, Alert } from "react-native";
 import RemarkCard from "./RemarkCard"; // Assuming you have a RemarkCard component
 import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
 import { UpdateInstructionApi } from "../../service/BuggyListApis/UpdateInstructionApi";
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const TextCard = ({ item, onUpdate , editable }) => {
   const [value, setValue] = useState(item.result || "");
@@ -60,6 +61,17 @@ const TextCard = ({ item, onUpdate , editable }) => {
           console.log(`Remark updated for ${id}: ${newRemark}`)
         }
       />
+
+        {item?.data?.optional &&   
+            <View className="flex-1 bg-transparent justify-end py-4 ">
+            <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
+           
+              <Icon name="info-circle" size={16} color="red" />
+              <Text className="text-sm text-black mr-2">
+                Optional
+              </Text>
+            </View>
+          </View>}
     </View>
   );
 };

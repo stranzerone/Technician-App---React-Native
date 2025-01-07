@@ -44,7 +44,7 @@ const RequestServiceTabs = ({ navigation }) => {
               index: selectedTab,
               routes: [
                 { key: 'WorkOrder', title: 'Manual' },
-                { key: 'PPM', title: 'Pms' },
+                { key: 'PPM', title: `PM's` },
               ],
             }}
             renderScene={renderScene}
@@ -73,9 +73,12 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   backButton: {
+
+    width:60,
+    height:36,
     position: 'absolute',
     top: 10,
-    left: 10,
+    paddingHorizontal:8,
     zIndex: 10,
   },
   tabBar: {

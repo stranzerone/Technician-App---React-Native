@@ -34,8 +34,6 @@ const WorkOrderPage = () => {
   const users = useSelector((state) => state.users.data);
   const teams = useSelector((state) => state.teams.data);
   const { ppmAsstPermissions } = usePermissions();
-  console.log(ppmAsstPermissions,"this are the permissions")
-  console.log(users[0],"users are")
   useEffect(() => {
 
     if (!users || !teams || users.length === 0 || teams.length === 0) {
@@ -128,13 +126,13 @@ const WorkOrderPage = () => {
         <View style={styles.loaderContainer}>
           <Loader />
         </View>
-      ) : workOrders.length === 0 ? (
+      ) : workOrders.length === 0 || filteredWorkOrders.length ===0 ? (
         <View style={styles.noRecordsContainer}>
           <Icon name="exclamation-circle" size={50} color="#074B7C" />
           <Text style={styles.noRecordsText}>No Work Order Found</Text>
-          <Text style={styles.suggestionText}>
-         For {selectedFilter} filter
-          </Text>
+          {/* <Text style={styles.suggestionText}>
+         For {selectedFilter} or filter
+          </Text> */}
         </View>
       ) : (
         <FlatList

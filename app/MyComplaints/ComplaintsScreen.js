@@ -14,6 +14,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import FilterOptions from '../WorkOrders/WorkOrderFilter';
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
+import Loader from '../LoadingScreen/AnimatedLoader';
 
 const ComplaintsScreen = () => {
   const [complaints, setComplaints] = useState([]);
@@ -41,8 +42,8 @@ const {ppmAsstPermissions}  = usePermissions()
   const fetchComplaints = async () => {
     try {
       const response = await GetMyComplaints();
-      setComplaints(response);
-      setFilteredComplaints(response);
+      setComplaints(response.data);
+      setFilteredComplaints(response.data);
     } catch (err) {
       setError('Failed to load complaints');
     } finally {
@@ -60,7 +61,7 @@ const {ppmAsstPermissions}  = usePermissions()
     if (status === 'All') {
       setFilteredComplaints(complaints);
     } else {
-      const filtered = complaints.filter((complaint) => complaint.status === status);
+      const filtered = complaints?.filter((complaint) => complaint.status === status)||[];
       setFilteredComplaints(filtered);
     }
     setShowFilter(false); // Close the filter after selection
@@ -78,7 +79,7 @@ const {ppmAsstPermissions}  = usePermissions()
   if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#074B7C" />
+      <Loader />
         <Text style={styles.loadingText}>Loading complaints...</Text>
       </View>
     );

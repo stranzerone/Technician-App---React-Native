@@ -25,16 +25,17 @@ export const uplodPdfToServer = async (data, itemId, WoUuId) => {
       return false;
     }
 
+    console.log(data, 'data for uploadint to server')
     // API URL for image upload
     // const apiUrl = `https://drs-api.isocietymanager.com/v1/society/${societyId}/publicupload`;
 
     // Create FormData object for the image file
     const formData = new FormData();
-    formData.append('name', data.fileName); // File name
+    formData.append('name', data.fileName || data.name.split(".")[0]); // File name
     formData.append('type', data.mimeType); // MIME type (e.g., image/jpeg)
     formData.append('file', {
       uri: data.uri,
-      name: data.fileName || data.name, // File name or fallback
+      name: data.fileName || data.name.split(".")[0], // File name or fallback
       type: data.mimeType, // MIME type (e.g., image/jpeg)
     });
 

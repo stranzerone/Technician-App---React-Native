@@ -11,13 +11,13 @@ import { usePermissions } from '../GlobalVariables/PermissionsContext';
 const CardRenderer = ({ item, onUpdateSuccess }) => {
   const [isEditable, setIsEditable] = useState(false);
   const { ppmAsstPermissions } = usePermissions();
-
   useEffect(() => {
     if (ppmAsstPermissions.some((permission) => permission.includes('U'))) {
       setIsEditable(true);
     }
   }, [ppmAsstPermissions]);
 
+  console.log(item,"bl")
   const renderCard = () => {
     switch (item.type) {
       case 'checkbox':

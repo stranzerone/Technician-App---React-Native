@@ -8,47 +8,72 @@ import { useNavigation } from '@react-navigation/native';
 import { CommonActions } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import { updateWorkOrderStatus } from '../../utils/Slices/WorkOrderSlice';
-const ProgressPage = ({ data, wo }) => {
+
+const ProgressPage = ({ data, wo,canComplete }) => {
   const [remark, setRemark] = useState('');
   const [count, setCount] = useState(0);
-  const [modalVisible, setModalVisible] = useState(false); // State to manage modal visibility
+  const [modalVisible, setModalVisible] = useState(false);
+  const [canMarkComplete, setCanMarkComplete] = useState(false); // New state to track the button visibility condition
   const { ppmAsstPermissions } = usePermissions();
-const navigation = useNavigation()
-const dispatch = useDispatch()
-  console.log(wo.Status, 'workorder details');
-  
+  const navigation = useNavigation();
+
+  const mandatoryItems = data?.filter((item) => item?.data?.optional === false || item?.data == null);
   useLayoutEffect(() => {
     let tempCount = 0;
+    let manCount =0;
 
-    // Count completed tasks
+    mandatoryItems &&
+      mandatoryItems.forEach((item) => {
+        if (
+          item.remarks ||
+          (item.type !== 'checkbox' && item.result && item.result.trim() !== '') ||
+          (item.type === 'checkbox' && item.result !== '0' && item.result !== '' && item.result !== null && item.result !== undefined)
+        ) {
+          manCount += 1;
+        }
+
+        
+      });
+
+      console.log(mandatoryItems.length,manCount, 'mandatoryItems');
+
+if(mandatoryItems.length === manCount){
+  console.log('All mandatory items are completed',manCount,mandatoryItems.length);
+    setCanMarkComplete(true); // Update the state based on the condition
+   canComplete(true)
+}else{
+  setCanMarkComplete(false)
+  canComplete(false)
+}
+    // Count completed tasks and check if all items have optional === false
     data &&
       data.forEach((item) => {
         if (
           item.remarks ||
           (item.type !== 'checkbox' && item.result && item.result.trim() !== '') ||
-          (item.type === 'checkbox' && item.result !== '0' && item.result !== '')
+          (item.type === 'checkbox' && item.result !== '0' && item.result !== '' && item.result !== null && item.result !== undefined)
         ) {
           tempCount += 1;
         }
+
+       
       });
 
     setCount(tempCount);
   }, [data]);
+
   const handleComplete = async () => {
     try {
-      const response = await MarkAsCompleteApi(wo,remark);
+      const response = await MarkAsCompleteApi(wo, remark);
       console.log(response, 'response from API for completion');
       console.log('Marked as complete with remark:', remark);
-      
+
       setRemark(''); // Reset the remark input
       setModalVisible(false); // Close the modal
-  
+
       console.log(wo, 'WO');
-  
+
       if (response) {
-        // Dispatch the action to update work order status
-        await dispatch(updateWorkOrderStatus({ id: wo.uuid, status: 'COMPLETED' }));
-  
         // Once the status update is successful, navigate
         navigation.dispatch(
           CommonActions.reset({
@@ -61,7 +86,7 @@ const dispatch = useDispatch()
       console.error('Error marking as complete:', error);
     }
   };
-  
+
   // Calculate progress percentage
   const progress = data.length > 0 ? count / data.length : 0; // Avoid division by zero
   const progressPercentage = count + '/' + data.length;
@@ -70,28 +95,25 @@ const dispatch = useDispatch()
   return (
     <View style={styles.container}>
       <View style={styles.progressContainer}>
-        {percentage === 100 ? (
-          <TouchableOpacity
-          className="flex  py-1 flex-row gap-1"
-            style={[
-              styles.tickContainer,
-              wo.Status === 'COMPLETED' && styles.disabledTickContainer, // Apply faint style if completed
-            ]}
-            onPress={() => wo.Status !== 'COMPLETED' && setModalVisible(true)} // Prevent opening modal if completed
-            disabled={wo.Status === 'COMPLETED'} // Disable button if completed
-          >
-
-            <View className="bg-green-500 p-1  rounded-full">
-            <Icon name="check" size={30} color={wo.Status === 'COMPLETED' ? '#d4d4d4' : 'white'} />
-             </View>
-
-
-             <Text  className="text-white text-xs font-black">{wo.Status === 'COMPLETED'?' Completed':"Mark Complete"}</Text>
-
-          </TouchableOpacity>
-        ) : (
+        <View className="flex   flex-row gap-0 items-center justify-normal fixed">
+          {
+            wo.Status !== 'COMPLETED' &&
+            canMarkComplete && 
+            <TouchableOpacity
+              className="flex bg-green-500 py-1 flex-row gap-1"
+              style={[
+                styles.tickContainer,
+                wo.Status === 'COMPLETED' && styles.disabledTickContainer, // Apply faint style if completed
+              ]}
+              onPress={() => wo.Status !== 'COMPLETED' && setModalVisible(true)} // Prevent opening modal if completed
+              disabled={wo.Status === 'COMPLETED'} // Disable button if completed
+            >
+              <Text className="text-white text-xs font-black">{wo.Status === 'COMPLETED' ? 'Completed' : 'Mark Complete'}</Text>
+            </TouchableOpacity>
+          }
           <Progress.Circle
-          className="ml-20 bg-[#074B7C] rounded-full mt-4"
+            className="rounded-full ml-24"
+            style={{  backgroundColor: '#074B7C', marginTop: 4 }}
             size={55}
             progress={progress}
             color="#00b300"
@@ -103,7 +125,7 @@ const dispatch = useDispatch()
             textStyle={styles.progressText}
             animated
           />
-        )}
+        </View>
       </View>
 
       {/* Bottom Modal */}
@@ -118,11 +140,16 @@ const dispatch = useDispatch()
             <Text style={styles.modalTitle}>Enter Remark</Text>
             <TextInput
               style={styles.input}
-              placeholder="Add your remark"
+              placeholder="Add your remark  250 char"
               value={remark}
               onChangeText={setRemark}
+              maxLength={250}
             />
-            <TouchableOpacity style={styles.completeButton} onPress={handleComplete}>
+            <TouchableOpacity
+              disabled={!remark}
+              style={styles.completeButton}
+              onPress={handleComplete}
+            >
               <Text style={styles.completeButtonText}>Mark as Complete</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -138,9 +165,12 @@ const dispatch = useDispatch()
   );
 };
 
-// Styles
+// Styles (unchanged)
 const styles = StyleSheet.create({
   container: {
+    position: "absolute",
+    bottom: 0,
+    left: 300,
     flexDirection: 'row',
     width: 70,
     height: 70,
@@ -151,18 +181,25 @@ const styles = StyleSheet.create({
   progressContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius:50,
+    borderRadius: 50,
   },
   tickContainer: {
-    width: 160,
-    height: 50,
-    backgroundColor: '#074B7C',
+    width: 120,
+    height: 40,
+    marginLeft: 30,
+    marginTop: 10,
+    backgroundColor: '#4CAF50',
     borderRadius: 25,
     alignItems: 'center',
-    justifyContent: 'start',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.5,
+    elevation: 5,
   },
   disabledTickContainer: {
-    backgroundColor: 'lightgreen', // Faint green for completed
+    backgroundColor: '#A5D6A7',
   },
   progressText: {
     fontSize: 12,
@@ -171,7 +208,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    height:200,
+    height: 200,
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dim background
   },

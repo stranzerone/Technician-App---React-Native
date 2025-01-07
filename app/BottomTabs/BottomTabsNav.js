@@ -29,6 +29,9 @@ import NewComplaintPage from '../RaiseComplaint/CompaintInput';
 import { useDispatch } from 'react-redux';
 import FilteredWorkOrderPage from '../WorkOrders/ScannedWorkOrder';
 import BuggyListTopTabs from '../BuggyListTopTabs/BuggyListTopTabs';
+import { Image } from 'react-native'; 
+import { clearAllTeams } from '../../utils/Slices/TeamSlice';
+import { clearAllUsers } from '../../utils/Slices/UsersSlice';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -39,12 +42,6 @@ const WorkOrderStack = () => (
       component={WorkOrderHomeTab}
       options={{ headerShown: false }}
     />
-<Stack.Screen
-      name="ScannedWoTag"
-      component={FilteredWorkOrderPage}
-      options={{ headerShown: false }}
-    />
-
   <Stack.Screen 
   name="AddWo"
   component={RequestServiceTabs}
@@ -81,9 +78,12 @@ const WorkOrderStack = () => (
 const QRCodeStack = () => (
   <Stack.Navigator>
     <Stack.Screen
+    
       name="NewScanPage"
       component={NewScanPage}
-      options={{ headerShown: false }}
+      options={{
+        title:'',
+        headerShown: false }}
     />
 
 <Stack.Screen
@@ -104,15 +104,14 @@ const QRCodeStack = () => (
 
 
 
-
-
-
 const ServiceRequestStack = () => (
   <Stack.Navigator>
     <Stack.Screen
       name="Service Request"
       component={ComplaintsScreen}
-      options={{ headerShown: false }}
+      options={{ 
+      
+        headerShown: false }}
     />
      <Stack.Screen 
           name="subComplaint"
@@ -125,7 +124,9 @@ const ServiceRequestStack = () => (
            component={NewComplaintPage}
            options={{ title: 'Report Complaint', headerShown: true }}
            />
-          <Stack.Screen name="CloseComplaint" component={ComplaintCloseScreen} />
+          <Stack.Screen
+          options={{title:'Close Complaint'}}
+          name="CloseComplaint" component={ComplaintCloseScreen} />
           <Stack.Screen 
           name="RaiseComplaint"
            component={ComplaintDropdown} 
@@ -142,25 +143,36 @@ const MyTabs = () => {
   const navigation = useNavigation();
   const { setPpmAsstPermissions,notificationsCount } = usePermissions(); // Extract context permissions function
   const [user,setUser] = useState({})
-  const dispatch = useDispatch(0)
+  const [siteLogo,setSiteLogo]  = useState(null)
+  const dispatch = useDispatch();
   useEffect(() => {
     const loadPermissions = async () => {
+
       try {
+        
         const savedPermissions = await AsyncStorage.getItem('userInfo');
-        const user = await AsyncStorage.getItem('user')
+        // const societyString = await AsyncStorage.getItem('society');
+        
+        // const societyData = JSON.parse(societyString);
+        // setSiteLogo(societyData.logo)
         if (savedPermissions) {
           const userInfo = JSON.parse(savedPermissions); // Parse the stored string into an object
-          const userData = JSON.parse(user); // Parse the stored string into an object
-         setUser(userData)
+        
+        console.log(userInfo.data.society.name,"this is name of society in bottom tabs")
+        // console.log(userInfo.data.society.name,"this is userinfo in bottomTabs")
+          setUser(userInfo.data.society)
+
+          
           // Check if permissions exist in the userInfo object
           if (userInfo.data && userInfo.data.permissions) {
             // Filter permissions that start with 'PPMASST'
             const filteredPermissions = userInfo.data.permissions
-              .filter(item => item.startsWith('PPMASST.')) // Get items starting with 'PPMASST'
+              .filter(item => item.startsWith('PPM_WOV')) // Get items starting with 'PPMASST'
               .map(item => item.split('.')[1]); // Split at the first dot and take the second part
             
-            setPpmAsstPermissions(filteredPermissions); // Set permissions in context
-          }
+              console.log(userInfo.data.permissions,'setting permissions')
+              setPpmAsstPermissions(filteredPermissions); // Set permissions in context
+         }
         }
       } catch (error) {
         console.error("Failed to load permissions:", error);
@@ -178,6 +190,28 @@ const MyTabs = () => {
   }, [setPpmAsstPermissions]); // Dependency array includes setPpmAsstPermissions
 
 
+  useEffect(() => {
+    // Define the fetchLogo function inside useEffect
+    const fetchLogo = async () => {
+      try {
+        const societyString = await AsyncStorage.getItem('userInfo');
+       
+        if (societyString) {
+          const societyData = JSON.parse(societyString); // Parse the data
+          const parsedImages = JSON.parse(societyData.data.society.data)
+          setSiteLogo(parsedImages.logo); // Set the logo URL
+        } else {
+          console.log('No society data found.');
+        }
+      } catch (error) {
+        console.error('Error fetching society data:', error);
+      }
+    };
+
+    fetchLogo(); // Call the function to fetch logo
+  }, []); // Empty dependency array ensures this runs once when the component mounts
+
+
 
   const fetchTotalNotifications = async () => {
     try {
@@ -193,19 +227,17 @@ const MyTabs = () => {
     fetchTotalNotifications();
 
     // Set up an interval to call the function every 10 minutes (600000 milliseconds)
-    const intervalId = setInterval(() => {
-      fetchTotalNotifications();
-    }, 1 * 60 * 1000); // 10 minutes
-
-    // Cleanup the interval when the component unmounts
-    return () => clearInterval(intervalId);
-  }, [notificationsCount]);
+  }, []);
 
   const handleLogout = async () => {
     try {
+      console.log('Logging out...');
       await AsyncStorage.removeItem('userInfo');
-      await AsyncStorage.removeItem('uuid');
+    const teams =   await dispatch(clearAllTeams())
+      await dispatch(clearAllUsers())
+      console.log(teams,"this is teams")
       navigation.replace("Login");
+
     } catch (error) {
       console.error('Error clearing local storage', error);
       Alert.alert('Error', 'Could not log out. Please try again.');
@@ -213,16 +245,15 @@ const MyTabs = () => {
   };
   const renderLogoutButton = () => (
     <View
-      className="flex flex-row items-center gap-4 p-4  rounded-lg shadow-md"
+      className="flex h-20 flex-row items-center gap-4 p-4  rounded-lg shadow-md"
     >
-      <View className="flex flex-row items-center bg-slate-700 rounded-lg p-2">
+      {/* <View className=" bg-slate-700  rounded-lg p-2">
         {Platform.OS === "android" && ( // Conditionally render society name for Android
-          <Text className="truncate w-24 h-5 text-white ml-2 text-sm font-semibold">
-            <Icon name="home" size={20} color="white" />
-            {user?.society_name}
+          <Text className="  text-center h-5 text-white px-0 text-sm font-semibold">
+            {user?.name}
           </Text>
         )}
-      </View>
+      </View> */}
   
       {/* Power-off icon (only clickable) */}
       <TouchableOpacity 
@@ -278,9 +309,28 @@ const MyTabs = () => {
             <View style={styles.societyNameContainer}>
               <Text style={styles.societyNameText}>{user?.society_name}</Text>
             </View>
-          ) : undefined,
+          ) : () => (
+            <View className="flex bg-[#074B7C] border-1  rounded-r-md h-12 items-start justify-start flex-row gap-1 w-full" style={styles.logoContainer}>
+            
+               <Image
+              className="w-24 h-24"
+              source={{ uri: siteLogo}}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+                {Platform.OS === "android" && ( // Conditionally render society name for Android
+          <Text className="  text-center h-5 text-white px-0 text-sm font-bold">
+            {user?.name}
+          
+          </Text>
+        )}
+            
+            </View>
+          ),
+          headerTitle: Platform.OS === "ios" ? "" : null, // Hide title on Android
+
           headerStyle: { backgroundColor: '#1996D3' },
-          headerTintColor: 'white',
+          headerTintColor: 'transparent',
           headerTitleStyle: {
             fontWeight: 'bold', // Make text bold
           },
@@ -309,31 +359,19 @@ const MyTabs = () => {
           },
         })}
       >
-        <Tab.Screen name="Work Orders" options={{ title: 'Work List' }} component={WorkOrderStack} />
+        <Tab.Screen name="Work Orders" options={{ title: '' }} component={WorkOrderStack} />
         {/* <Tab.Screen name="MyComplaints" options={{ title: 'Complaints' }} component={ComplaintsScreen} /> */}
 
-        <Tab.Screen name="QRCode" options={{ title: 'QR Scanner' }} component={QRCodeStack} />
-        <Tab.Screen name="ServiceRequests" options={{ title: 'Service Request' }} component={ServiceRequestStack} />
+        <Tab.Screen name="QRCode" options={{ title: '' }} component={QRCodeStack} />
+        <Tab.Screen name="ServiceRequests" options={{ title: '' }} component={ServiceRequestStack} />
 
         <Tab.Screen 
           name="Notifications" 
           // component={NotificationMainPage}
           component={NotificationMainPage}
           options={{
-            tabBarBadge: totalNotifications, // Show badge only if there's unread notifications
-            tabBarBadgeStyle: {
-              backgroundColor: 'red',    // Badge color
-              color: 'white',            // Text color of the badge
-              fontSize: 14,              // Badge font size
-              fontWeight: 'bold',        // Badge font weight
-              borderRadius: 15,         // Make badge circular
-              minWidth: 20,             // Ensure the badge width is large enough for one or two digits
-              height: 20,               // Ensure the badge height accommodates the text
-              justifyContent: 'center', // Vertically center the text
-              alignItems: 'center',     // Horizontally center the text
-              padding: 1,               // Padding for badge
-              textAlign: 'center',      // Ensure the text is centered inside the badge
-            },
+            title:'',
+          
           }}
           
        
@@ -373,6 +411,18 @@ const styles = StyleSheet.create({
     width: 40,
     borderRadius: 20,
     backgroundColor: 'transparent',
+  },
+  logoContainer: {
+
+      
+    justifyContent: "start",
+    paddingHorizontal:10,
+    width:"auto",
+    alignItems: "center",
+  },
+  logo: {
+    borderRadius: 30, // Keeps rounded edges
+    marginLeft:20
   },
   activeIconContainer: {
     backgroundColor: '#074B7C',

@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { GetNotificationsApi } from '../../service/NotificationsApis/GetNotificationsApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Create a context for permissions and notifications
@@ -20,26 +19,17 @@ export const PermissionsProvider = ({ children }) => {
           const userInfo = JSON.parse(savedPermissions); // Parse the stored string into an object
           if (userInfo.permissions) {
             const filteredPermissions = userInfo.permissions
-              .filter(item => item.startsWith('PPMASST.'))
+              .filter(item => item.startsWith('PPM_WOV.'))
               .map(item => item.split('.')[1]);
 
             // setPpmAsstPermissions(filteredPermissions); // Set permissions
-            setPpmAsstPermissions(["CUD"])
+            setPpmAsstPermissions(filteredPermissions)
           }
         }
 
         // Fetch notifications count from the API
-        const fetchNotificationCount = async () => {
-          const fetchedData = await GetNotificationsApi(); // Use the API to get notifications
-          if (fetchedData) {
-            const newNotificationsCount = parseInt(await AsyncStorage.getItem('newNotifications'), 10);
-            console.log(newNotificationsCount, "got in context new notifications");
-            setNotificationCount(newNotificationsCount); // Set notification count from AsyncStorage
-          }
-        };
-
+      
         // Initial fetch
-        await fetchNotificationCount();
 
         // Set interval to fetch notifications every 1 minute (60000 milliseconds)
         // const intervalId = setInterval(fetchNotificationCount, 60000); 

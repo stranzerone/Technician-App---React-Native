@@ -19,7 +19,6 @@ export const WorkOrderInfoApi = async (WoUuId) => {
     const apiToken = parsedUserInfo.data.api_token
     const societyId =parsedUserInfo.data.societyId
 
-    console.log(userId,apiToken,"ifo4")
     
     // Define the API endpoint
 

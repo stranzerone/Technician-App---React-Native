@@ -21,7 +21,6 @@ const CommentsPage = ({ WoUuId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [newComment, setNewComment] = useState('');
-  const [keyboardOffset, setKeyboardOffset] = useState(0);
 
   // Function to fetch comments
   const loadComments = async () => {
@@ -40,18 +39,7 @@ const CommentsPage = ({ WoUuId }) => {
   useEffect(() => {
     loadComments();
 
-    // Handle keyboard events
-    const keyboardShowListener = Keyboard.addListener('keyboardDidShow', (e) =>
-      setKeyboardOffset(e.endCoordinates.height)
-    );
-    const keyboardHideListener = Keyboard.addListener('keyboardDidHide', () =>
-      setKeyboardOffset(0)
-    );
-
-    return () => {
-      keyboardShowListener.remove();
-      keyboardHideListener.remove();
-    };
+  
   }, []);
 
   // Handle comment submission
@@ -94,43 +82,49 @@ const CommentsPage = ({ WoUuId }) => {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : null}
-    >
-      <FlatList
-        data={comments}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderComment}
-        contentContainerStyle={styles.commentsList}
-        ListEmptyComponent={
-          <View style={styles.emptyList}>
-            <Text style={styles.emptyText}>No comments available</Text>
-          </View>
-        }
-      />
-<View
-  style={[
-    styles.commentInputContainer,
-    keyboardOffset > 0 ? { marginBottom: keyboardOffset  } : {}, // Apply margin only when the keyboard is open
-  ]}
->
-  <TextInput
-    style={styles.input}
-    placeholder="Write a comment..."
-    value={newComment}
-    onChangeText={setNewComment}
-    multiline
-    numberOfLines={3}
-    maxLength={200}
-  />
-  <TouchableOpacity style={styles.button} onPress={handleCommentSubmit}>
-    <Text style={styles.buttonText}>Send</Text>
-  </TouchableOpacity>
-</View>
+    <View style={{ flex: 1 }}>
+      {/* ScrollView for comments */}
+      <ScrollView style={{ flex: 1 }}>
+        <View
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : null}
+        >
+          <FlatList
+            data={comments}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderComment}
+            scrollEnabled={false}
+            contentContainerStyle={styles.commentsList}
+            ListEmptyComponent={
+              <View style={styles.emptyList}>
+                <Text style={styles.emptyText}>No comments available</Text>
+              </View>
+            }
+          />
+        </View>
+      </ScrollView>
 
-
-    </KeyboardAvoidingView>
+      {/* Comment input section */}
+      <View
+        style={[
+          styles.commentInputContainer,
+         // Apply margin when keyboard is open
+        ]}
+      >
+        <TextInput
+          style={styles.input}
+          placeholder="Write a comment..."
+          value={newComment}
+          onChangeText={setNewComment}
+          multiline
+          numberOfLines={3}
+          maxLength={200}
+        />
+        <TouchableOpacity style={styles.button} onPress={handleCommentSubmit}>
+          <Text style={styles.buttonText}>Send</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
 
@@ -138,6 +132,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+    borderWidth:1,
+    borderRadius:10,
+    borderColor:"#074B7C",
     backgroundColor: '#fff',
   },
   loaderContainer: {
@@ -163,29 +160,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   commentInputContainer: {
-    paddingBottom:110,
+    height: 70,  // Set a fixed height for the input container
+    paddingBottom: 10,
+    borderWidth:1,
+    borderColor:"gray",
     flexDirection: 'row',
     alignItems: 'flex-end',
     padding: 10,
     borderTopWidth: 1,
     borderTopColor: '#ccc',
     backgroundColor: '#fff',
-   
   },
   input: {
-   
     flex: 1,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 8,
     padding: 10,
-    height:40,
+    height: 40,
     marginRight: 10,
     backgroundColor: '#f5f5f5',
     textAlignVertical: 'top',
   },
   button: {
-  
     backgroundColor: '#074B7C',
     borderRadius: 8,
     paddingVertical: 10,

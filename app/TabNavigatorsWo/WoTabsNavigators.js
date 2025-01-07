@@ -49,6 +49,7 @@ const WorkOrderStack = () => {
   }, []);
 
   const onTagDetected = async (tag) => {
+    console.log("tag detected",tag)
     try {
       if (!tag || !tag.id) {
         console.log('Invalid or missing NFC tag.');
@@ -70,7 +71,17 @@ const WorkOrderStack = () => {
             console.log('Invalid site_uuid in response data:', response.data[0]);
             return;
           }
-          navigation.navigate('ScannedWoTag', { uuid:siteUuid });
+
+              
+     if(response.data[0]._LABELS.includes('LOCATION')){
+      navigation.navigate('ScannedWoTag', {uuid: response.data[0].uuid,type:"LC"});
+
+     }else{
+      navigation.navigate('ScannedWoTag', {uuid: response.data[0].uuid,type:"AS"});
+
+
+     }
+          // navigation.navigate('ScannedWoTag', { uuid:siteUuid });
         }
       } else {
         console.log('Invalid NFC tag or response');

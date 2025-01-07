@@ -32,20 +32,23 @@ export default GetUuIdForTag = async (id) => {
         params,
         withCredentials: true,
       });
+      // console.log(response.data.data[0],"response for tag id passed")
 
-   console.log(response.data.status)
+  //  console.log(response.data.data[0]._LABELS.includes('LOCATION'),"response for tag id passed")
 
      if(response.data.status =='success'){
         console.log("navigation created")
 
      }
 
+     console.log(response.data,"response for tag id passed")
       return response.data;
     } else {
       console.error("User info not found in AsyncStorage");
       throw new Error("User info not found");
     }
   } catch (error) {
+    console.log(error,"error at get uuid from nfc")
     throw error;
   }
 };

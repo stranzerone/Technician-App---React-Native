@@ -15,6 +15,8 @@ const BuggyListCard = ({ item, onUpdateSuccess, WoUuId }) => {
   const [editingRemark, setEditingRemark] = useState(false);
   const [preview, setPreview] = useState(null); // Use one state to manage preview type and URL
   const [loading, setLoading] = useState(true);
+ 
+ console.log(item,"item")
   // Function to handle image and document picking
   const handleFilePick = useCallback(async (pickerType) => {
     try {

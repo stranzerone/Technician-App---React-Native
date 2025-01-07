@@ -6,8 +6,10 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   TextInput,
+  StyleSheet,
 } from "react-native";
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from "react-native-vector-icons/FontAwesome";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { GetAllPmsApi } from "../../service/PMS/GetAllPms";
 import { CreatePmsApi } from "../../service/PMS/CreatePms";
@@ -20,24 +22,36 @@ const PMList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [popupVisible, setPopupVisible] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
-  const [popupType, setPopupType] = useState(""); 
+  const [popupType, setPopupType] = useState("");
   const [confirmationPopupVisible, setConfirmationPopupVisible] = useState(false);
   const [selectedUuid, setSelectedUuid] = useState(null);
 
-  useLayoutEffect(() => {
-    const fetchPMs = async () => {
-      try {
+  // Function to load PMs from AsyncStorage or fetch from API
+  const loadPms = async () => {
+    try {
+      const storedPms = await AsyncStorage.getItem("pmsData");
+      if (storedPms) {
+        // If data is available in AsyncStorage, use it
+        const parsedPms = JSON.parse(storedPms);
+        setPms(parsedPms);
+        setFilteredPms(parsedPms);
+      } else {
+        // If data is not available in AsyncStorage, fetch from API
         const data = await GetAllPmsApi();
         setPms(data);
-        setFilteredPms(data); 
-      } catch (error) {
-        console.error("Error fetching PMs:", error);
-      } finally {
-        setLoading(false);
+        setFilteredPms(data);
+        await AsyncStorage.setItem("pmsData", JSON.stringify(data)); // Store data in AsyncStorage
       }
-    };
+    } catch (error) {
+      console.error("Error loading PMs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchPMs();
+  // Fetch PMs only on first mount (when app is opened)
+  useEffect(() => {
+    loadPms();
   }, []);
 
   const handleSearch = (query) => {
@@ -48,7 +62,7 @@ const PMList = () => {
       );
       setFilteredPms(filteredData);
     } else {
-      setFilteredPms(pms); 
+      setFilteredPms(pms); // Reset to the original list if search is empty
     }
   };
 
@@ -71,78 +85,71 @@ const PMList = () => {
   };
 
   const renderItem = ({ item }) => (
-    <View
-      className="bg-white rounded-lg p-3 mb-4 shadow-md border-2 border-blue-300"
-      style={{ elevation: 4 }}
-    >
-      <View className="flex-row items-center mb-2">
+    <View style={styles.card}>
+      <View style={styles.cardRow}>
         <Icon name="file-text" size={24} color="#1996D3" />
-        <Text className="ml-2 text-black text-base font-semibold">
-          {item.Name || "Unnamed PM"}
-        </Text>
+        <Text style={styles.cardTitle}>{item.Name || "Unnamed PM"}</Text>
       </View>
 
-      <View className="flex-row items-center mb-2">
+      <View style={styles.cardRow}>
         <Icon name="cogs" size={20} color="#4CAF50" />
-        <Text className="ml-2 text-gray-800 text-xs">
-          <Text className="font-medium text-black">Asset:</Text>{" "}
-          {item.ass || "Not Assigned"}
+        <Text style={styles.cardText}>
+          <Text style={styles.boldText}>Asset:</Text> {item.ass || "Not Assigned"}
         </Text>
       </View>
 
-      <View className="flex-row items-center mb-2">
+      <View style={styles.cardRow}>
         <Icon name="tags" size={20} color="#FFA726" />
-        <Text className="ml-2 text-gray-800 text-xs">
-          <Text className="font-medium text-black">Category:</Text>{" "}
-          {item.cat || "N/A"}
+        <Text style={styles.cardText}>
+          <Text style={styles.boldText}>Category:</Text> {item.cat || "N/A"}
         </Text>
       </View>
 
-      <View className="flex-row items-center mb-2">
+      <View style={styles.cardRow}>
         <Icon name="map-marker" size={20} color="#F44336" />
-        <Text className="ml-2 text-gray-800 text-xs">
-          <Text className="font-medium text-black">Location:</Text>{" "}
-          {item.loc || "Unknown"}
+        <Text style={styles.cardText}>
+          <Text style={styles.boldText}>Location:</Text> {item.loc || "Unknown"}
         </Text>
       </View>
 
       <TouchableOpacity
         onPress={() => showConfirmationPopup(item._ID)}
-        style={{
-          backgroundColor: "#1996D3",
-          padding: 8,
-          marginTop: 8,
-          borderRadius: 4,
-        }}
+        style={styles.createButton}
       >
-        <Text style={{ color: "white", textAlign: "center", fontSize: 14 }}>
-          Create
-        </Text>
+        <Text style={styles.createButtonText}>Create</Text>
       </TouchableOpacity>
     </View>
   );
 
   return (
-    <View className="flex-1 bg-gray-50 p-4 pb-0">
-      <TextInput
-        value={searchQuery}
-        onChangeText={handleSearch}
-        placeholder="Search PMs by Name"
-        className="bg-white p-3 rounded-lg mb-5 border-2 border-gray-300 shadow-sm"
-        style={{
-          fontSize: 14,
-          color: "#333",
-        }}
-      />
+    <View style={styles.container}>
+      <View style={styles.searchContainer}>
+        <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
+        <TextInput
+          value={searchQuery}
+          onChangeText={handleSearch}
+          placeholder="Search PMs by Name"
+          style={styles.searchInput}
+        />
+      </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#1996D3" />
-      ) : (
+        <ActivityIndicator size="large" color="#1996D3" style={styles.loader} />
+      ) : filteredPms.length > 0 && searchQuery ? (
         <FlatList
           data={filteredPms}
           renderItem={renderItem}
           keyExtractor={(item) => item.uuid}
         />
+      ) : (
+        <View style={styles.emptyContainer}>
+          <Icon name="exclamation-circle" size={40} color="#ccc" />
+          <Text style={styles.emptyText}>
+            {searchQuery
+              ? "No PMs found. Try a different search."
+              : "Search for PMs to create Work Order from PM's."}
+          </Text>
+        </View>
       )}
 
       <DynamicPopup
@@ -166,5 +173,86 @@ const PMList = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F8F8F8",
+    padding: 16,
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF",
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#DDD",
+    elevation: 2,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#333",
+  },
+  loader: {
+    marginTop: 16,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+  },
+  emptyText: {
+    marginTop: 8,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  card: {
+    backgroundColor: "#FFF",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#DDD",
+  },
+  cardRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  cardTitle: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  cardText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: "#555",
+  },
+  boldText: {
+    fontWeight: "bold",
+    color: "#333",
+  },
+  createButton: {
+    backgroundColor: "#1996D3",
+    paddingVertical: 8,
+    borderRadius: 4,
+    marginTop: 8,
+  },
+  createButtonText: {
+    color: "#FFF",
+    textAlign: "center",
+    fontSize: 14,
+  },
+});
 
 export default PMList;

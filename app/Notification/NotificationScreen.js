@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, Text, ActivityIndicator } from 'react-native';
+import { View, FlatList, StyleSheet, Text, ActivityIndicator, ScrollView } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NotificationCard from './NotificationCard';
@@ -8,6 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
 import { GetNotificationsApi } from '../../service/NotificationsApis/GetNotificationsApi';
 import Loader from '../LoadingScreen/AnimatedLoader';
+import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome for the bell icon
 
 const NotificationMainPage = () => {
   const [notifications, setNotifications] = useState([]);
@@ -25,7 +26,11 @@ const NotificationMainPage = () => {
       if (userInfo) {
         console.log('Fetching notifications');
         const response = await GetNotificationsApi();
-        setNotifications(response.data);
+        if (response?.data) {
+          setNotifications(response.data);
+        } else {
+          setNotifications([]);
+        }
       }
     } catch (err) {
       console.error('Error initializing notifications:', err);
@@ -33,25 +38,9 @@ const NotificationMainPage = () => {
   };
 
   // Reset notification count when the page is focused and refresh notifications
-  useFocusEffect(
-    React.useCallback(() => {
-      const resetNotifications = async () => {
-        try {
-          await AsyncStorage.setItem('newNotifications', '0');
-          updateNotificationCount(0); // Update local notification count
-          console.log('Opened notifications');
-          await initializeNotifications(); // Fetch notifications when the page is focused
-        } catch (err) {
-          console.error('Error resetting notifications:', err);
-        }
-      };
-
-      resetNotifications();
-
-      return () => {};
-    }, [updateNotificationCount, dispatch]) // Include dispatch to avoid stale closures
-  );
-
+useEffect(()=>{
+initializeNotifications()
+},[])
   const renderNotification = ({ item }) => (
     <NotificationCard
       message={item.message || 'No message available'} // Add default value to avoid crashes
@@ -60,7 +49,14 @@ const NotificationMainPage = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
+      {/* Heading with Bell Icon and Yellow Dot */}
+      <View  style={styles.headerContainer}>
+        <FontAwesome name="bell" size={24} color="black" style={styles.bellIcon} />
+        <Text style={styles.headerText}>Notifications</Text>
+      </View>
+
+      {/* Display error message if any */}
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
@@ -72,7 +68,6 @@ const NotificationMainPage = () => {
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#0000ff" />
           <Text style={styles.loadingText}>
-
             <Loader />
           </Text>
         </View>
@@ -82,19 +77,15 @@ const NotificationMainPage = () => {
           renderItem={renderNotification}
           keyExtractor={(item, index) => item?.id?.toString() || index.toString()} // Ensure a fallback key
           contentContainerStyle={styles.listContainer}
+          scrollEnabled={false}
           ListEmptyComponent={
-            status === 'loading' ? (
-              <Text style={styles.loadingText}>
-
-                <Loader />
-              </Text>
-            ) : (
+            notifications.length === 0 && !status ? (
               <Text style={styles.emptyText}>No notifications available</Text>
-            )
+            ) : null
           }
         />
       )}
-    </View>
+    </ScrollView>
   );
 };
 
@@ -102,8 +93,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F7F7F7',
-    paddingTop: 5,
+    
     marginBottom: 35,
+  },
+  headerContainer: {
+    borderRadius:20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor:"#ADD8E6",
+    paddingLeft:10,
+    padding:4,
+   
+    marginBottom: 5,
+  },
+  bellIcon: {
+    marginRight: 10, // Add space between the bell and yellow dot
+  },
+  yellowDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'yellow',
+    marginRight: 10,
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
   },
   errorContainer: {
     flex: 1,

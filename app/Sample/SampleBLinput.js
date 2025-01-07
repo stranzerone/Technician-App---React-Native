@@ -1,329 +1,285 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
-  TextInput,
   Text,
-  StyleSheet,
-  TouchableWithoutFeedback,
   TouchableOpacity,
-  Keyboard,
-  Image,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  TextInput,
   Modal,
 } from 'react-native';
-import RNPickerSelect from 'react-native-picker-select';
-import * as ImagePicker from 'expo-image-picker';
-import * as DocumentPicker from 'expo-document-picker';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
-import { uploadImageToServer } from '../../service/ImageUploads/ConvertImageToUrlApi';
-import handleDownload from './FileDownloader'; // Import your file download logic
+import Icon from 'react-native-vector-icons/FontAwesome';
+import FilterOptions from './WorkOrderFilter';
+import WorkOrderCard from './WorkOrderCards';
+import { fetchServiceRequests } from '../../service/FetchWorkOrderApi';
+import { useNavigation } from '@react-navigation/native';
 import Loader from '../LoadingScreen/AnimatedLoader';
+import { fetchAllUsers } from '../../utils/Slices/UsersSlice';
+import { fetchAllTeams } from '../../utils/Slices/TeamSlice';
+import { useDispatch, useSelector } from 'react-redux'; // Import useSelector to access Redux state
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
-import styles from './InputFieldStyleSheet';
-import { uplodPdfToServer } from '../../service/ImageUploads/ConvertPdfToUrl';
-import OptionsModal from '../DynamivPopUps/DynamicOptionsPopUp';
 
-
-const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, WoUuId, onUpdateSuccess }) => {
+const WorkOrderPage = () => {
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState('OPEN');
+  const [workOrders, setWorkOrders] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [inputText, setInputText] = useState(inputValue);
-  const [isEditing, setIsEditing] = useState(false);
+  const [inputNumber, setInputNumber] = useState('');
+  const [refreshing, setRefreshing] = useState(false); // Track refresh state
+  const navigation = useNavigation();
+
+
+  const dispatch = useDispatch(); // Use dispatch to dispatch actions
+  const users = useSelector((state) => state.users.data);
+  const teams = useSelector((state) => state.teams.data);
   const { ppmAsstPermissions } = usePermissions();
-  const [isModalVisible,setIsModalVisible] = useState(false)
-  const [options,setOptions]  = useState([])
+  console.log(ppmAsstPermissions,"this are the permissions")
+  console.log(users[0],"users are")
+  useEffect(() => {
 
-
-     // Mapping the options properly to pass them as an array of objects
-     const listOptions = item.options?.map((option) => ({
-      label: option,
-      value: option,
-    }));
-  
-    // Setting the options to the state
-    setOptions(listOptions);
-
-  const renderTextOrNumberInput = ({
-    item,
-    inputText,
-    setInputText,
-    isEditing,
-    setIsEditing,
-    setInputValue,
-    ppmAsstPermissions,
-  }) => (
-    <View style={styles.inputContainer}>
-      <Text style={styles.label}>{item.label || 'Input:'}</Text>
-      {isEditing ? (
-        <TextInput
-          style={styles.remarkInput}
-          placeholder={`Enter ${item.type === 'text' ? 'text' : 'number'}`}
-          value={inputText}
-          onChangeText={setInputText}
-          placeholderTextColor="#888"
-          keyboardType={item.type === 'number' ? 'numeric' : 'default'}
-          onBlur={() => {
-            setIsEditing(false);
-            if (inputText.trim()) {
-              setInputValue(inputText);
-            }
-          }}
-          autoFocus
-        />
-      ) : (
-        <TouchableOpacity
-          onPress={() => {
-            if (ppmAsstPermissions.some(permission => permission.includes('U'))) {
-              setIsEditing(true);
-            }
-          }}
-        >
-          <Text style={styles.remarkText}>{inputText || 'Enter Value or Text'}</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-  
-
-
-
-
-  const handleTypeSelect = (type) => {
-    setSelectedType(type);
-    onTypeSelect(type);
-    setIsModalVisible(false);
-  };
-
-  const closeModal = () => {
-    setIsModalVisible(false);
-  };
-
-
-  const renderField = () => {
-    switch (item.type) {
-      case 'text':
-        case 'number':
-          return renderTextOrNumberInput({
-            item,
-            inputText,
-            setInputText,
-            isEditing,
-            setIsEditing,
-            setInputValue,
-            ppmAsstPermissions,
-          });
-        
-     
-
-          
-          case 'dropdown':
-       
-          
-            return item.options && item.options.length > 0 ? (
-              <View style={styles.inputContainer}>
-                <View style={styles.dropdownContainer}>
-                  <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-                    <View style={styles.dropdown}>
-                      <Text>Select Option</Text>
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconContainer}>
-                    <Ionicons name="chevron-down" size={24} color="#1996D3" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ) : (
-              <Text style={styles.errorText}>No options available</Text>
-            );
-          
-
-
-
-
-      case 'checkbox':
-        return renderCheckbox();
-
-      case 'file':
-        return renderImageAttachment();
-
-      case 'document':
-        return renderFileAttachment();
-
-      default:
-        return null;
-    }
-  };
-
+    if (!users || !teams || users.length === 0 || teams.length === 0) {
+      console.log("dispatche called at workorderscreen")
+      dispatch(fetchAllUsers());
+      dispatch(fetchAllTeams());
+    } 
 
  
-
-  const renderCheckbox = () => (
-    <TouchableOpacity
-      disabled={!ppmAsstPermissions.some(permission => permission.includes('U'))}
-      style={styles.checkboxContainer}
-      onPress={() => setInputValue(inputValue === '1' ? '0' : '1')}
-    >
-      <View className="flex flex-row gap-2">
-      <View style={styles.middleCircle}>
-        <View
-          style={[styles.innerCircle, inputValue === '1' ? styles.checked : styles.unchecked]}
-        />
-
-       
-      </View>
-      <Text className='mx-2' style={styles.title}>{item.title}</Text>
-
-     </View>
-    </TouchableOpacity>
-  );
-
-  const renderImageAttachment = () => (
-    <View style={styles.imageAttachmentContainer}>
-      <View style={styles.imagePreviewContainer}>
-        {loading ? (
-          <Loader />
-        ) : imagePreviewUrl ? (
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
-            <Image source={{ uri: imagePreviewUrl }} style={styles.image} />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.imagePlaceholder}>
-            <Ionicons name="image-outline" size={50} color="#CED4DA" />
-            <Text>No image selected</Text>
-          </View>
-        )}
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleImagePicker} style={styles.cameraButton}>
-          <Ionicons name="camera" size={24} color="white" />
-          <Text style={styles.buttonText}>Camera</Text>
-        </TouchableOpacity>
-        {/* <TouchableOpacity onPress={handleDocumentPicker} style={[styles.cameraButton]}>
-          <Ionicons name="folder-open-outline" size={24} color="white" />
-          <Text style={styles.buttonText}>Choose Image</Text>
-        </TouchableOpacity> */}
-      </View>
-    </View>
-  );
-
-  const renderFileAttachment = () => (
-    <View style={styles.inputContainer}>
-      {selectedFile && (
-        <Text style={styles.selectedFileText}>PDF Selected: {selectedFile.name}</Text>
-      )}
-      <View style={styles.pdfButtonsContainer}>
-        <TouchableOpacity onPress={handleDocumentPicker} style={[styles.button, styles.pdfButton]}>
-          <Text style={styles.buttonText}>
-            <FontAwesome name='file-pdf-o' size={20}  />
-            &nbsp;
-            Choose PDF</Text>
-        </TouchableOpacity>
-        {item.file && (
-          <TouchableOpacity
-            onPress={() => handleDownload({ file: item.file })}
-            style={[styles.button, styles.pdfButton]}
-          >
-            <Ionicons name="download-outline" size={20} color="white" />
-            <Text style={styles.buttonText}>Download PDF</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
-  );
-
-  const handleDocumentPicker = async () => {
-    console.log('document picker called',ppmAsstPermissions)
-    if (!ppmAsstPermissions.some(permission => permission.includes('U'))) return;
-console.log("clicked to upload pdf")
+  }, [dispatch]);
+  const fetchWorkOrders = async () => {
     setLoading(true);
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ['application/pdf', 'image/*'],
-    });
-
-    console.log(result.assets[0].uri,'uri')
-    if (!result.canceled && result.assets[0].uri) {
-      console.log(result,'result')
-      setSelectedFile(result);
-      const uploadResponse = await uplodPdfToServer(result.assets[0], item.id, WoUuId);
-      if (uploadResponse) onUpdateSuccess();
+    try {
+      // Fetch work orders based on the selected filter
+      const data = await fetchServiceRequests(selectedFilter);
+      setWorkOrders(data || []); // Set to an empty array if no data is returned
+    } catch (error) {
+      console.error('Error fetching work orders:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false); // Stop refreshing
     }
-    setLoading(false);
   };
 
-  const handleImagePicker = async () => {
-    if (!ppmAsstPermissions.some(permission => permission.includes('U'))) return;
+  useEffect(() => {
+  
+    fetchWorkOrders();
+  }, [selectedFilter]);
 
-    setLoading(true);
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 1,
-    });
+  const applyFilter = (filter) => {
+    setSelectedFilter(filter);
+    setFilterVisible(false);
+  };
 
-    if (!result.canceled && result.assets && result.assets[0].uri) {
-      const imageUri = result.assets[0].uri;
-      const fileData = {
-        uri: imageUri,
-        fileName: `photo_${Date.now()}.jpeg`,
-        mimeType: 'image/jpeg',
-      };
-      const uploadResponse = await uploadImageToServer(fileData, item.id, WoUuId);
-      if (uploadResponse) onUpdateSuccess();
-    }
-    setLoading(false);
+  const filteredWorkOrders = inputNumber
+    ? workOrders.filter((order) =>
+        order.wo['Sequence No'].includes(inputNumber)
+      )
+    : workOrders;
+
+  // Pull-to-refresh handler
+  const onRefresh = () => {
+    setRefreshing(true); // Trigger refresh
+    fetchWorkOrders(); // Reload data
   };
 
   return (
-    <>
-      {renderField()}
-      <Modal animationType="slide" transparent={true} visible={modalVisible}>
-        <View style={styles.modalContainer}>
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.headerContainer}>
+        <View style={styles.header}>
           <TouchableOpacity
-            style={[styles.modalCloseButton, { zIndex: 1 }]}
-            onPress={() => setModalVisible(false)}
+            onPress={() => setFilterVisible((prev) => !prev)}
+            style={styles.statusButton}
           >
-            <Ionicons name="close" size={30} color="white" />
+            <Icon name="filter" size={20} color="#074B7C" style={styles.searchIcon} />
+            <Text style={styles.statusButtonText}>Status</Text>
           </TouchableOpacity>
-          {imagePreviewUrl && (
-            <Image source={{ uri: imagePreviewUrl }} style={styles.modalImage} resizeMode="contain" />
-          )}
+
+          <View style={styles.statusTextContainer}>
+            <Text style={styles.statusText}>{selectedFilter}</Text>
+          </View>
+          {ppmAsstPermissions.some((permission) => permission.includes('C'))&&
+          <TouchableOpacity
+            onPress={() => navigation.navigate('AddWo')}
+            style={styles.addButton}
+          >
+            <Icon name="plus" size={20} color="#074B7C" style={styles.searchIcon} />
+            <Text style={styles.addButtonText}>Add WO</Text>
+          </TouchableOpacity>
+}
         </View>
-      </Modal>
-      <OptionsModal
-        visible={isModalVisible}
-        options={options}
-        onSelect={handleTypeSelect}
-        onClose={closeModal}
-      />
-    </>
+      </View>
+
+      {/* Search Input */}
+      <View style={styles.inputContainer}>
+        <Icon name="search" size={20} color="#074B7C" style={styles.searchIcon} />
+        <TextInput
+          style={styles.numberInput}
+          onChangeText={(text) => setInputNumber(text)}
+          value={inputNumber}
+          placeholder="Search WO ID"
+          keyboardType="numeric"
+          placeholderTextColor="#888"
+        />
+      </View>
+
+      {/* Content */}
+      {loading ? (
+        <View style={styles.loaderContainer}>
+          <Loader />
+        </View>
+      ) : workOrders.length === 0 || filteredWorkOrders.length ===0 ? (
+        <View style={styles.noRecordsContainer}>
+          <Icon name="exclamation-circle" size={50} color="#074B7C" />
+          <Text style={styles.noRecordsText}>No Work Order Found</Text>
+          {/* <Text style={styles.suggestionText}>
+         For {selectedFilter} or filter
+          </Text> */}
+        </View>
+      ) : (
+        <FlatList
+          data={filteredWorkOrders}
+          keyExtractor={(item) => item.wo['Sequence No']}
+          renderItem={({ item }) => <WorkOrderCard workOrder={item} />}
+          contentContainerStyle={styles.contentContainer}
+          refreshing={refreshing} // Pass refreshing state to FlatList
+          onRefresh={onRefresh} // Set up the pull-to-refresh functionality
+        />
+      )}
+
+      {/* Filter Modal */}
+      {filterVisible && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={filterVisible}
+          onRequestClose={() => setFilterVisible(false)}
+        >
+          <FilterOptions
+            filters={['OPEN', 'STARTED', 'COMPLETED', 'HOLD', 'CANCELLED', 'REOPEN']}
+            selectedFilter={selectedFilter}
+            applyFilter={applyFilter}
+            closeFilter={() => setFilterVisible(false)}
+          />
+        </Modal>
+      )}
+    </View>
   );
 };
 
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: '#1996D3',
-    borderRadius: 8,
-    color: 'black',
-    backgroundColor: '#f0f0f0',
-    marginTop: 8,
-    paddingRight: 30,
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    paddingBottom:70
   },
-  inputAndroid: {
-    fontSize: 16,
-    paddingVertical: 8,
+  headerContainer: {
+    backgroundColor: '#074B7C',
+    paddingVertical: 10,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 10,
+  },
+  statusButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+    paddingVertical: 5,
+    width: 100,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+  },
+  statusButtonText: {
+    marginLeft: 8,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  statusTextContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statusText: {
+    fontWeight: '900',
+    fontSize: 16,
+    color: '#fff',
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1996D3',
+    width: 90,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  addButtonText: {
+    marginLeft: 8,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+
+
+  searchIcon: {
+    color: '#074B7C',
+  },
+  numberInput: {
+    flex: 1,
+    borderBottomWidth: 1,
+    borderColor: '#074B7C',
+    padding: 8,
+    fontSize: 16,
+    color: '#074B7C',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 10,
+    paddingTop: 10,
+  },
+  numberInput: {
+    height: 40,
+    borderColor: '#ccc',
     borderWidth: 1,
-    borderColor: '#1996D3',
-    borderRadius: 8,
-    color: 'black',
-    backgroundColor: '#f0f0f0',
-    marginTop: 8,
-    paddingRight: 30,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
+    width: '80%',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noRecordsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    marginBottom:30,
+    marginTop:0,
+    alignItems: 'center',
+    marginTop: 0,
+  },
+  noRecordsText: {
+    fontSize: 18,
+    color: '#074B7C',
+    marginTop: 20,
+    fontWeight: 'bold',
+  },
+  suggestionText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#888',
+  },
+  contentContainer: {
+    paddingHorizontal: 15,
   },
 });
 
-export default InputField; 
+export default WorkOrderPage;

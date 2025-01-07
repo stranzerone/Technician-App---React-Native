@@ -6,7 +6,7 @@ export const otpLoginApi = async (phoneNumber) => {
   try {
     const response = await axios.post(`${API_URL2}/generateotp`, {
       identity: phoneNumber, // Use the phoneNumber passed to the function
-      app_roles: ['admin', 'groundstaff', 'supervisor', 'master', 'partner', 'ism_admin'], // Correct array syntax
+      app_roles: ['admin', 'groundstaff', 'supervisor'], // Correct array syntax
     });
     return response.data; // Return the data from the response
   } catch (error) {

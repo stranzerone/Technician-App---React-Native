@@ -31,7 +31,6 @@ console.log(params,"api parmas for redux complaint call")
 
     try {
       const response = await axios.get(`${API_URL2}/nonresidents`, { params,headers, withCredentials: true });
-      console.log("data from sers api ",response.data,'data from api users')
       return response.data
 
 

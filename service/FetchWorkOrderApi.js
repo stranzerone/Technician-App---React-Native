@@ -2,12 +2,11 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 export const fetchServiceRequests = async (selectedFilter) => {
+  console.log(selectedFilter, 'selected filter');
   try {
     // Fetch user info and uuid from AsyncStorage
     const userInfo = await AsyncStorage.getItem('userInfo');
-const uuid = await AsyncStorage.getItem('uuid');
 
-console.log(API_URL,"this is url called for fetching wo")
     if (!userInfo ) {
       throw new Error('User information or UUID not found in AsyncStorage');
     }
@@ -33,11 +32,9 @@ console.log(API_URL,"this is url called for fetching wo")
       site_id: societyId,
       breakdown1:false,
       breakdown2:false,
-      asset_uuid: uuid,
       breakdown: false,
+      page_no:1,
       Status: selectedFilter,
-      page_no: 1,
-      per_page: 50,
       user_id: userId,
       'api-token': apiToken,
     };
@@ -56,7 +53,7 @@ console.log(API_URL,"this is url called for fetching wo")
 
     // Check the response data
     const data = response.data.data;
-
+     console.log(params,"this are params")
     // Return the data if it's available, otherwise return false
     if (response.data.metadata.count) {
       return data;

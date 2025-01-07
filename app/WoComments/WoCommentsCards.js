@@ -7,7 +7,8 @@ import { format } from 'date-fns'; // Importing date-fns for date formatting
 const CommentCard = ({ comment }) => {
   const users = useSelector((state) => state.users.data); // Assuming `users` slice stores user data
   // Find the user from Redux based on the `created_by` ID
-  const user = users.find((u) => u.user_id === comment.created_by);
+
+  const user =user? users[1].find((u) => u.user_id === comment.created_by) : null;
   const userName = user ? user.name : 'Unknown User'; // Fallback to 'Unknown User' if not found
 
   const formattedDateTime = format(new Date(comment.created_at), 'MMMM d, HH:mm');
