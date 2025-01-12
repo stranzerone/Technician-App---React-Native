@@ -79,6 +79,7 @@ const BuggyListPage = ({ uuid, wo }) => {
       onUpdateSuccess={handleRefreshData} 
       index={index}
       WoUuId={uuid}
+      wo={wo}
     />
   );
 

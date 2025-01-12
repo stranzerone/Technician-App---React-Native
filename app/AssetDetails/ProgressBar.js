@@ -98,7 +98,7 @@ if(mandatoryItems.length === manCount){
         <View className="flex   flex-row gap-0 items-center justify-normal fixed">
           {
             wo.Status !== 'COMPLETED' &&
-            canMarkComplete && 
+            canMarkComplete ?(
             <TouchableOpacity
               className="flex bg-green-500 py-1 flex-row gap-1"
               style={[
@@ -110,6 +110,22 @@ if(mandatoryItems.length === manCount){
             >
               <Text className="text-white text-xs font-black">{wo.Status === 'COMPLETED' ? 'Completed' : 'Mark Complete'}</Text>
             </TouchableOpacity>
+            ):(
+               wo.Status == 'COMPLETED'?(
+                <TouchableOpacity
+                className="flex bg-green-500 py-1 flex-row gap-1"
+                style={[
+                  styles.tickContainer,
+                  wo.Status === 'COMPLETED' && styles.disabledTickContainer, // Apply faint style if completed
+                ]}
+                onPress={() => wo.Status !== 'COMPLETED' && setModalVisible(true)} // Prevent opening modal if completed
+                disabled={true} // Disable button if completed
+              >
+                <Text className="text-white text-xs font-black">COMPLETED</Text>
+              </TouchableOpacity>
+
+               ):null
+            )
           }
           <Progress.Circle
             className="rounded-full ml-24"

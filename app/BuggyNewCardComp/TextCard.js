@@ -57,9 +57,7 @@ const TextCard = ({ item, onUpdate , editable }) => {
       {/* RemarkCard placed below the text input */}
       <RemarkCard
         item={item}
-        onRemarkChange={(id, newRemark) =>
-          console.log(`Remark updated for ${id}: ${newRemark}`)
-        }
+        editable={editable}
       />
 
         {item?.data?.optional &&   

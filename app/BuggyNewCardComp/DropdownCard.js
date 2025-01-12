@@ -81,9 +81,8 @@ const DropdownCard = ({ item, onUpdate,editable }) => {
       {/* RemarkCard placed below the dropdown */}
       <RemarkCard
         item={item}
-        onRemarkChange={(id, newRemark) =>
-          console.log(`Remark updated for ${id}: ${newRemark}`)
-        }
+        editable={editable}
+       
       />
 
 

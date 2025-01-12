@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Keyboard } from "react-native"
 import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
 import { UpdateInstructionApi } from "../../service/BuggyListApis/UpdateInstructionApi";
 import Icon from "react-native-vector-icons/FontAwesome";
-const RemarkCard = ({ item }) => {
+const RemarkCard = ({ item,editable }) => {
   // Initialize the remark state based on item.remark, if exists
   const [isEditing, setIsEditing] = useState(false);
   const [remark, setRemark] = useState(item.remarks || ""); // Default to empty string if no remark
@@ -55,7 +55,9 @@ const RemarkCard = ({ item }) => {
           onEndEditing={handleBlur} // Optional: Ensure API is called when editing ends
         />
       ) : (
-        <TouchableOpacity onPress={handleTitleClick}>
+        <TouchableOpacity
+        disabled={!editable}
+        onPress={handleTitleClick}>
           <Text className="text-sm font-bold text-gray-600 mt-2">
           <Icon name="pencil" size={16} color="#074B7C" /> 
           {'  '}

@@ -66,11 +66,11 @@ const DocumentCard = ({ item, onUpdate, editable }) => {
     
     // Decode the URL-encoded file name (e.g., %20 to space)
     const decodedFileName = decodeURIComponent(fileNameWithExtension);
-    
+    console.log(decodedFileName,"file decoded")
     // Extract the file name starting from "NEW Bill"
-    const fileNameStartFromNewBill = decodedFileName.split("NEW Bill")[1]; // Extract from "NEW Bill" onward
-    
-    return "NEW Bill" + fileNameStartFromNewBill; // Return the full name starting from "NEW Bill"
+    const fileNameStartFromNewBill = decodedFileName.split("_")[2]; // Extract from "NEW Bill" onward
+    console.log(fileNameStartFromNewBill[2])
+    return fileNameStartFromNewBill  || "no name for pdf"; // Return the full name starting from "NEW Bill"
   };
   
 
@@ -142,7 +142,7 @@ const DocumentCard = ({ item, onUpdate, editable }) => {
      
 
       <View className="mt-4">
-      <RemarkCard item={item} />
+      <RemarkCard item={item} editable={editable} />
       </View>
     </View>
   );

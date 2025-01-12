@@ -58,7 +58,7 @@ const CheckboxCard = ({ title, item, onUpdate, editable }) => {
       </View>
 
       {/* Render the RemarkCard component */}
-      <RemarkCard item={item} />
+      <RemarkCard item={item} editable={editable} />
 
       {/* Optional info section */}
       {item?.data?.optional && (

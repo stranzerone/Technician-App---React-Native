@@ -141,57 +141,43 @@ const MyTabs = () => {
   const [totalNotifications, setTotalNotifications] = useState(); // Initialize notification count
  const [dispatchCount,setDispatchCount]  =useState(0)
   const navigation = useNavigation();
-  const { setPpmAsstPermissions,notificationsCount,setComplaintPermissions,setInstructionPermissions} = usePermissions(); // Extract context permissions function
+  const { setPpmAsstPermissions,notificationsCount,loadPermissions} = usePermissions(); // Extract context permissions function
   const [user,setUser] = useState({})
   const [siteLogo,setSiteLogo]  = useState(null)
   const dispatch = useDispatch();
   useEffect(() => {
-    const loadPermissions = async () => {
+    // const loadPermissions = async () => {
 
-      try {
+    //   try {
         
-        const savedPermissions = await AsyncStorage.getItem('userInfo');
-        // const societyString = await AsyncStorage.getItem('society');
+    //     const savedPermissions = await AsyncStorage.getItem('userInfo');
+    //     // const societyString = await AsyncStorage.getItem('society');
         
-        // const societyData = JSON.parse(societyString);
-        // setSiteLogo(societyData.logo)
-        if (savedPermissions) {
-          const userInfo = JSON.parse(savedPermissions); // Parse the stored string into an object
+    //     // const societyData = JSON.parse(societyString);
+    //     // setSiteLogo(societyData.logo)
+    //     if (savedPermissions) {
+    //       const userInfo = JSON.parse(savedPermissions); // Parse the stored string into an object
         
-        console.log(userInfo.data.society.name,"this is name of society in bottom tabs")
-        // console.log(userInfo.data.society.name,"this is userinfo in bottomTabs")
-          setUser(userInfo.data.society)
+    //     console.log(userInfo.data.society.name,"this is name of society in bottom tabs")
+    //     // console.log(userInfo.data.society.name,"this is userinfo in bottomTabs")
+    //       setUser(userInfo.data.society)
 
           
-          // Check if permissions exist in the userInfo object
-          if (userInfo.data && userInfo.data.permissions) {
-            // Filter permissions that start with 'PPMASST'
-            const filteredPermissions = userInfo.data.permissions
-              .filter(item => item.startsWith('PPM_WOV.')) // Get items starting with 'PPMASST'
-              .map(item => item.split('.')[1]); // Split at the first dot and take the second part
+    //       // Check if permissions exist in the userInfo object
+    //       if (userInfo.data && userInfo.data.permissions) {
+    //         // Filter permissions that start with 'PPMASST'
+    //         const filteredPermissions = userInfo.data.permissions
+    //           .filter(item => item.startsWith('PPM_WOV')) // Get items starting with 'PPMASST'
+    //           .map(item => item.split('.')[1]); // Split at the first dot and take the second part
             
-              setPpmAsstPermissions(filteredPermissions); // Set permissions in context
-
-
-              const filteredComplaintPermissions = userInfo.data.permissions
-              .filter(item => item.startsWith('COM.')) // Get items starting with 'PPMASST'
-              .map(item => item.split('.')[1]); // Split at the first dot and take the second part
-            
-              setComplaintPermissions(filteredComplaintPermissions); // Set permissions in context
-         
-         
-              const filteredInstructionPermissions = userInfo.data.permissions
-              .filter(item => item.startsWith('PPM_IST.')) // Get items starting with 'PPMASST'
-              .map(item => item.split('.')[1]); // Split at the first dot and take the second part
-            
-              setInstructionPermissions(filteredInstructionPermissions); // Set permissions in context
-
-            }
-        }
-      } catch (error) {
-        console.error("Failed to load permissions:", error);
-      }
-    };
+    //           console.log(userInfo.data.permissions,'setting permissions')
+    //           setPpmAsstPermissions(filteredPermissions); // Set permissions in context
+    //      }
+    //     }
+    //   } catch (error) {
+    //     console.error("Failed to load permissions:", error);
+    //   }
+    // };
 
 
  console.log('call for permissions')
@@ -201,7 +187,7 @@ const MyTabs = () => {
 
 
 
-  }, []); // Dependency array includes setPpmAsstPermissions
+  }, [setPpmAsstPermissions]); // Dependency array includes setPpmAsstPermissions
 
 
   useEffect(() => {
@@ -321,24 +307,25 @@ const MyTabs = () => {
           headerRight: renderLogoutButton,
           headerLeft: Platform.OS === 'ios' ? () => (
             <View style={styles.societyNameContainer}>
-              <Text style={styles.societyNameText}>{user?.name}</Text>
+              <Text style={styles.societyNameText}>{user?.society_name}</Text>
             </View>
           ) : () => (
-      <View className="flex border-1 rounded-r-md h-12 items-start justify-start flex-row gap-1" style={styles.logoContainer}>
-{siteLogo &&
- <Image
-    className="w-24 h-24 rounded-lg"
-    source={{ uri: siteLogo }}
-    style={styles.logo}
-    resizeMode="contain"
-  />}
-  {Platform.OS === "android" && ( // Conditionally render society name for Android
-    <Text className="text-center h-5 text-white px-0 text-sm font-black">
-      {user?.name?.length > 12 ? `${user.name.substring(0, 12)}...` : user?.name}
-    </Text>
-  )}
-</View>
-
+            <View className="flex bg-[#074B7C] border-1  rounded-r-md h-12 items-start justify-start flex-row gap-1 w-full" style={styles.logoContainer}>
+            
+               <Image
+              className="w-24 h-24"
+              source={{ uri: siteLogo}}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+                {Platform.OS === "android" && ( // Conditionally render society name for Android
+          <Text className="  text-center h-5 text-white px-0 text-sm font-bold">
+            {user?.name}
+          
+          </Text>
+        )}
+            
+            </View>
           ),
           headerTitle: Platform.OS === "ios" ? "" : null, // Hide title on Android
 
@@ -426,14 +413,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   logoContainer: {
+
+      
     justifyContent: "start",
-    paddingHorizontal: 10,
-    width: "70%",
+    paddingHorizontal:10,
+    width:"auto",
     alignItems: "center",
   },
-  
   logo: {
-    borderRadius: 80, // Keeps rounded edges
+    borderRadius: 30, // Keeps rounded edges
     marginLeft:20
   },
   activeIconContainer: {

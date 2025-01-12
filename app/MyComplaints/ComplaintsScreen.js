@@ -25,7 +25,7 @@ const ComplaintsScreen = () => {
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [showFilter, setShowFilter] = useState(false);
   const navigation = useNavigation();
-const {ppmAsstPermissions}  = usePermissions()
+const {complaintPermissions}  = usePermissions()
   const statusOptions = [
     { label: 'All', value: 'All', color: '#999' },
     { label: 'Open', value: 'Open', color: '#4CAF50' },
@@ -118,7 +118,7 @@ const {ppmAsstPermissions}  = usePermissions()
         </View>
 
         {/* Add button */}
-        {ppmAsstPermissions.some((permission) => permission.includes('C'))&&
+        {complaintPermissions.some((permission) => permission.includes('C'))&&
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => navigation.navigate('RaiseComplaint')}
@@ -144,6 +144,7 @@ const {ppmAsstPermissions}  = usePermissions()
           <Text style={styles.noComplaintsText}>No Complaints Found</Text>
         </View>
       ) : (
+        complaintPermissions.some((permission) => permission.includes('R'))?
         <FlatList
           data={filteredComplaints}
           keyExtractor={(item) => item.id.toString()}
@@ -154,6 +155,13 @@ const {ppmAsstPermissions}  = usePermissions()
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         />
+        :
+        <View className="flex-1 items-center justify-center"> 
+
+
+          <Text className='text-center'>Not Authorized to view complaints</Text>
+        </View>
+        
       )}
     </View>
   );

@@ -18,7 +18,6 @@ export const GetComplaintLocations = async () => {
 
     try {
       const response = await axios.get(`${API_URL2}/getAllCustomAndCommonArea`, { params });
-console.log(response.data,"locations data")
       return response.data
 
 

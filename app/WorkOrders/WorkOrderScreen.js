@@ -33,7 +33,8 @@ const WorkOrderPage = () => {
   const dispatch = useDispatch(); // Use dispatch to dispatch actions
   const users = useSelector((state) => state.users.data);
   const teams = useSelector((state) => state.teams.data);
-  const { ppmAsstPermissions } = usePermissions();
+  const { ppmAsstPermissions,complaintPermissions,instructionPermissions } = usePermissions();
+  console.log(ppmAsstPermissions,complaintPermissions,instructionPermissions,"this are permissions stored in app")
   useEffect(() => {
 
     if (!users || !teams || users.length === 0 || teams.length === 0) {

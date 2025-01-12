@@ -1,63 +1,64 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Create a context for permissions and notifications
+// Create a context for permissions
 const PermissionsContext = createContext();
 
 // Create a provider component
 export const PermissionsProvider = ({ children }) => {
   const [ppmAsstPermissions, setPpmAsstPermissions] = useState([]);
-  const [notificationsCount, setNotificationCount] = useState(0); // Track notification count
+  const [complaintPermissions, setComplaintPermissions] = useState([]);
+  const [instructionPermissions, setInstructionPermissions] = useState([]);
 
-  // Load permissions and notifications count from AsyncStorage and update context on mount
-  useEffect(() => {
-    const loadPermissions = async () => {
-      try {
-        const savedPermissions = await AsyncStorage.getItem('userInfo');
+  const loadPermissions = async () => {
+ console.log("inside call permissions")
+    try {
+      const savedPermissions = await AsyncStorage.getItem('userInfo');
+     
+      if (savedPermissions) {
+        const userInfo = JSON.parse(savedPermissions); // Parse the stored string into an object
+        console.log("after load permission in context",userInfo.permissions)
 
-        if (savedPermissions) {
-          const userInfo = JSON.parse(savedPermissions); // Parse the stored string into an object
-          if (userInfo.permissions) {
-            const filteredPermissions = userInfo.permissions
-              .filter(item => item.startsWith('PPM_WOV.'))
-              .map(item => item.split('.')[1]);
+        if (userInfo.permissions) {
+          // const filteredPermissions = userInfo.permissions
+          //   .filter(item => item.startsWith('PPM_WOV.'))
+          //   .map(item => item.split('.')[1]);
 
-            // setPpmAsstPermissions(filteredPermissions); // Set permissions
-            setPpmAsstPermissions(filteredPermissions)
-          }
+          //   console.log(filteredPermissions,"filteredpermissions1")
+          // setPpmAsstPermissions(filteredPermissions);
+
+          // const filteredComplaintPermissions = userInfo.permissions
+          //   .filter(item => item.startsWith('COM.'))
+          //   .map(item => item.split('.')[1]);
+          //   console.log(filteredComplaintPermissions,"filteredpermissions2")
+
+          // setComplaintPermissions(filteredComplaintPermissions);
+
+          // const filteredInstructionPermissions = userInfo.permissions
+          //   .filter(item => item.startsWith('PPM_IST.'))
+          //   .map(item => item.split('.')[1]);
+
+          //   console.log(filteredInstructionPermissions,"filteredpermissions3")
+
+            
+          // setInstructionPermissions(filteredInstructionPermissions);
         }
-
-        // Fetch notifications count from the API
-      
-        // Initial fetch
-
-        // Set interval to fetch notifications every 1 minute (60000 milliseconds)
-        // const intervalId = setInterval(fetchNotificationCount, 60000); 
-
-        // Cleanup function to clear the interval when component unmounts
-        return () => clearInterval(intervalId);
-
-      } catch (error) {
-        console.error('Failed to load permissions or notifications:', error);
       }
-    };
-
-    loadPermissions();
-  }, []); // Empty dependency array to only run once on mount
-
-  // Update notification count directly in context
-  const updateNotificationCount = (count) => {
-    setNotificationCount(count);
+    } catch (error) {
+      console.error('Failed to load permissions:', error);
+    }
   };
 
   return (
     <PermissionsContext.Provider
       value={{
         ppmAsstPermissions,
+        complaintPermissions,
+        instructionPermissions,
         setPpmAsstPermissions,
-        notificationsCount,
-        setNotificationCount,
-        updateNotificationCount,
+        setComplaintPermissions,
+        setInstructionPermissions,
+        loadPermissions, // Expose the function
       }}
     >
       {children}
@@ -65,7 +66,7 @@ export const PermissionsProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the Permissions and Notifications context
+// Custom hook to use the Permissions context
 export const usePermissions = () => {
   return useContext(PermissionsContext);
 };

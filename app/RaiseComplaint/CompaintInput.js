@@ -74,9 +74,9 @@ const NewComplaintPage = ({ route }) => {
     const result = await ImagePicker.launchCameraAsync({
            mediaTypes: ImagePicker.MediaType,
            allowsEditing: false,
-           quality: 1,
+           quality: .5,
          });
-  
+  console.log(result,'image result')
     if (!result.canceled) {
       setImage(result.assets[0].uri); // Immediately show the image preview
   

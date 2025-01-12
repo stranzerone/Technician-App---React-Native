@@ -100,9 +100,7 @@ const FileCard = ({ item,onUpdate ,editable}) => {
       <RemarkCard
       className="mt-4"
         item={item}
-        onRemarkChange={(id, newRemark) =>
-          console.log(`Remark updated for ${id}: ${newRemark}`)
-        }
+        editable={editable}
       />
 
 

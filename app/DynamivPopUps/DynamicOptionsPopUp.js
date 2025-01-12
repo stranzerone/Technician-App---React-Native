@@ -18,7 +18,10 @@ const OptionsModal = ({ visible, options, onSelect, onClose }) => {
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.modalOption}
-                onPress={() => onSelect(item.value)} // Call onSelect when an option is pressed
+                onPress={() => {
+                  onSelect(item.value); // Call onSelect when an option is pressed
+                  onClose(); // Close the modal immediately after selecting
+                }}
               >
                 <FontAwesome
                   name={item.icon || 'circle'}

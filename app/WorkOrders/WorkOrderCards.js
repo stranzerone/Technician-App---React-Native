@@ -44,7 +44,6 @@ const WorkOrderCard = React.memo(({ workOrder }) => {
   const priorityColor = getPriorityColor(workOrder.wo.Priority);
   const [teamName, setTeamName] = useState('No team assigned');
   const users = useSelector((state) => state.users.data);
-console.log(users,"this are users in wo cards")
   const getUserNames = (assignedIds) => {
     if (!assignedIds || assignedIds.length === 0) {
       return 'Team';

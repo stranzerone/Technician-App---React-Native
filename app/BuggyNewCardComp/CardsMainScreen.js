@@ -8,16 +8,16 @@ import DocumentCard from './DocumentCard';
 
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
 
-const CardRenderer = ({ item, onUpdateSuccess }) => {
+const CardRenderer = ({ item, onUpdateSuccess,wo }) => {
   const [isEditable, setIsEditable] = useState(false);
-  const { ppmAsstPermissions } = usePermissions();
+  const { instructionPermissions } = usePermissions();
+console.log(instructionPermissions,"this are instruction permission")
   useEffect(() => {
-    if (ppmAsstPermissions.some((permission) => permission.includes('U'))) {
+    if (instructionPermissions.some((permission) => permission.includes('U')) && wo.Status !=="COMPLETED" ){
       setIsEditable(true);
     }
-  }, [ppmAsstPermissions]);
+  }, [instructionPermissions]);
 
-  console.log(item,"bl")
   const renderCard = () => {
     switch (item.type) {
       case 'checkbox':

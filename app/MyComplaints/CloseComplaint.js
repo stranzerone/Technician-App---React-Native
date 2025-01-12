@@ -30,7 +30,7 @@ const ComplaintCloseScreen = ({ route }) => {
   const [popupVisible, setPopupVisible] = useState(false); // For controlling popup visibility
   const [popupConfig, setPopupConfig] = useState({}); // For configuring the popup
   const navigation = useNavigation();
-const {ppmAsstPermissions} = usePermissions()
+const {complaintPermissions} = usePermissions()
 
 console.log(complaint,"complaint")
   useEffect(() => {
@@ -202,7 +202,7 @@ console.log(complaint,"complaint")
           <Text className="text-gray-600 ">Status : </Text>
           <Text className="text-black font-bold">{complaint.status}</Text>
           </View>
-            {complaint.status !== 'Closed' && ppmAsstPermissions.some((permission) => permission.includes('U')) && (
+            {complaint.status !== 'Closed' && complaintPermissions.some((permission) => permission.includes('U')) && (
               <TouchableOpacity
                 className="bg-blue-500 px-4 py-2 rounded-lg"
                 onPress={handleCloseComplaint}
