@@ -2,15 +2,15 @@ import React, { useState, useLayoutEffect } from "react";
 import { Text, View, StyleSheet } from "react-native";
 import { CameraView, Camera } from "expo-camera";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import DynamicPopup from "../DynamivPopUps/DynapicPopUpScreen";
 
-export default function QrScanner({onRefresh}) {
+export default function QrScanner({ onRefresh }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
-  const [popupVisible, setPopupVisible] = useState(false);  // State for popup visibility
-  const [popupMessage, setPopupMessage] = useState('');     // State for popup message
-  const [popupType, setPopupType] = useState('error');      // State for popup type (error, success, etc.)
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+  const [popupType, setPopupType] = useState('error');
   const navigation = useNavigation();
 
   const getCameraPermissions = async () => {
@@ -24,36 +24,31 @@ export default function QrScanner({onRefresh}) {
 
   const handleBarcodeScanned = async ({ data }) => {
     setScanned(true);
-    console.log(data,'uuid data')
+    console.log(data, 'UUID data');
     const type = data.split("=")[1];
     const uuid = data.split("=")[2];
-    console.log(`Scanned data: ${uuid} type = ${type}`);
+    console.log(`Scanned data: ${uuid}, type = ${type}`);
 
-    // Store UUID in AsyncStorage
     try {
-   
+      if (data.includes('app.factech')) {
+        // Store the latest UUID and type in AsyncStorage
+        await AsyncStorage.setItem('uuid', uuid);
+        await AsyncStorage.setItem('type', type);
 
-  
-    console.log(uuid,"sending to route")
+        console.log(`Stored UUID: ${uuid}, type: ${type}`);
 
-if(data.includes('app.factech')){
-  setScanned(false); // Reset scanned to allow scanning again
-
-  navigation.navigate("ScannedWoTag", { uuid : uuid ,type:type});
-}else{
-console.log(data,"not contain")
-setScanned(false); // Reset scanned to allow scanning again
-
-setPopupMessage("Qr Is Not Releated to app.factech, Scan a Valid Qr ");
-setPopupType("error"); // Set the popup type to 'error'
-setPopupVisible(true); // Display the popup
-
-
-}
-
+        setScanned(false); // Allow scanning again
+        navigation.navigate("ScannedWoTag", { uuid, type });
+      } else {
+        console.log(data, "not related");
+        setPopupMessage("QR Code is not related to site. Please scan a valid QR.");
+        setPopupType("error");
+        setPopupVisible(true);
+        setScanned(false); // Allow scanning again
+      }
     } catch (error) {
       console.error("Failed to store UUID:", error);
-      setScanned(false); // Reset scanned even if an error occurs
+      setScanned(false); // Allow scanning again in case of an error
     }
   };
 
@@ -76,14 +71,14 @@ setPopupVisible(true); // Display the popup
           style={styles.camera}
         />
       </View>
+      {/* Dynamic Popup */}
       <DynamicPopup
-      visible={popupVisible}
-      type={popupType}
-      message={popupMessage}
-      onOk={() => setPopupVisible(false)}  // Close the popup when OK is pressed
-
-      onClose={() => setPopupVisible(false)}  // Close the popup when OK is pressed
-    />
+        visible={popupVisible}
+        type={popupType}
+        message={popupMessage}
+        onOk={() => setPopupVisible(false)}
+        onClose={() => setPopupVisible(false)}
+      />
     </View>
   );
 }
@@ -96,14 +91,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
   },
   cameraContainer: {
-    width: "100%", 
-    aspectRatio: 1, 
-    borderRadius: 20, 
-    overflow: "hidden", 
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 20,
+    overflow: "hidden",
     borderWidth: 2,
-    borderColor: '#074B7C', 
-    backgroundColor: '#fff', 
-    marginBottom: 20, 
+    borderColor: '#074B7C',
+    backgroundColor: '#fff',
+    marginBottom: 20,
   },
   camera: {
     flex: 1,

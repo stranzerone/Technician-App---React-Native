@@ -84,10 +84,10 @@ const CommentsPage = ({ WoUuId }) => {
   return (
     <View style={{ flex: 1 }}>
       {/* ScrollView for comments */}
-      <ScrollView style={{ flex: 1 }}>
-        <View
+      <View style={{ flex: 1 }}>
+        <ScrollView
+        className="bg-blue-200"
           style={styles.container}
-          behavior={Platform.OS === 'ios' ? 'padding' : null}
         >
           <FlatList
             data={comments}
@@ -101,8 +101,8 @@ const CommentsPage = ({ WoUuId }) => {
               </View>
             }
           />
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
 
       {/* Comment input section */}
       <View
@@ -130,12 +130,12 @@ const CommentsPage = ({ WoUuId }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 10,
     borderWidth:1,
     borderRadius:10,
     borderColor:"#074B7C",
-    backgroundColor: '#fff',
+  
+    zIndex:100,
   },
   loaderContainer: {
     justifyContent: 'center',
@@ -163,13 +163,13 @@ const styles = StyleSheet.create({
     height: 70,  // Set a fixed height for the input container
     paddingBottom: 10,
     borderWidth:1,
+    backgroundColor:"gray",
     borderColor:"gray",
     flexDirection: 'row',
     alignItems: 'flex-end',
     padding: 10,
     borderTopWidth: 1,
     borderTopColor: '#ccc',
-    backgroundColor: '#fff',
   },
   input: {
     flex: 1,

@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
 export const GetAllWorkOrders = async (selectedFilter) => {
-  console.log(selectedFilter,"get ALl workOrders")
   try {
     // Fetch user info and uuid from AsyncStorage
     const userInfo = await AsyncStorage.getItem('userInfo');

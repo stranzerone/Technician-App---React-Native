@@ -8,12 +8,11 @@ import DocumentCard from './DocumentCard';
 
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
 
-const CardRenderer = ({ item, onUpdateSuccess,wo }) => {
+const CardRenderer = ({ item, onUpdateSuccess,wo,restricted }) => {
   const [isEditable, setIsEditable] = useState(false);
   const { instructionPermissions } = usePermissions();
-console.log(instructionPermissions,"this are instruction permission")
   useEffect(() => {
-    if (instructionPermissions.some((permission) => permission.includes('U')) && wo.Status !=="COMPLETED" ){
+    if (instructionPermissions.some((permission) => !restricted && permission.includes('U')) && wo.Status !=="COMPLETED" ){
       setIsEditable(true);
     }
   }, [instructionPermissions]);

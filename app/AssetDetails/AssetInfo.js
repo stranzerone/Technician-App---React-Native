@@ -144,8 +144,9 @@ const DetailItem = ({ icon, label, text, isTag }) => (
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#f9f9f9',
+    height:"120%",
+    paddingBottom:80
   },
   scrollViewContent: {
     padding: 16,

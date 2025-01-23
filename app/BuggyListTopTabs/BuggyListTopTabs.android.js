@@ -8,20 +8,22 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import BuggyListPage from '../BuggyList/BuggyListScreen';
 import AssetDetailsMain from '../AssetDetails/AssetDetailsScreen';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation,CommonActions } from '@react-navigation/native';
 
 const BuggyListTopTabs = ({  route  }) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const { ppmAsstPermissions } = usePermissions();
   const uuid = route.params.workOrder;
   const wo = route.params.wo
+  const restricted = route.params.restricted
+  const previousScreen = route.params.previousScreen
   const hasPermission = ppmAsstPermissions.some((permission) =>
     permission.includes('C')
   );
 
   const navigation = useNavigation()
   const renderScene = SceneMap({
-    BuggyList: () => <BuggyListPage   uuid={uuid}  wo={wo}/>,
+    BuggyList: () => <BuggyListPage restricted={restricted}  uuid={uuid}  wo={wo}/>,
     Details: () => <AssetDetailsMain uuid={uuid} />,
   });
 
@@ -35,9 +37,22 @@ const BuggyListTopTabs = ({  route  }) => {
   );
 
   const handleBackPress = () => {
-    navigation.goBack();
-  };
+ 
 
+    navigation.goBack()
+  //  console.log(previousScreen,"this is back previous screen")
+  //  if(previousScreen == 'ScannedWoTag'){
+  //     navigation.navigate(previousScreen);
+  //  }else{
+  //      navigation.dispatch(
+  //              CommonActions.reset({
+  //                index: 0,
+  //                routes: [{ name: 'Home' }], 
+  //              })
+  //            );
+  //  }
+  };
+  
   if (hasPermission) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>

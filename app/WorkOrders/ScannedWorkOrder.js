@@ -13,39 +13,68 @@ import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 import Loader from '../LoadingScreen/AnimatedLoader';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { getLocationWorkOrder } from '../../service/WorkOrderApis/GetLocationWo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const FilteredWorkOrderPage = ({ route, uuids: passedUuid }) => {
   const [loading, setLoading] = useState(false);
   const [filteredWorkOrders, setFilteredWorkOrders] = useState([]);
   const [isPopupVisible, setPopupVisible] = useState(false);
-  const uuid = route?.params?.uuid || passedUuid;
-  const type = route?.params?.type;
+  const [type, setType] = useState(route?.params?.type || null);
+  const [uuid, setUuid] = useState(route?.params?.uuid || passedUuid || null);
   const navigation = useNavigation();
 
-  console.log(uuid, type,'this is the uuid received in wororder screen');
+  useEffect(() => {
+    const fetchUuidAndType = async () => {
+      try {
+        if (!uuid || !type) {
+          const storedUuid = await AsyncStorage.getItem('uuid');
+          const storedType = await AsyncStorage.getItem('type');
+          setUuid(storedUuid);
+          setType(storedType);
+        }
+      } catch (error) {
+        console.error('Error fetching UUID and type from AsyncStorage:', error);
+      }
+    };
 
-  // Fetch work orders if not present in Redux
+    fetchUuidAndType();
+  }, []);
+
+
+  const handleBack = ()=>{
+        navigation.goBack()
+  }
+
+
+
+  
+console.log(uuid,type,'this are the values')
+
+  useEffect(() => {
+    if (uuid && type) {
+      fetchData();
+    }
+  }, [uuid, type]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
-console.log(type,"type")
-let response ;
-      if(type == 'LC'){
-        console.log("inside location")
-     response = await getLocationWorkOrder(uuid)
-      }else{
-        console.log("inside asset")
-      response = await GetSingleWorkOrders(uuid);
-      console.log(response, 'this is response for scanned wo');
+      let response;
+      if (type === 'LC') {
+        console.log('Fetching location work orders...');
+        response = await getLocationWorkOrder(uuid);
+      } else {
+        console.log('Fetching asset work orders...');
+        response = await GetSingleWorkOrders(uuid);
       }
       if (response && response.length > 0) {
         setFilteredWorkOrders(response);
       } else {
-        setPopupVisible(true); // Show popup if no work orders are found
+        setPopupVisible(true);
       }
     } catch (error) {
       console.error('Error fetching work orders:', error);
-      setPopupVisible(true); // Show popup in case of an error
+      setPopupVisible(true);
     } finally {
       setLoading(false);
     }
@@ -56,21 +85,20 @@ let response ;
     navigation.goBack(); // Navigate back to the previous screen
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [uuid]);
-
   return (
     <View style={styles.container}>
       {/* Custom Back Button */}
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.goBack()}
+        onPress={() => handleBack()}
       >
         <FontAwesome name="arrow-left" size={20} color="white" />
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
 
+
+
+<Text  className="text-center font-bold text-lg">WorkOrders </Text>
       {loading ? (
         <View style={styles.loaderContainer}>
           <Loader />
@@ -79,7 +107,9 @@ let response ;
         <FlatList
           data={filteredWorkOrders}
           keyExtractor={(item) => item.wo['Sequence No']}
-          renderItem={({ item }) => <WorkOrderCard workOrder={item} />}
+          renderItem={({ item }) => (
+            <WorkOrderCard workOrder={item} previousScreen={'ScannedWoTag'} />
+          )}
           contentContainerStyle={styles.contentContainer}
         />
       )}
@@ -102,7 +132,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   backButton: {
-    width:100,
     flexDirection: 'row',
     alignItems: 'center',
     margin: 10,
@@ -112,7 +141,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   backButtonText: {
-    
     marginLeft: 8,
     fontSize: 16,
     color: '#fff', // White text for contrast

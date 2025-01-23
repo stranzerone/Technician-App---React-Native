@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
-export const GetSingleWorkOrders = async (uuid,status) => {
+export const GetWorkOrderInfo = async (uuid) => {
 //https://nppm-api.isocietymanager.com/v3/workorder/assigned/asset?
   try {
     // Fetch user info and uuid from AsyncStorage
@@ -25,17 +25,12 @@ export const GetSingleWorkOrders = async (uuid,status) => {
 
       //https://nppm-api.isocietymanager.com/v3/asset/uuid1
     const params = {
-      asset_uuid:uuid,
-      per_page:'10',
-      page_no:'1',
-      user_id: userId,
-      site_id:societyId,
-      Status:status,
-      breakdown:'false',
-      "api-token": apiToken,
-     " user-id": userId,
-      "api-token": apiToken,
-      "user-id": userId
+        "uuid": uuid,
+       "site_id" : societyId,
+       "api-token":apiToken,
+        "user-id": userId,
+        "api-token": apiToken,
+        "user-id": userId
     };
 
 
@@ -51,7 +46,7 @@ export const GetSingleWorkOrders = async (uuid,status) => {
 
 
     // Make the API request
-    const response = await axios.get(`${API_URL}/v3/workorder/assigned/asset?`, { params,headers,withCredentials: true });
+    const response = await axios.get(`${API_URL}/v4/workorder?`, { params,headers,withCredentials: true });
     // Check the response data
 
   return response.data.data

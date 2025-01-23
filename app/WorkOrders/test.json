@@ -1,0 +1,36 @@
+Description
+: "added restriction for config"
+Due Date
+: "2025-01-19 16:00:00"
+Name
+: "Daily Wo 2PM"
+Priority
+: "Normal"
+Sequence No
+: "WO-01221"
+Status
+: "OPEN"
+Type
+: "PLANNED"
+breakdown
+: false
+created_at
+: "2025-01-19 10:30:40"
+created_by
+: 0
+enable_alert
+: true
+flag_pm
+: true
+pm_uuid
+: "7e14858f-caf4-431a-b9d7-1d00459e3f34"
+updated_at
+: "2025-01-19 10:30:40"
+user_id
+: 364815
+uuid
+: "e9a28214-5ecf-4225-9414-8f005d1ce021"
+wo_restriction
+: true
+wo_restriction_time
+: 1

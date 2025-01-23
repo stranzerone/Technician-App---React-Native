@@ -5,6 +5,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { useSelector } from 'react-redux';
 import useConvertToIST from '../TimeConvertot/ConvertUtcToIst';
 import { getAllTeams } from '../../service/GetUsersApi/GetAllTeams';
+import { GetWorkOrderInfo } from '../../service/WorkOrderApis/GetWorkOrderInfo';
+import moment from 'moment';
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -38,12 +40,15 @@ const getPriorityColor = (priority) => {
   }
 };
 
-const WorkOrderCard = React.memo(({ workOrder }) => {
+const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
+
   const navigation = useNavigation();
   const statusColor = getStatusColor(workOrder.wo.Status);
   const priorityColor = getPriorityColor(workOrder.wo.Priority);
   const [teamName, setTeamName] = useState('No team assigned');
   const users = useSelector((state) => state.users.data);
+  const [siteUuid,setSiteUuid]  = useState('')
+  const [restricted,setRestricted]  = useState(false)
   const getUserNames = (assignedIds) => {
     if (!assignedIds || assignedIds.length === 0) {
       return 'Team';
@@ -60,7 +65,34 @@ const WorkOrderCard = React.memo(({ workOrder }) => {
       .join(', ');
   };
 
-  // useEffect(() => {
+
+
+
+
+
+
+
+  useEffect(() => {
+    // Get restriction time (in hours)
+    const delTime = workOrder.wo.wo_restriction_time; // Time in hours
+  
+    // Parse created time as UTC
+    const creTime = moment.utc(workOrder.wo.created_at); // Force UTC interpretation for 'created_at'
+  
+    const currTime = moment(); // Get current local time
+  
+    const timeDiff = currTime.diff(creTime, 'minutes') / 60; // Calculate difference in minutes, then convert to hours
+  
+      
+    if (timeDiff >= delTime) {
+
+      setRestricted(true); // Set restricted if the time difference exceeds the restriction time
+    }else{
+      setRestricted(false)
+    }
+
+    }, []);
+    // useEffect(() => {
   //   const fetchTeamName = async () => {
   //     try {
   //       console.log(workOrder.wo.AssignedTeam, "workOrder.wo.AssignedTeam")
@@ -94,21 +126,72 @@ const WorkOrderCard = React.memo(({ workOrder }) => {
   //   fetchTeamName();
   // }, [workOrder.wo.AssignedTeam, workOrder.as.site_uuid]); // Dependencies for re-running effect
   
+
+  // const fetchWorkorder = async()=>{
+
+  //   try{
+  
+  // const response = await GetWorkOrderInfo(workOrder.wo.uuid)
+  
+  // console.log(response[0].pm.site_uuid,'response for wo ')
+  
+  //   }catch(error){
+  //     console.error(error)
+  //   }
+  
+  
+  // }
+
+
+// useEffect(()=>{
+
+// fetchWorkorder()
+// },[])
+
+
+
+
+
+
+
+
+
+
+const handleBack=()=>{
+
+
+
+  if (!workOrder.wo.flag_delay) {
+
+if(previousScreen == 'ScannedWoTag'){
+  navigation.navigate('ScannedWoBuggyList',{
+    workOrder: workOrder.wo.uuid,
+    wo: workOrder.wo,
+    previousScreen:previousScreen,
+    restricted
+  })
+}else{
+
+    navigation.navigate('BuggyListTopTabs', {
+      workOrder: workOrder.wo.uuid,
+      wo: workOrder.wo,
+      previousScreen:previousScreen,
+      restricted
+    });
+
+  }
+
+}
+}
+
+
   const fontSize = Platform.OS === 'ios' ? 13 : 14;
   const largeFontSize = Platform.OS === 'ios' ? 16 : 18;
-
   return (
     <TouchableOpacity
     className="bg-white border p-4 rounded-md my-2 shadow-lg relative"
     style={{ borderColor: 'darkblue' }}
-    onPress={() => {
-      if (!workOrder.wo.wo_restriction) {
-        navigation.navigate('BuggyListTopTabs', {
-          workOrder: workOrder.wo.uuid,
-          wo: workOrder.wo,
-        });
-      }
-    }}
+    onPress={handleBack}
   >
   
       {/* Work Order ID and status */}
@@ -117,13 +200,18 @@ const WorkOrderCard = React.memo(({ workOrder }) => {
         <Text className="text-gray-600 font-bold" style={{ fontSize }}>
           WO-ID : {workOrder.wo['Sequence No']}
         </Text>
-        {workOrder.wo.wo_restriction  &&
+        {workOrder.wo.flag_delay  &&
 
                <Icon name="flag" size={16} color="red"  />
        
           }
 
+{!workOrder.wo.flag_delay  && workOrder.wo.flag_pm &&
 
+
+<Icon name="clock-o" size={16} color="gray"  />
+
+}
         </View>
     
         <View className="flex-row items-center">

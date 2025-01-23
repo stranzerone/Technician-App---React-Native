@@ -1,0 +1,1056 @@
+
+    "1174": {
+        "created_at": "2021-06-10 17:58:54",
+        "created_by": 212928,
+        "disp_order": 120,
+        "id": 1174,
+        "ivr_order": null,
+        "name": "test",
+        "remarks": "test",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 1,
+        "updated_at": "2021-06-10 12:28:54",
+        "updated_by": 212928
+    },
+    "1212": {
+        "created_at": "2021-10-05 10:03:47",
+        "created_by": 218024,
+        "disp_order": 17,
+        "id": 1212,
+        "ivr_order": null,
+        "name": "Air",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2021-10-05 04:33:47",
+        "updated_by": 218024
+    },
+    "1273": {
+        "created_at": "2022-01-06 11:13:41",
+        "created_by": 233678,
+        "disp_order": 77,
+        "id": 1273,
+        "ivr_order": null,
+        "name": "water1",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2022-01-06 05:43:41",
+        "updated_by": 233678
+    },
+    "1310": {
+        "created_at": "2022-02-23 20:59:21",
+        "created_by": 189185,
+        "disp_order": 150,
+        "id": 1310,
+        "ivr_order": null,
+        "name": "Airconditioning Service",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2022-02-23 15:29:21",
+        "updated_by": 189185
+    },
+    "14": {
+        "created_at": "2016-04-13 14:09:22",
+        "created_by": 0,
+        "disp_order": 1,
+        "id": 14,
+        "ivr_order": 1,
+        "name": "Electricity  (बिजली की समस्या)",
+        "remarks": "",
+        "sla": 5,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2021-06-22 17:27:30",
+        "updated_by": 124513
+    },
+    "15": {
+        "created_at": "2016-04-13 14:09:22",
+        "created_by": 0,
+        "disp_order": 2,
+        "id": 15,
+        "ivr_order": 2,
+        "name": "Water (पानी की समस्या)",
+        "remarks": "",
+        "sla": 5,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2021-06-22 17:28:09",
+        "updated_by": 124513
+    },
+    "1561": {
+        "created_at": "2022-12-05 18:38:40",
+        "created_by": 258514,
+        "disp_order": 26,
+        "id": 1561,
+        "ivr_order": null,
+        "name": "garbage management",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2022-12-05 13:08:40",
+        "updated_by": 258514
+    },
+    "1612": {
+        "created_at": "2023-02-01 10:40:15",
+        "created_by": 258514,
+        "disp_order": 123,
+        "id": 1612,
+        "ivr_order": null,
+        "name": "ttttt",
+        "remarks": "aaaa",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 1,
+        "updated_at": "2023-02-01 05:10:15",
+        "updated_by": 258514
+    },
+    "1613": {
+        "created_at": "2023-02-01 10:43:36",
+        "created_by": 258514,
+        "disp_order": 44,
+        "id": 1613,
+        "ivr_order": null,
+        "name": "aaa",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2023-02-01 05:13:36",
+        "updated_by": 258514
+    },
+    "1771": {
+        "created_at": "2023-04-25 16:08:57",
+        "created_by": 258514,
+        "disp_order": 56,
+        "id": 1771,
+        "ivr_order": null,
+        "name": "aaaaaa",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2023-04-25 10:38:57",
+        "updated_by": 258514
+    },
+    "1831": {
+        "created_at": "2023-06-01 10:12:42",
+        "created_by": 270738,
+        "disp_order": 1,
+        "id": 1831,
+        "ivr_order": null,
+        "name": "Electrical",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2023-09-02 05:59:41",
+        "updated_by": 270853
+    },
+    "1832": {
+        "created_at": "2023-06-01 10:12:42",
+        "created_by": 270738,
+        "disp_order": 2,
+        "id": 1832,
+        "ivr_order": null,
+        "name": "Plumbing",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2023-09-02 05:59:46",
+        "updated_by": 270853
+    },
+    "1838": {
+        "created_at": "2023-06-03 08:33:08",
+        "created_by": 270853,
+        "disp_order": 3,
+        "id": 1838,
+        "ivr_order": null,
+        "name": "House Keeping",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2023-09-02 05:59:50",
+        "updated_by": 270853
+    },
+    "1966": {
+        "created_at": "2023-06-30 11:09:26",
+        "created_by": 258514,
+        "disp_order": 101,
+        "id": 1966,
+        "ivr_order": null,
+        "name": "fitting",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2023-06-30 05:39:26",
+        "updated_by": 258514
+    },
+    "2139": {
+        "created_at": "2023-08-24 18:13:16",
+        "created_by": 270739,
+        "disp_order": 4,
+        "id": 2139,
+        "ivr_order": null,
+        "name": "ABC Internal",
+        "remarks": "",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2023-09-02 05:59:56",
+        "updated_by": 270853
+    },
+    "2200": {
+        "created_at": "2023-09-06 20:47:42",
+        "created_by": 277087,
+        "disp_order": 85,
+        "id": 2200,
+        "ivr_order": null,
+        "name": "cable",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2023-09-06 15:17:42",
+        "updated_by": 277087
+    },
+    "2239": {
+        "created_at": "2023-09-30 12:25:40",
+        "created_by": 278021,
+        "disp_order": 3,
+        "id": 2239,
+        "ivr_order": null,
+        "name": "Plumbing",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2023-12-12 10:07:28",
+        "updated_by": 278022
+    },
+    "2662": {
+        "created_at": "2024-03-30 15:30:37",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2662,
+        "ivr_order": null,
+        "name": "Electricit1",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-03-30 15:30:37",
+        "updated_by": null
+    },
+    "2663": {
+        "created_at": "2024-03-30 15:30:54",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2663,
+        "ivr_order": null,
+        "name": "Electricit2",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-03-30 15:30:54",
+        "updated_by": null
+    },
+    "2664": {
+        "created_at": "2024-03-30 15:31:19",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2664,
+        "ivr_order": null,
+        "name": "Electricity4",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-03-30 15:31:19",
+        "updated_by": null
+    },
+    "2665": {
+        "created_at": "2024-03-30 15:36:05",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2665,
+        "ivr_order": null,
+        "name": "Water12",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-03-30 15:36:05",
+        "updated_by": null
+    },
+    "2737": {
+        "created_at": "2024-04-18 07:16:52",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2737,
+        "ivr_order": null,
+        "name": "Carpentary",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-04-18 07:16:52",
+        "updated_by": null
+    },
+    "2738": {
+        "created_at": "2024-04-18 07:17:32",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2738,
+        "ivr_order": null,
+        "name": "Facility related",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-04-18 07:17:32",
+        "updated_by": null
+    },
+    "2739": {
+        "created_at": "2024-04-18 07:29:30",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2739,
+        "ivr_order": null,
+        "name": "Common Area",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-04-18 07:29:30",
+        "updated_by": null
+    },
+    "2752": {
+        "created_at": "2024-04-22 05:26:18",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2752,
+        "ivr_order": null,
+        "name": "Electrical &amp;",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-04-22 05:26:18",
+        "updated_by": null
+    },
+    "2774": {
+        "created_at": "2024-05-03 11:15:11",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2774,
+        "ivr_order": null,
+        "name": "Car Parking",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-05-03 11:15:11",
+        "updated_by": null
+    },
+    "2789": {
+        "created_at": "2024-05-06 07:04:33",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2789,
+        "ivr_order": null,
+        "name": "Lift Service",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-05-06 07:04:33",
+        "updated_by": null
+    },
+    "2882": {
+        "created_at": "2024-05-29 04:47:31",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2882,
+        "ivr_order": null,
+        "name": "Payment",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-05-29 04:47:31",
+        "updated_by": null
+    },
+    "2883": {
+        "created_at": "2024-05-29 04:58:16",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2883,
+        "ivr_order": null,
+        "name": "Cleaning",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-05-29 04:58:16",
+        "updated_by": null
+    },
+    "2884": {
+        "created_at": "2024-05-29 05:39:23",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2884,
+        "ivr_order": null,
+        "name": "Security &amp;",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-05-29 05:39:23",
+        "updated_by": null
+    },
+    "2960": {
+        "created_at": "2024-06-19 05:18:05",
+        "created_by": null,
+        "disp_order": null,
+        "id": 2960,
+        "ivr_order": null,
+        "name": "Fire Safety",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-06-19 05:18:05",
+        "updated_by": null
+    },
+    "3003": {
+        "created_at": "2024-07-08 06:05:31",
+        "created_by": 5487,
+        "disp_order": 899,
+        "id": 3003,
+        "ivr_order": null,
+        "name": "techni",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2024-07-08 06:05:31",
+        "updated_by": 5487
+    },
+    "3398": {
+        "created_at": "2024-11-08 10:39:58",
+        "created_by": null,
+        "disp_order": null,
+        "id": 3398,
+        "ivr_order": null,
+        "name": "Water",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2024-11-08 10:39:58",
+        "updated_by": null
+    },
+    "402": {
+        "created_at": "2018-07-14 02:15:36",
+        "created_by": 5487,
+        "disp_order": 10,
+        "id": 402,
+        "ivr_order": null,
+        "name": "Tata Sky",
+        "remarks": "Please contact Tata Sky helpline: 1800 208 6633 (Toll free).",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 1,
+        "updated_at": "2019-03-15 04:58:03",
+        "updated_by": 2090
+    },
+    "49": {
+        "created_at": "2016-08-03 21:46:33",
+        "created_by": 3980,
+        "disp_order": 3,
+        "id": 49,
+        "ivr_order": 3,
+        "name": "AC (एयर कंडीशन की समस्या)",
+        "remarks": "",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2021-06-22 17:29:13",
+        "updated_by": 124513
+    },
+    "50": {
+        "created_at": "2016-08-03 21:46:33",
+        "created_by": 3980,
+        "disp_order": 4,
+        "id": 50,
+        "ivr_order": 4,
+        "name": "Housekeeping",
+        "remarks": "",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2018-07-19 12:59:22",
+        "updated_by": 3980
+    },
+    "51": {
+        "created_at": "2016-08-03 21:46:33",
+        "created_by": 3980,
+        "disp_order": 50,
+        "id": 51,
+        "ivr_order": 5,
+        "name": "Mason (Civil)",
+        "remarks": "30",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2019-09-11 10:49:43",
+        "updated_by": 116335
+    },
+    "52": {
+        "created_at": "2016-08-03 21:46:33",
+        "created_by": 3980,
+        "disp_order": 6,
+        "id": 52,
+        "ivr_order": 6,
+        "name": "Carpenter (Civil)",
+        "remarks": "",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2018-07-19 12:59:22",
+        "updated_by": 3980
+    },
+    "53": {
+        "created_at": "2016-08-03 21:46:33",
+        "created_by": 3980,
+        "disp_order": 7,
+        "id": 53,
+        "ivr_order": 7,
+        "name": "Painter (Civil)",
+        "remarks": "",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2018-07-19 12:59:22",
+        "updated_by": 3980
+    },
+    "532": {
+        "created_at": "2018-12-21 14:08:39",
+        "created_by": 78841,
+        "disp_order": 12,
+        "id": 532,
+        "ivr_order": null,
+        "name": "D2H",
+        "remarks": "Please call to Mobile Operator",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2019-03-05 16:48:06",
+        "updated_by": 5487
+    },
+    "54": {
+        "created_at": "2016-08-03 21:46:33",
+        "created_by": 3980,
+        "disp_order": 8,
+        "id": 54,
+        "ivr_order": 8,
+        "name": "Security",
+        "remarks": "",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2018-07-19 12:59:22",
+        "updated_by": 3980
+    },
+    "55": {
+        "created_at": "2016-08-03 21:46:33",
+        "created_by": 3980,
+        "disp_order": 9,
+        "id": 55,
+        "ivr_order": 9,
+        "name": "Horticulture",
+        "remarks": "",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2018-07-19 12:59:22",
+        "updated_by": 3980
+    },
+    "56": {
+        "created_at": "2016-08-03 21:46:33",
+        "created_by": 3980,
+        "disp_order": 5,
+        "id": 56,
+        "ivr_order": 0,
+        "name": "Fire",
+        "remarks": "",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2019-09-11 10:49:53",
+        "updated_by": 116335
+    },
+    "631": {
+        "created_at": "2019-05-14 12:26:12",
+        "created_by": 114357,
+        "disp_order": 11,
+        "id": 631,
+        "ivr_order": null,
+        "name": "Club House pantry",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2019-05-14 06:56:12",
+        "updated_by": 114357
+    },
+    "640": {
+        "created_at": "2019-05-17 15:35:13",
+        "created_by": 39551,
+        "disp_order": 100,
+        "id": 640,
+        "ivr_order": null,
+        "name": "demo",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2019-05-17 10:05:13",
+        "updated_by": 39551
+    },
+    "641": {
+        "created_at": "2019-05-17 15:36:02",
+        "created_by": 39551,
+        "disp_order": 10000,
+        "id": 641,
+        "ivr_order": null,
+        "name": "Renovation",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2020-10-21 13:06:54",
+        "updated_by": 124513
+    },
+    "73": {
+        "created_at": "2017-07-25 19:50:22",
+        "created_by": 13868,
+        "disp_order": 999,
+        "id": 73,
+        "ivr_order": null,
+        "name": "Electricity2",
+        "remarks": "",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2019-03-15 04:57:58",
+        "updated_by": 16936
+    },
+    "74": {
+        "created_at": "2017-07-25 19:50:22",
+        "created_by": 13868,
+        "disp_order": 25,
+        "id": 74,
+        "ivr_order": null,
+        "name": "Cctv",
+        "remarks": "call other no",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 1,
+        "updated_at": "2019-08-26 15:56:55",
+        "updated_by": 125595
+    },
+    "775": {
+        "created_at": "2019-09-12 15:29:37",
+        "created_by": 125595,
+        "disp_order": 13,
+        "id": 775,
+        "ivr_order": null,
+        "name": "housekeeping 2",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ],
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2019-09-12 09:59:37",
+        "updated_by": 125595
+    },
+    "776": {
+        "created_at": "2019-09-12 15:36:02",
+        "created_by": 125595,
+        "disp_order": 14,
+        "id": 776,
+        "ivr_order": null,
+        "name": "house keeping",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2019-09-12 10:06:02",
+        "updated_by": 125595
+    },
+    "777": {
+        "created_at": "2019-09-12 16:09:03",
+        "created_by": 125595,
+        "disp_order": 15,
+        "id": 777,
+        "ivr_order": null,
+        "name": "pest",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2020-10-19 12:27:40",
+        "updated_by": 10712
+    },
+    "778": {
+        "created_at": "2019-09-12 16:15:09",
+        "created_by": 125595,
+        "disp_order": 16,
+        "id": 778,
+        "ivr_order": null,
+        "name": "pest control",
+        "remarks": null,
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": null,
+        "updated_at": "2019-09-12 10:45:09",
+        "updated_by": 125595
+    },
+    "92": {
+        "created_at": "-0001-11-30 00:00:00",
+        "created_by": null,
+        "disp_order": null,
+        "id": 92,
+ {       "ivr_order": null,
+        "name": "Others",
+        "remarks": "",
+        "sla": 0,
+        "society_id": 2,
+        "sub_catagory": [
+            [Object
+            ]
+        ],
+        "unhandled": 0,
+        "updated_at": "2017-09-06 08:49:59",
+        "updated_by": null
+    }
+} complaints

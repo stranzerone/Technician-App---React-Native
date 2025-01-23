@@ -9,7 +9,6 @@ import { usePermissions } from '../GlobalVariables/PermissionsContext';
 const WorkOrderHomeTab = () => {
   const { ppmAsstPermissions } = usePermissions();
   const navigation = useNavigation();
-console.log(ppmAsstPermissions,"this are the permissions ")
   // Refresh logic that will run every time the tab is focused
   useFocusEffect(
     useCallback(() => {

@@ -18,8 +18,10 @@ export const loginApi = async (user) => {
     ...(user.user?.user_id && { user_id: user.user.user_id }),
   };
 
+
+  console.log(user,payload,'this is login issue')
   try {
-    const { data } = await axiosInstance.post('/login', payload);
+    const { data } = await axios.post(API_URL2+'/login', payload);
 
     if (data.message === 'Login Successful.') {
       const { designation_name } = data.data;
@@ -44,16 +46,10 @@ export const loginApi = async (user) => {
     return data;
   } catch (error) {
     // Handle network or API errors
-    if (error.response) {
-      return {
-        status: 'error',
-        message: error.response.data.message || 'An error occurred during login.',
-      };
-    }
-
+  console.error(error)
     return {
       status: 'error',
-      message: 'Network error. Please try again later.',
+      message: error,
     };
   }
 };

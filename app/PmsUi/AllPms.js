@@ -210,6 +210,7 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 8,
     fontSize: 16,
+    fontWeight:"900",
     color: "#666",
     textAlign: "center",
   },

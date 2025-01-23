@@ -22,10 +22,10 @@ import { WorkOrderInfoApi } from '../../service/WorkOrderInfoApi';
 import CardRenderer from '../BuggyNewCardComp/CardsMainScreen';
 import { Platform } from 'react-native';
 
-const BuggyListPage = ({ uuid, wo }) => {
+const BuggyListPage = ({ uuid, wo ,restricted}) => {
   const [data, setData] = useState([]);
   const [assetDescription, setAssetDescription] = useState(''); 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [expanded, setExpanded] = useState(false); 
   const [keyboardOffset, setKeyboardOffset] = useState(0);
@@ -34,16 +34,19 @@ const BuggyListPage = ({ uuid, wo }) => {
   const navigate = useNavigation();
 
   // Function to fetch buggy list data
-  console.log(wo.Name, "at buggyscreen");
   const loadBuggyList = async () => {
-    setLoading(true); 
     try {
       const result = await GetInstructionsApi(uuid);
-      setData(result);
+      if(result){
+        setData(result);
+
+      }else{
+        setData([])
+      }
     } catch (error) {
       setError(error.message || 'Something went wrong');
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   };
 
@@ -58,6 +61,7 @@ const BuggyListPage = ({ uuid, wo }) => {
   };
 
   useEffect(() => {
+    setLoading(true)
     loadBuggyList();
     loadAssetDescription(); 
   }, [uuid]);
@@ -75,6 +79,7 @@ const BuggyListPage = ({ uuid, wo }) => {
 
   const renderCard = ({ item, index }) => (
     <CardRenderer
+    restricted={restricted}
       item={item}
       onUpdateSuccess={handleRefreshData} 
       index={index}
@@ -100,12 +105,6 @@ const BuggyListPage = ({ uuid, wo }) => {
     extrapolate: 'clamp',
   });
 
-  const handleAddInstruction = () => {
-    const lastItem = data[data.length - 1];
-    if (lastItem && lastItem.order) {
-      navigate.navigate('AddInstructions', { order: lastItem.order });
-    }
-  };
 
   if (error) {
     return (
@@ -118,17 +117,14 @@ const BuggyListPage = ({ uuid, wo }) => {
     );
   }
 
-  if (data.length === 0) {
+
+
+
+  if (loading) {
     return <Loader />;
   }
 
-  if (!data) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No instructions available.</Text>
-      </View>
-    );
-  }
+
 
   return (
     <KeyboardAvoidingView
@@ -141,8 +137,13 @@ const BuggyListPage = ({ uuid, wo }) => {
           <View style={styles.descriptionContainer}>
             <Text style={styles.assetDescription}>{assetDescription}</Text>
           </View>
-          
+      { restricted &&   <View className="flex flex-row gap-1 items-center justify-center">
+        <FontAwesome5 name='stop-circle' size={20} color="red" />
+                   <Text className="text-red-500 text-center">restriction applied</Text>
+          </View>}
           {/* List of Cards */}
+
+          {data?
           <FlatList
             data={data}
             renderItem={renderCard}
@@ -150,6 +151,14 @@ const BuggyListPage = ({ uuid, wo }) => {
             scrollEnabled={false} 
             contentContainerStyle={styles.listContainer}
           />
+          : 
+          
+          
+          <View style={styles.emptyContainer}>
+          
+                <Text style={styles.emptyText}>No instructions available.</Text>
+           </View>
+          }
           
           {/* Comments Section */}
       
@@ -160,11 +169,13 @@ const BuggyListPage = ({ uuid, wo }) => {
 
       {/* Comment input button */}
       <View style={styles.expandButtonContainer}>
-        <KeyboardAvoidingView>
-        <Animated.View style={[styles.commentsContainer, { height: commentsHeight }]}>
+      
+        <Animated.View style={[styles.commentsContainer, { height: commentsHeight,overflow:"scroll" }]}>
+           
             <CommentsPage WoUuId={uuid} />
+
+
         </Animated.View>
-        </KeyboardAvoidingView>
      
         <TouchableOpacity style={styles.expandButton} onPress={toggleExpand}>
           <FontAwesome5 name={expanded ? 'comments' : 'comments'} size={20} color="#fff" />
@@ -185,6 +196,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E1F2FE',
+    paddingBottom:100
   },
   scrollViewContainer: {
     paddingBottom: 100,
@@ -232,11 +244,13 @@ left:10,
   },
   emptyContainer: {
     flex: 1,
+    textAlign:'center',
     justifyContent: 'center',
     alignItems: 'center',
   },
   emptyText: {
-    color: '#888',
+    textAlign:"center",
+    color: 'red',
   },
 });
 

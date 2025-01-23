@@ -8,12 +8,13 @@ import { StatusBar } from 'expo-status-bar';
 import OtpLogin from './app/Login/OtpLogin/OtpLoginScreen';
 import OtpEnterPage from './app/Login/OtpLogin/OtpEnterPage';
 import { PermissionsProvider } from './app/GlobalVariables/PermissionsContext';
-import FilteredWorkOrderPage from './app/WorkOrders/ScannedWorkOrder';
+import FilteredWorkOrderPage from './app/WorkOrders/ScannedWorkOrderScreen';
 import WorkOrderPage from "./app/WorkOrders/WorkOrderScreen"
 import SubComplaint from './app/RaiseComplaint/SubComplaintItem';
 import NewComplaintPage from './app/RaiseComplaint/CompaintInput';
 import ComplaintCloseScreen from './app/MyComplaints/CloseComplaint';
 import ComplaintDropdown from './app/RaiseComplaint/ComplaintDropdown';
+import BuggyListTopTabs from './app/BuggyListTopTabs/BuggyListTopTabsQr.android';
 const Stack = createNativeStackNavigator();
 
 export default function MainNavigation() {
@@ -54,6 +55,13 @@ export default function MainNavigation() {
       component={FilteredWorkOrderPage}
       options={{ headerShown: false }}
     />
+
+<Stack.Screen
+      name="ScannedWoBuggyList"
+      component={BuggyListTopTabs}
+      options={{ headerShown: false }}
+    />
+         
          
           {/* <Stack.Screen name="WorkOrderPage" component={WorkOrderPage} />
           <Stack.Screen 

@@ -4,7 +4,6 @@ import { API_URL2 } from '@env';
 
 export const getAllUsersApi = async () => {
   const userInfo = await AsyncStorage.getItem('userInfo');
-console.log("get all users",userInfo)
   if (userInfo) {
 
     const parsedUserInfo = JSON.parse(userInfo);
@@ -18,7 +17,6 @@ console.log("get all users",userInfo)
     "api-token":apiToken,
       
     };
-console.log(params,"api parmas for redux complaint call")
 
     const headers = {
         'Content-Type': 'application/json',

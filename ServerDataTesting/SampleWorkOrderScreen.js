@@ -14,11 +14,8 @@ import FilterOptions from './WorkOrderFilter';
 import WorkOrderCard from './WorkOrderCards';
 import { fetchServiceRequests } from '../../service/FetchWorkOrderApi';
 import { useNavigation } from '@react-navigation/native';
-import Loader from '../LoadingScreen/AnimatedLoader';
-import { fetchAllUsers } from '../../utils/Slices/UsersSlice';
-import { fetchAllTeams } from '../../utils/Slices/TeamSlice';
-import { useDispatch, useSelector } from 'react-redux'; // Import useSelector to access Redux state
-import { usePermissions } from '../GlobalVariables/PermissionsContext';
+import NfcManager, { NfcEvents } from 'react-native-nfc-manager';
+import GetUuIdForTag from '../../service/NfcTag/GetUuId';
 
 const WorkOrderPage = () => {
   const [filterVisible, setFilterVisible] = useState(false);
@@ -28,39 +25,90 @@ const WorkOrderPage = () => {
   const [inputNumber, setInputNumber] = useState('');
   const [refreshing, setRefreshing] = useState(false); // Track refresh state
   const navigation = useNavigation();
+  const [nfcEnabled, setNfcEnabled] = useState(false);
 
-
-  const dispatch = useDispatch(); // Use dispatch to dispatch actions
-  const users = useSelector((state) => state.users.data);
-  const teams = useSelector((state) => state.teams.data);
-  const { ppmAsstPermissions,complaintPermissions,instructionPermissions } = usePermissions();
-  console.log(ppmAsstPermissions,complaintPermissions,instructionPermissions,"this are permissions stored in app")
   useEffect(() => {
+    const initNfc = async () => {
+      try {
+        const isSupported = await NfcManager.isSupported();
+        if (!isSupported) {
+          console.log('NFC is not supported on this device.');
+          return;
+        }
 
-    if (!users || !teams || users.length === 0 || teams.length === 0) {
-      console.log("dispatche called at workorderscreen")
-      dispatch(fetchAllUsers());
-      dispatch(fetchAllTeams());
-    } 
+        await NfcManager.start(); // Initialize NFC
+        const isEnabled = await NfcManager.isEnabled();
+        setNfcEnabled(isEnabled);
 
- 
-  }, [dispatch]);
-  const fetchWorkOrders = async () => {
-    setLoading(true);
+        if (!isEnabled) {
+          console.log('NFC is not enabled on this device.');
+        }
+
+        await NfcManager.setEventListener(NfcEvents.DiscoverTag, onTagDetected);
+        await NfcManager.registerTagEvent();
+      } catch (error) {
+        console.error('Error initializing NFC:', error);
+      }
+    };
+
+    initNfc();
+
+    return () => {
+      NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
+      NfcManager.unregisterTagEvent().catch((err) =>
+        console.error('Error unregistering NFC tag event:', err)
+      );
+    };
+  }, []);
+
+  const onTagDetected = async (tag) => {
     try {
-      // Fetch work orders based on the selected filter
-      const data = await fetchServiceRequests(selectedFilter);
-      setWorkOrders(data || []); // Set to an empty array if no data is returned
+      if (!tag || !tag.id) {
+        console.log('Invalid or missing NFC tag.');
+        return;
+      }
+  
+      console.log(tag.id, "this is tag id");
+  
+      const response = await GetUuIdForTag(tag.id.toLowerCase());
+      console.log('NFC tag detected:', tag.id, response);
+  
+      if (response.status === 'success') {
+        const count = response.metadata?.count;
+        if (count === '0') {
+          Alert.alert("No Asset Found Related to Tag");
+        } else {
+          const siteUuid = response.data[0]?.uuid;
+          if (!siteUuid) {
+            console.log('Invalid site_uuid in response data:', response.data[0]);
+            return;
+          }
+          navigation.navigate('ScannedWoTag', { uuid: siteUuid });
+        }
+      } else {
+        console.log('Invalid NFC tag or response');
+      }
     } catch (error) {
-      console.error('Error fetching work orders:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false); // Stop refreshing
+      console.error('Error while detecting tag:', error);
+      Alert.alert('Error', 'Something went wrong while processing the tag. Please try again.');
     }
   };
 
   useEffect(() => {
-  
+    const fetchWorkOrders = async () => {
+      setLoading(true);
+      try {
+        // Fetch work orders based on the selected filter
+        const data = await fetchServiceRequests(selectedFilter);
+        setWorkOrders(data || []); // Set to an empty array if no data is returned
+      } catch (error) {
+        console.error('Error fetching work orders:', error);
+      } finally {
+        setLoading(false);
+        setRefreshing(false); // Stop refreshing
+      }
+    };
+
     fetchWorkOrders();
   }, [selectedFilter]);
 
@@ -97,7 +145,6 @@ const WorkOrderPage = () => {
           <View style={styles.statusTextContainer}>
             <Text style={styles.statusText}>{selectedFilter}</Text>
           </View>
-          {ppmAsstPermissions.some((permission) => permission.includes('C'))&&
           <TouchableOpacity
             onPress={() => navigation.navigate('AddWo')}
             style={styles.addButton}
@@ -105,7 +152,6 @@ const WorkOrderPage = () => {
             <Icon name="plus" size={20} color="#074B7C" style={styles.searchIcon} />
             <Text style={styles.addButtonText}>Add WO</Text>
           </TouchableOpacity>
-}
         </View>
       </View>
 
@@ -125,21 +171,21 @@ const WorkOrderPage = () => {
       {/* Content */}
       {loading ? (
         <View style={styles.loaderContainer}>
-          <Loader />
+          <ActivityIndicator size="large" color="#1996D3" />
         </View>
-      ) : workOrders.length === 0 || filteredWorkOrders.length ===0 ? (
+      ) : workOrders.length === 0 ? (
         <View style={styles.noRecordsContainer}>
           <Icon name="exclamation-circle" size={50} color="#074B7C" />
           <Text style={styles.noRecordsText}>No Work Order Found</Text>
-          {/* <Text style={styles.suggestionText}>
-         For {selectedFilter} or filter
-          </Text> */}
+          <Text style={styles.suggestionText}>
+            Try adjusting your filters or searching for a different ID.
+          </Text>
         </View>
       ) : (
         <FlatList
           data={filteredWorkOrders}
           keyExtractor={(item) => item.wo['Sequence No']}
-          renderItem={({ item }) => <WorkOrderCard workOrder={item} previousScreen="Work Orders" />}
+          renderItem={({ item }) => <WorkOrderCard workOrder={item} />}
           contentContainerStyle={styles.contentContainer}
           refreshing={refreshing} // Pass refreshing state to FlatList
           onRefresh={onRefresh} // Set up the pull-to-refresh functionality
@@ -170,7 +216,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-    paddingBottom:70
   },
   headerContainer: {
     backgroundColor: '#074B7C',
@@ -223,8 +268,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-
-
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    marginVertical: 10,
+  },
   searchIcon: {
     color: '#074B7C',
   },
@@ -236,22 +287,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#074B7C',
   },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 10,
-    paddingTop: 10,
-  },
-  numberInput: {
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
-    width: '80%',
-  },
   loaderContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -260,10 +295,8 @@ const styles = StyleSheet.create({
   noRecordsContainer: {
     flex: 1,
     justifyContent: 'center',
-    marginBottom:30,
-    marginTop:0,
     alignItems: 'center',
-    marginTop: 0,
+    marginTop: 50,
   },
   noRecordsText: {
     fontSize: 18,

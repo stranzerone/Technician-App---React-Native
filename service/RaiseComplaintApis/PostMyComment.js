@@ -2,9 +2,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL2 } from '@env';
 
-export const PostMyComment = async (id, remark) => {
+export const PostMyComment = async (id, remark,file) => {
   const userInfo = await AsyncStorage.getItem('userInfo');
-  console.log(id, remark, "info");
 
   if (userInfo) {
     const parsedUserInfo = JSON.parse(userInfo);
@@ -24,7 +23,9 @@ export const PostMyComment = async (id, remark) => {
     const formData = new FormData();
     formData.append('remarks', remark);
     formData.append('comp_id', id);
+    formData.append('file', file);
 
+    console.log(formData,'this is formData')
     try {
       const response = await axios.post(`${API_URL2}/staff/addcomment`, formData, {
         params, 

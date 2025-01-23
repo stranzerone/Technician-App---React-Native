@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Modal } from 'react-native';
 import * as Progress from 'react-native-progress';
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
@@ -8,14 +8,43 @@ import { useNavigation } from '@react-navigation/native';
 import { CommonActions } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import { updateWorkOrderStatus } from '../../utils/Slices/WorkOrderSlice';
+import { GetWorkOrderInfo } from '../../service/WorkOrderApis/GetWorkOrderInfo';
 
 const ProgressPage = ({ data, wo,canComplete }) => {
   const [remark, setRemark] = useState('');
+  const [lock,setLock] = useState(false)
   const [count, setCount] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [canMarkComplete, setCanMarkComplete] = useState(false); // New state to track the button visibility condition
   const { ppmAsstPermissions } = usePermissions();
+  const [siteUuid,setSiteUuid] = useState('')
   const navigation = useNavigation();
+
+
+  const fetchWorkorder = async()=>{
+
+    try{
+  
+  const response = await GetWorkOrderInfo(wo.uuid)
+  if(response[0].pm){
+  setSiteUuid(response[0].pm.site_uuid)
+}else{
+  setSiteUuid(response[0].wo.asset_uuid)
+}
+    }catch(error){
+      console.error(error)
+    }
+  
+  
+  }
+
+
+useEffect(()=>{
+
+fetchWorkorder()
+},[])
+
+const string = 'sahil'
 
   const mandatoryItems = data?.filter((item) => item?.data?.optional === false || item?.data == null);
   useLayoutEffect(() => {
@@ -35,10 +64,8 @@ const ProgressPage = ({ data, wo,canComplete }) => {
         
       });
 
-      console.log(mandatoryItems.length,manCount, 'mandatoryItems');
 
 if(mandatoryItems.length === manCount){
-  console.log('All mandatory items are completed',manCount,mandatoryItems.length);
     setCanMarkComplete(true); // Update the state based on the condition
    canComplete(true)
 }else{
@@ -63,24 +90,20 @@ if(mandatoryItems.length === manCount){
   }, [data]);
 
   const handleComplete = async () => {
-    try {
-      const response = await MarkAsCompleteApi(wo, remark);
-      console.log(response, 'response from API for completion');
-      console.log('Marked as complete with remark:', remark);
 
+    try {
+      setLock(true)
+      const response =  await MarkAsCompleteApi(wo, remark,siteUuid);
       setRemark(''); // Reset the remark input
       setModalVisible(false); // Close the modal
 
-      console.log(wo, 'WO');
 
       if (response) {
         // Once the status update is successful, navigate
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'Work Orders' }], // Replace with the correct screen name
-          })
-        );
+    
+          navigation.goBack(); // Fallback if no screen is passed
+        
+        
       }
     } catch (error) {
       console.error('Error marking as complete:', error);
@@ -162,7 +185,7 @@ if(mandatoryItems.length === manCount){
               maxLength={250}
             />
             <TouchableOpacity
-              disabled={!remark}
+              disabled={remark.length < 3  && lock}
               style={styles.completeButton}
               onPress={handleComplete}
             >

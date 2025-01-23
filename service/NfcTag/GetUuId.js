@@ -36,10 +36,10 @@ export default GetUuIdForTag = async (id) => {
 
   //  console.log(response.data.data[0]._LABELS.includes('LOCATION'),"response for tag id passed")
 
-     if(response.data.status =='success'){
-        console.log("navigation created")
+    //  if(response.data.status =='success'){
+    //     console.log("navigation created")
 
-     }
+    //  }
 
      console.log(response.data,"response for tag id passed")
       return response.data;
