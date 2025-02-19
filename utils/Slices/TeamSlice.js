@@ -6,6 +6,7 @@ export const fetchAllTeams = createAsyncThunk(
   'teams/fetchAllTeams',
   async (_, { rejectWithValue }) => {
     try {
+      console.log("fetching all team Names")
       const response = await getAllTeams();
       const teamsArray = Array.isArray(response.data)
         ? response.data

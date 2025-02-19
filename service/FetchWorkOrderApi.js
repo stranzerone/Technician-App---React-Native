@@ -1,8 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
-export const fetchServiceRequests = async (selectedFilter) => {
-  console.log(selectedFilter, 'selected filter');
+export const fetchServiceRequests = async (selectedFilter,flag) => {
+  console.log(selectedFilter,flag, 'selected filter');
   try {
     // Fetch user info and uuid from AsyncStorage
     const userInfo = await AsyncStorage.getItem('userInfo');
@@ -36,8 +36,13 @@ export const fetchServiceRequests = async (selectedFilter) => {
       page_no:1,
       Status: selectedFilter,
       user_id: userId,
+    
       'api-token': apiToken,
     };
+
+    if(flag){
+      params.flag_delay = flag;
+    }
 
 
     const headers = {

@@ -21,7 +21,6 @@ import { fetchAllUsers } from '../../utils/Slices/UsersSlice';
 import { fetchAllTeams } from '../../utils/Slices/TeamSlice';
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Button } from 'react-native-web';
 import { getLocationHk } from '../../service/HouseKeepingApis/GetHkOnScan';
 
 const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
@@ -43,6 +42,7 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
   const { ppmAsstPermissions } = usePermissions();
   const [siteLogo,setSiteLogo]  = useState(null)
  const [listType,setListType] = useState(true)
+ const [breakdownActive,setBreakdownActive] = useState(false)
   useEffect(() => {
     if (!users || !teams || users.length === 0 || teams.length === 0) {
       dispatch(fetchAllUsers());
@@ -56,33 +56,37 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
   useFocusEffect(
     React.useCallback(() => {
       fetchWorkOrders();
-    }, [uuid, type, selectedFilter, listType])
+    }, [uuid, type, selectedFilter, listType,breakdownActive])
   );
   const fetchWorkOrders = async () => {
+    console.log('fetching work orders',selectedFilter,breakdownActive);
     setLoading(true);
     try {
-      let response;
+      let hk = [];
+      let work =[];
+      let breakWork =[]
       if (type === 'LC') {
-          console.log(listType,'list type')
-        if(listType){
-          response = await getLocationWorkOrder(uuid, selectedFilter); // Fetch based on location
+      
+        work = await getLocationWorkOrder(uuid, selectedFilter,false); // Fetch based on location
+        breakWork = await getLocationWorkOrder(uuid, selectedFilter,true); // Fetch based on location
 
 
-        }else{ 
-          response = await getLocationWorkOrder(uuid, selectedFilter); // Fetch based on location
-           console.log(response,'for hk')
-        }
+          hk = await getLocationHk(uuid, selectedFilter,false); 
+          setWorkOrders([...work,...breakWork,...hk]); // Ensure response is an array
+
+
       } else {
-        response = await GetSingleWorkOrders(uuid, selectedFilter); // Fetch based on single work order
+        breakWork = await GetSingleWorkOrders(uuid, selectedFilter,true); // Fetch based on single work order
+        work = await GetSingleWorkOrders(uuid, selectedFilter,false); // Fetch based on single work order
+        setWorkOrders([...work,...breakWork]); // Ensure response is an array
+
       }
-      setWorkOrders(response || []); // Ensure response is an array
-    } catch (error) {
-      setWorkOrders([])
-      console.error('Error fetching work orders:', error);
     } finally {
       setLoading(false);
+
     }
   };
+
 
   const applyFilter = (filter) => {
     setSelectedFilter(filter); // Apply selected filter
@@ -125,7 +129,19 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
   }, []); // Empty dependency array ensures this runs once when the component mounts
 
 
+  const hkClicked = () =>{
 
+    setListType(!listType)
+    onRefresh()
+
+  }
+
+
+  const breakdownClicked = () =>{
+    console.log('breakdown clicked',breakdownActive)
+    setBreakdownActive(!breakdownActive)
+  
+  }
   return (
     <View style={styles.container}className="text-center">
       <View className="flex bg-[#1996D3] p-2 h-14 items-center justify-start  flex-row gap-3">
@@ -169,63 +185,34 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
         </View>
       </View>
 
-      {/* Search Input */}
-      <View className="flex gap-2  my-1 flex-row items-center justify-center w-full">
-    <View className="w=[20%]">
-      <TouchableOpacity
-          className="bg-blue-500 p-2 rounded-md flex flex-row justify-center gap-1 "
-          onPress={() => navigation.goBack()}
-        
-        >
-          <Icon name="arrow-left" size={20} color="white" className="bg-blue-500" />
-          <Text className="text-white text-center  font-bold">Back</Text>
-        </TouchableOpacity>
+
+
+
+      <View className="flex flex-row  gap-4 items-center justify-start w-full p-2">
+  {/* Back Button */}
+  <TouchableOpacity
+    className="bg-blue-500 p-2 rounded-md w-[15vw] flex flex-row justify-center items-center"
+    onPress={() => navigation.goBack()}
+  >
+    <Icon name="arrow-left" size={20} color="white" />
+  </TouchableOpacity>
+
+  {/* Search Input */}
+  <View className="flex flex-row gap-1 items-center w-[70vw] border border-gray-500 rounded-md px-1">
+    <Icon name="search" size={18} color="#074B7C" className="mr-2" />
+    <TextInput
+      style={styles.numberInput}
+      onChangeText={(text) => setInputNumber(text)}
+      value={inputNumber}
+      placeholder="Search WO ID"
+      keyboardType="numeric"
+      placeholderTextColor="#888"
+      className="flex-1"
+    />
+  </View>
+
+
 </View>
-
-<View className="flex flex-row w-[50%]">
-
-
-
-      <View 
-      className=" w-full"
-      style={styles.inputContainer}>
-        <Icon name="search" size={20} color="#074B7C" style={styles.searchIcon} />
-        <TextInput
-          style={styles.numberInput}
-          onChangeText={(text) => setInputNumber(text)}
-          value={inputNumber}
-          placeholder="Search WO ID"
-          keyboardType="numeric"
-          placeholderTextColor="#888"
-        />
-      </View>
-
-
-
-   </View>
-
-
-   <View className="w=[20%] ">
-      <TouchableOpacity
-      onPress={()=>setListType(!listType)}
-          className="bg-green-500 p-2 rounded-md flex flex-row justify-center gap-1 "
-        
-        
-        >
-          {
-            listType?
-          
- <Icon   name="home" size={20} color="white" className="bg-blue-500" />
-:
-<Icon   name="desktop" size={20} color="white" className="bg-blue-500" />
-
-}
-          <Text className="text-white text-center  font-bold">{listType?"HK":"WO"}</Text>
-        </TouchableOpacity>
-</View>
-
-      </View>
-
 
       {/* Content */}
       {loading ? (

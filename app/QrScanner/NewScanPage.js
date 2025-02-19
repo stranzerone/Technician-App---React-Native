@@ -1,45 +1,106 @@
-import React, { useState } from "react";
-import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Text, View, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import QrScanner from "./QrScannerComp";
+import fetchQrAssets from "../../service/AddWorkOrderApis/FetchAssetsforQr"; 
+import { useNavigation } from "@react-navigation/native";
+
 export default function MainScannerPage() {
   const [scanned, setScanned] = useState(false);
+  const [options, setOptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showOptions, setShowOptions] = useState(false); // Controls visibility of options
 
-  const handleScanned = (uuid) => {
-    setScanned(true);
-    console.log(`Scanned UUID: ${uuid}`);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const fetchAssetOptions = async () => {
+      try {
+        setLoading(true);
+        const response = await fetchQrAssets();
+        const data = Array.isArray(response?.data)
+          ? response.data.map((item, index) => ({
+              id: item._ID || index.toString(),
+              label: item.Name || "Unnamed Asset",
+              value: item.Name || "Unnamed Asset",
+              uuid: item.uuid || "",
+            }))
+          : [];
+
+        setOptions(data);
+      } catch (error) {
+        console.error("Error fetching assets:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssetOptions();
+  }, []);
+
+  const handleAssetSelect = (item) => {
+    setShowOptions(false); // Hide list after selection
+    navigation.navigate("ScannedWoTag", { uuid: item.uuid, type: "AST" });
   };
 
   return (
     <View style={styles.container}>
-      {/* Instructions at the top */}
-      <Text style={styles.instructions}>
-        Point your camera at a QR code to scan it.
-      </Text>
+      <View className="h-[10%]">
+      <TouchableOpacity
+      className="bg-[#074B7C] font-black"
+        style={styles.assetButton}
+        onPress={() => setShowOptions(!showOptions)}
+      >
+        <Text className="text-white font-bold">Select Asset</Text>
+        {!showOptions?
+                <Ionicons    name="chevron-forward" size={20} color="white" />
+:
+<Ionicons    name="chevron-down" size={20} color="white" />
 
-      {/* Scanner container takes up a dynamic portion of the screen height */}
-      <View style={styles.cameraContainer}>
-        <QrScanner onScanned={handleScanned} />
-      </View>
+      }
+      </TouchableOpacity>
 
-      {scanned && (
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.scanButton}
-            onPress={() => setScanned(false)}
-          >
-            <Ionicons name="ios-refresh" size={24} color="#fff" />
-            <Text style={styles.buttonText}>Scan Again</Text>
-          </TouchableOpacity>
+</View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#074B7C" style={styles.loadingIndicator} />
+      ) : showOptions ? (
+        <View className="bg-white rounded-lg shadow-md p-1 mt-1">
+        <FlatList
+          data={options}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.assetButton} onPress={() => handleAssetSelect(item)}>
+              <Text style={styles.assetText}>{item.label}</Text>
+              <Ionicons name="chevron-forward" size={20} color="#074B7C" />
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={<Text style={styles.noDataText}>No assets found</Text>}
+        />
+
         </View>
-      )}
+      ) : null}
 
-      {!scanned && (
-        <View style={styles.scanIconContainer}>
-          <Ionicons name="qr-code-outline" size={100} color="#074B7C" />
-          <Text style={styles.scanText}>Scanning for QR Code</Text>
-        </View>
-      )}
+
+     
+     <View>
+
+<View>
+<View className='mt-10 flex flex-col items-center justify-center' style={styles.cameraContainer}>
+        <QrScanner onScanned={(uuid) => setScanned(true)} />
+   </View>
+
+
+  
+     </View>
+     <View className='mt-10 flex flex-col items-center justify-center'>
+     <Ionicons name="qr-code-outline" size={100} color="#074B7C" />
+
+     <Text className='mt-24' style={styles.instructions}>Scan QR code or select asset from above</Text>
+    </View>
+     </View>
+     <View>
+
+     </View>
     </View>
   );
 }
@@ -47,68 +108,54 @@ export default function MainScannerPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    padding: 20,
+    backgroundColor: "#EAF2F8",
+  },
+  assetButton: {
+    flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#EAF2F8", // Light background color for a modern look
-    paddingHorizontal: 20, // Added padding for better layout on the sides
+    justifyContent: "space-between",
+    color:'white',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#074B7C",
+    marginTop: 0,
+  },
+  assetText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  scanIconContainer: {
+    alignItems: "center",
+    marginTop: 40,
+  },
+  noDataText: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#074B7C",
+    padding: 10,
   },
   instructions: {
     fontSize: 18,
     color: "#074B7C",
     fontWeight: "600",
     textAlign: "center",
-    marginBottom: 20, // Spacing below the instructions
-    paddingHorizontal: 10, // Padding for better text alignment
+    marginVertical: 20,
   },
-  cameraContainer: {
-    flex: 1, // This ensures the scanner takes a dynamic portion of the screen
-    width: "100%",
-    maxHeight: "30%", // Max height for the QR scanner
-    borderRadius: 20,
-    overflow: "hidden",
-    borderWidth: 4,
-    borderColor: "#074B7C", // Brand-like color
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 10, // Creates a subtle shadow for better aesthetics
-  },
-  buttonContainer: {
-    marginTop: 30,
-    width: "80%",
-    alignSelf: "center",
-  },
-  scanButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#1996D3",
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 25, // More rounded for a modern look
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    marginLeft: 10,
-    fontWeight: "bold",
-  },
-  scanIconContainer: {
-    alignItems: "center",
-    marginTop: 40,
-  },
-  scanText: {
-    fontSize: 20,
-    color: "#074B7C",
-    marginTop: 15,
-    fontWeight: "600",
-    textAlign: "center",
+  // cameraContainer: {
+  //   flex: 1,
+  //   width: "100%",
+  //   maxHeight: 200,
+  //   borderRadius: 20,
+  //   borderWidth: 4,
+  //   borderColor: "#074B7C",
+  //   backgroundColor: "#fff",
+  //   marginTop: 10,
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  // },
+  loadingIndicator: {
+    padding: 20,
   },
 });

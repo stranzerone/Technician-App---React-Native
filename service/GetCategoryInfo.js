@@ -1,17 +1,20 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_URL } from '@env';
+import { API_URL} from '@env';
 
-export const GetWorkOrderInfo = async (uuid) => {
-//https://nppm-api.isocietymanager.com/v3/workorder/assigned/asset?
+export const GetCategory = async () => {
+
+
+
+
   try {
-    // Fetch user info and uuid from AsyncStorage
-    const userInfo = await AsyncStorage.getItem('userInfo');
-// const uuid = await AsyncStorage.getItem('uuid');
 
+
+    const userInfo = await AsyncStorage.getItem('userInfo');
+    const societyInfo = await  AsyncStorage.getItem('societyInfo');
 
     if (!userInfo) {
-      throw new Error('User information or UUID not found in AsyncStorage');
+      throw new Error('User information  not found in AsyncStorage');
     }
 
     // Parse userInfo and access data object inside it
@@ -21,19 +24,19 @@ export const GetWorkOrderInfo = async (uuid) => {
       const userId = parsedUserInfo.data.id; 
       const apiToken = parsedUserInfo.data.api_token;
       const societyId =parsedUserInfo.data.societyId
+      const site_uuid = JSON.parse(societyInfo);
 
-
-      //https://nppm-api.isocietymanager.com/v3/asset/uuid1
     const params = {
-        "uuid": uuid,
-       "site_id" : societyId,
-       "api-token":apiToken,
-        "user-id": userId,
-        "api-token": apiToken,
-        "user-id": userId
+   
+  site_uuid:site_uuid,
+  "api-token": apiToken,    
+  "user-id": userId,      
+  "api-token": apiToken,    
+  "user-id": userId,    
+
     };
 
-
+    console.log(params,'this are params for category')
     const headers = {
       'Content-Type': 'application/json',
       'ism-auth': JSON.stringify({
@@ -43,14 +46,10 @@ export const GetWorkOrderInfo = async (uuid) => {
       })
     };
 
-
-console.log(uuid,'this is uuid for cloasing')
     // Make the API request
-    const response = await axios.get(`${API_URL}/v4/workorder?`, { params,headers,withCredentials: true });
+    const response = await axios.get(`${API_URL}/v3/category/ppm`, { params, headers });
     // Check the response data
-
-    console.log(response.data,'this is response for pms ifn')
-  return response.data.data
+  return response.data
 
   } catch (error) {
     console.error('Error fetching data:', error.message || error);

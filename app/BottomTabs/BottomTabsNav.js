@@ -32,6 +32,8 @@ import BuggyListTopTabs from '../BuggyListTopTabs/BuggyListTopTabs';
 import { Image } from 'react-native'; 
 import { clearAllTeams } from '../../utils/Slices/TeamSlice';
 import { clearAllUsers } from '../../utils/Slices/UsersSlice';
+import { Keyboard } from 'react-native';
+import { GetSiteUuid } from '../../service/GetSiteInfo';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -125,7 +127,7 @@ const ServiceRequestStack = () => (
            options={{ title: 'Report Complaint', headerShown: true }}
            />
           <Stack.Screen
-          options={{title:'Close Complaint'}}
+          options={{title:'Complaint Screen'}}
           name="CloseComplaint" component={ComplaintCloseScreen} />
           <Stack.Screen 
           name="RaiseComplaint"
@@ -144,6 +146,7 @@ const MyTabs = () => {
   const { setPpmAsstPermissions,notificationsCount,setComplaintPermissions,setInstructionPermissions} = usePermissions(); // Extract context permissions function
   const [user,setUser] = useState({})
   const [siteLogo,setSiteLogo]  = useState(null)
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const dispatch = useDispatch();
   useEffect(() => {
     const loadPermissions = async () => {
@@ -206,6 +209,17 @@ const MyTabs = () => {
 
   useEffect(() => {
     // Define the fetchLogo function inside useEffect
+const StoreSociety = async() =>{
+
+  try {
+   
+    const response = await GetSiteUuid()
+    
+  } catch (error) {
+    console.error('Error fetching society data:', error);
+  }
+}
+
     const fetchLogo = async () => {
       try {
         const societyString = await AsyncStorage.getItem('userInfo');
@@ -223,9 +237,20 @@ const MyTabs = () => {
     };
 
     fetchLogo(); // Call the function to fetch logo
+    StoreSociety()
   }, []); // Empty dependency array ensures this runs once when the component mounts
 
 
+
+  useEffect(() => {
+    const keyboardDidShow = Keyboard.addListener("keyboardDidShow", () => setKeyboardVisible(true));
+    const keyboardDidHide = Keyboard.addListener("keyboardDidHide", () => setKeyboardVisible(false));
+
+    return () => {
+      keyboardDidShow.remove();
+      keyboardDidHide.remove();
+    };
+  }, []);
 
   const fetchTotalNotifications = async () => {
     try {
@@ -305,8 +330,11 @@ const MyTabs = () => {
 
       <Tab.Navigator
         screenOptions={({ route }) => ({
+          headerShown:true,
+          tabBarHideOnKeyboard:true,
           tabBarStyle: {
             position: 'absolute',
+            display:isKeyboardVisible ? 'none' : 'flex',
             bottom: 0,
             left: 0,
             right: 0,
@@ -318,6 +346,7 @@ const MyTabs = () => {
             ...styles.shadow,
             elevation: 5,
           },
+          
           headerRight: renderLogoutButton,
           headerLeft: Platform.OS === 'ios' ? () => (
             <View style={styles.societyNameContainer}>
@@ -326,24 +355,25 @@ const MyTabs = () => {
           ) : () => (
       <View className="flex border-1 rounded-r-md h-12 items-start justify-start flex-row gap-1" style={styles.logoContainer}>
 {siteLogo &&
- <Image
-    className="w-24 h-24 rounded-lg"
-    source={{ uri: siteLogo }}
-    style={styles.logo}
-    resizeMode="contain"
-  />}
-  {Platform.OS === "android" && ( // Conditionally render society name for Android
+  <Image
+  className="w-24 h-24 rounded-lg"
+  source={{ uri: siteLogo }}
+  style={[styles.logo, { borderRadius: 20 }]}
+  resizeMode="contain"
+/>
+        }
+  {/* {Platform.OS === "android" && ( // Conditionally render society name for Android
     <Text className="text-center h-5 text-white px-0 text-sm font-black">
       {user?.name?.length > 12 ? `${user.name.substring(0, 12)}...` : user?.name}
     </Text>
-  )}
+  )} */}
 </View>
 
           ),
           headerTitle: Platform.OS === "ios" ? "" : null, // Hide title on Android
 
           headerStyle: { backgroundColor: '#1996D3' },
-          headerTintColor: 'transparent',
+          headerTintColor: '#fff',
           headerTitleStyle: {
             fontWeight: 'bold', // Make text bold
           },
@@ -372,19 +402,19 @@ const MyTabs = () => {
           },
         })}
       >
-        <Tab.Screen name="Work Orders" options={{ title: '' }} component={WorkOrderStack} />
+        <Tab.Screen name="Work Orders" options={{ title: 'Work Orders' ,headerShown: true, }} component={WorkOrderStack} />
         {/* <Tab.Screen name="MyComplaints" options={{ title: 'Complaints' }} component={ComplaintsScreen} /> */}
 
-        <Tab.Screen name="QRCode" options={{ title: '' }} component={QRCodeStack} />
-        <Tab.Screen name="ServiceRequests" options={{ title: '' }} component={ServiceRequestStack} />
+        <Tab.Screen name="QRCode" options={{ title: 'Qr Code', headerShown: true, }} component={QRCodeStack} />
+        <Tab.Screen name="ServiceRequests" options={{ title: 'Service Request', headerShown: true, }} component={ServiceRequestStack} />
 
         <Tab.Screen 
           name="Notifications" 
           // component={NotificationMainPage}
           component={NotificationMainPage}
           options={{
-            title:'',
-          
+            title:'Notifications',
+            headerShown: true,
           }}
           
        
@@ -426,6 +456,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   logoContainer: {
+    height:60,
     justifyContent: "start",
     paddingHorizontal: 10,
     width: "70%",
@@ -433,7 +464,7 @@ const styles = StyleSheet.create({
   },
   
   logo: {
-    borderRadius: 80, // Keeps rounded edges
+    maxHeight:"100%",
     marginLeft:20
   },
   activeIconContainer: {

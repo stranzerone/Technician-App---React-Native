@@ -17,6 +17,7 @@ const BuggyListTopTabs = ({  route  }) => {
   const uuid = route.params.workOrder;
   const wo = route.params.wo
   const restricted = route.params.restricted
+  const restrictedTime = route.params.restrictedTime
   const [siteLogo,setSiteLogo]  = useState(null)
   
   const previousScreen = route.params.previousScreen
@@ -26,7 +27,7 @@ const BuggyListTopTabs = ({  route  }) => {
 
   const navigation = useNavigation()
   const renderScene = SceneMap({
-    BuggyList: () => <BuggyListPage restricted={restricted}  uuid={uuid}  wo={wo}/>,
+    BuggyList: () => <BuggyListPage restricted={restricted} restrictedTime={restrictedTime} uuid={uuid}  wo={wo}/>,
     Details: () => <AssetDetailsMain uuid={uuid} />,
   });
 

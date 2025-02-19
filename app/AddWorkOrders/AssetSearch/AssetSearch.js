@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
-import { View,Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform, Animated, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform, Animated, TouchableWithoutFeedback, ScrollView } from 'react-native';
 import AssetCard from './AssetCards'; // Ensure correct import path
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const AssetSearch = ({onSelectAsset}) => {
+const AssetSearch = ({ onSelectAsset }) => {
   const [searchQuery, setSearchQuery] = useState(''); // State for search input
   const [showAssetCard, setShowAssetCard] = useState(false); // State to control visibility of AssetCard
   const [assetHeight, setAssetHeight] = useState(new Animated.Value(0)); // Animated height for the asset container
 
-  console.log("finding assets")
   // Function to handle the selection of an asset
   const handleSelectAsset = (assetName) => {
-    console.log(assetName,"selected asset")
     onSelectAsset(assetName)
     setSearchQuery(assetName.Name); // Set the search input to the selected asset's name
     setShowAssetCard(false); // Close the AssetCard
@@ -27,13 +25,11 @@ const AssetSearch = ({onSelectAsset}) => {
   // Function to expand the asset card
   const expandAssetCard = () => {
     Animated.timing(assetHeight, {
-      toValue: 200, // Set the height for displaying the AssetCard
+      toValue: 400, // Set the height for displaying the AssetCard
       duration: 300,
       useNativeDriver: false, // Height animation doesn't support native driver
     }).start();
   };
-
-  console.log(searchQuery,"from seach page ")
 
   // Function to collapse the asset card
   const collapseAssetCard = () => {
@@ -44,14 +40,12 @@ const AssetSearch = ({onSelectAsset}) => {
     }).start();
   };
 
-
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust for keyboard avoidance
     >
-      <SafeAreaView style={styles.innerContainer}>
+      <SafeAreaView  style={styles.innerContainer}>
         <Text style={styles.title}>Select Asset</Text>
         <TextInput
           style={styles.searchInput}
@@ -63,11 +57,13 @@ const AssetSearch = ({onSelectAsset}) => {
         <Animated.View style={[styles.assetContainer, { height: assetHeight }]}>
           {showAssetCard && ( // Show AssetCard if it's visible
             <TouchableWithoutFeedback onPress={() => setShowAssetCard(true)}>
-              <AssetCard 
-                searchQuery={searchQuery} 
-                onClose={collapseAssetCard} // Collapse AssetCard
-                onSelect={handleSelectAsset} // Pass the handleSelectAsset function
-              />
+              <ScrollView style={styles.scrollView}>
+                <AssetCard 
+                  searchQuery={searchQuery} 
+                  onClose={collapseAssetCard} // Collapse AssetCard
+                  onSelect={handleSelectAsset} // Pass the handleSelectAsset function
+                />
+              </ScrollView>
             </TouchableWithoutFeedback>
           )}
         </Animated.View>
@@ -77,25 +73,26 @@ const AssetSearch = ({onSelectAsset}) => {
 };
 
 const styles = StyleSheet.create({
-
   searchInput: {
-  
     width: '100%',
-    height:50,
+    height: 50,
     padding: 10,
     borderWidth: 1,
     borderColor: '#1996D3',
     borderRadius: 5,
     backgroundColor: '#FFFFFF',
   },
-  title:{
-fontSize:16,
-fontWeight:"bold"
+  title: {
+    fontSize: 16,
+    fontWeight: "bold",
   },
   assetContainer: {
     overflow: 'hidden', // Hide overflow for smooth animation
   },
- 
+  scrollView: {
+    // Optionally adjust the scroll view styling here
+    paddingBottom: 10,
+  },
 });
 
 export default AssetSearch;

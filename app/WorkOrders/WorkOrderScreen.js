@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import FilterOptions from './WorkOrderFilter';
 import WorkOrderCard from './WorkOrderCards';
 import { fetchServiceRequests } from '../../service/FetchWorkOrderApi';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Loader from '../LoadingScreen/AnimatedLoader';
 import { fetchAllUsers } from '../../utils/Slices/UsersSlice';
 import { fetchAllTeams } from '../../utils/Slices/TeamSlice';
@@ -26,31 +26,30 @@ const WorkOrderPage = () => {
   const [workOrders, setWorkOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [inputNumber, setInputNumber] = useState('');
-  const [refreshing, setRefreshing] = useState(false); // Track refresh state
+  const [refreshing, setRefreshing] = useState(false);
+  const [flag, setFlag] = useState(false); // New state to manage flag
   const navigation = useNavigation();
-
 
   const dispatch = useDispatch(); // Use dispatch to dispatch actions
   const users = useSelector((state) => state.users.data);
   const teams = useSelector((state) => state.teams.data);
-  const { ppmAsstPermissions,complaintPermissions,instructionPermissions } = usePermissions();
-  console.log(ppmAsstPermissions,complaintPermissions,instructionPermissions,"this are permissions stored in app")
-  useEffect(() => {
+  const { ppmAsstPermissions } = usePermissions();
 
+  useEffect(() => {
     if (!users || !teams || users.length === 0 || teams.length === 0) {
-      console.log("dispatche called at workorderscreen")
+      console.log(teams,'this are teams')
       dispatch(fetchAllUsers());
       dispatch(fetchAllTeams());
-    } 
-
- 
+    }
   }, [dispatch]);
+
   const fetchWorkOrders = async () => {
     setLoading(true);
     try {
-      // Fetch work orders based on the selected filter
-      const data = await fetchServiceRequests(selectedFilter);
-      setWorkOrders(data || []); // Set to an empty array if no data is returned
+      console.log(selectedFilter,"this is selectedfilter")
+      // Fetch work orders based on the selected filter and flag
+      const data = await fetchServiceRequests(selectedFilter, flag); // Pass flag to the API call
+      setWorkOrders(data || []);
     } catch (error) {
       console.error('Error fetching work orders:', error);
     } finally {
@@ -59,10 +58,17 @@ const WorkOrderPage = () => {
     }
   };
 
-  useEffect(() => {
-  
-    fetchWorkOrders();
-  }, [selectedFilter]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchWorkOrders();
+    }, [selectedFilter, flag])
+  );
+
+
+  // useEffect(() => {
+  //   fetchWorkOrders();
+  // }, [selectedFilter, flag]); // Also trigger fetchWorkOrders when flag changes
 
   const applyFilter = (filter) => {
     setSelectedFilter(filter);
@@ -77,8 +83,12 @@ const WorkOrderPage = () => {
 
   // Pull-to-refresh handler
   const onRefresh = () => {
-    setRefreshing(true); // Trigger refresh
-    fetchWorkOrders(); // Reload data
+    setRefreshing(true);
+    fetchWorkOrders();
+  };
+
+  const toggleFlag = () => {
+    setFlag((prevFlag) => !prevFlag); // Toggle the flag between true and false
   };
 
   return (
@@ -97,15 +107,15 @@ const WorkOrderPage = () => {
           <View style={styles.statusTextContainer}>
             <Text style={styles.statusText}>{selectedFilter}</Text>
           </View>
-          {ppmAsstPermissions.some((permission) => permission.includes('C'))&&
-          <TouchableOpacity
-            onPress={() => navigation.navigate('AddWo')}
-            style={styles.addButton}
-          >
-            <Icon name="plus" size={20} color="#074B7C" style={styles.searchIcon} />
-            <Text style={styles.addButtonText}>Add WO</Text>
-          </TouchableOpacity>
-}
+          {ppmAsstPermissions.some((permission) => permission.includes('C')) && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('AddWo')}
+              style={styles.addButton}
+            >
+              <Icon name="plus" size={20} color="#074B7C" style={styles.searchIcon} />
+              <Text style={styles.addButtonText}>Add WO</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -120,6 +130,20 @@ const WorkOrderPage = () => {
           keyboardType="numeric"
           placeholderTextColor="#888"
         />
+
+        {/* Flag button */}
+        <TouchableOpacity
+  className={`p-2 rounded-md border shadow-lg border-gray-400 bg-blue-200 flex justify-center items-center}`}
+  onPress={toggleFlag}
+>
+  <Icon
+    name="flag"
+    
+    size={20}
+    color={flag ? 'red' : '#074B7C'} // Change color based on flag state
+  />
+</TouchableOpacity>
+
       </View>
 
       {/* Content */}
@@ -127,13 +151,10 @@ const WorkOrderPage = () => {
         <View style={styles.loaderContainer}>
           <Loader />
         </View>
-      ) : workOrders.length === 0 || filteredWorkOrders.length ===0 ? (
+      ) : workOrders.length === 0 || filteredWorkOrders.length === 0 ? (
         <View style={styles.noRecordsContainer}>
           <Icon name="exclamation-circle" size={50} color="#074B7C" />
           <Text style={styles.noRecordsText}>No Work Order Found</Text>
-          {/* <Text style={styles.suggestionText}>
-         For {selectedFilter} or filter
-          </Text> */}
         </View>
       ) : (
         <FlatList
@@ -141,8 +162,8 @@ const WorkOrderPage = () => {
           keyExtractor={(item) => item.wo['Sequence No']}
           renderItem={({ item }) => <WorkOrderCard workOrder={item} previousScreen="Work Orders" />}
           contentContainerStyle={styles.contentContainer}
-          refreshing={refreshing} // Pass refreshing state to FlatList
-          onRefresh={onRefresh} // Set up the pull-to-refresh functionality
+          refreshing={refreshing}
+          onRefresh={onRefresh}
         />
       )}
 
@@ -170,7 +191,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-    paddingBottom:70
+    paddingBottom: 70,
   },
   headerContainer: {
     backgroundColor: '#074B7C',
@@ -223,25 +244,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-
-
   searchIcon: {
     color: '#074B7C',
-  },
-  numberInput: {
-    flex: 1,
-    borderBottomWidth: 1,
-    borderColor: '#074B7C',
-    padding: 8,
-    fontSize: 16,
-    color: '#074B7C',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 10,
-    paddingTop: 10,
   },
   numberInput: {
     height: 40,
@@ -250,7 +254,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     backgroundColor: '#fff',
-    width: '80%',
+    width: '75%',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 25,
+    paddingTop: 10,
+  },
+  flagButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
   loaderContainer: {
     flex: 1,
@@ -260,21 +275,15 @@ const styles = StyleSheet.create({
   noRecordsContainer: {
     flex: 1,
     justifyContent: 'center',
-    marginBottom:30,
-    marginTop:0,
-    alignItems: 'center',
+    marginBottom: 30,
     marginTop: 0,
+    alignItems: 'center',
   },
   noRecordsText: {
     fontSize: 18,
     color: '#074B7C',
     marginTop: 20,
     fontWeight: 'bold',
-  },
-  suggestionText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#888',
   },
   contentContainer: {
     paddingHorizontal: 15,

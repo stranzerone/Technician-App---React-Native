@@ -7,8 +7,10 @@ export const MarkAsCompleteApi = async (item,remark,siteUuid) => {
 
   // Fetch user info from AsyncStorage
   const userInfo = await AsyncStorage.getItem('userInfo');
-  const parsedUserInfo = JSON.parse(userInfo);
+  const societyInfo = await  AsyncStorage.getItem('societyInfo');
 
+  const parsedUserInfo = JSON.parse(userInfo);
+ const parsedSocietyInfo = JSON.parse(societyInfo)
  
 
 
@@ -16,8 +18,8 @@ export const MarkAsCompleteApi = async (item,remark,siteUuid) => {
     const userId = parsedUserInfo.data.id
     const apiToken = parsedUserInfo.data.api_token
     const societyId =parsedUserInfo.data.societyId
-
-    
+    const site_uuid = parsedSocietyInfo
+    console.log(societyInfo,'this is from localstorate for societyUuid')
 
     // Construct the payload correctly
 
@@ -25,10 +27,10 @@ export const MarkAsCompleteApi = async (item,remark,siteUuid) => {
     const payload = {
     Status: "COMPLETED",
     closed_by:userId,
-    completed_at: new Date().toISOString().replace("T", " ").split(".")[0],
-    site_uuid:siteUuid,
+    // completed_at: new Date().toISOString().replace("T", " ").split(".")[0],
+    site_uuid:site_uuid,
     status_uuid:  "36891c87-60c5-4a0a-9e5c-e726e542f49f",
-    updated_at: new Date().toISOString().replace("T", " ").split(".")[0] ,
+    // updated_at: new Date().toISOString().replace("T", " ").split(".")[0] ,
     updated_by: userId,
     instruction_remark:remark,
     uuid: item.uuid,

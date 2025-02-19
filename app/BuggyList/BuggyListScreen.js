@@ -9,11 +9,11 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Dimensions
 } from 'react-native';
 import { GetInstructionsApi } from '../../service/BuggyListApis/GetInstructionsApi';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import BuggyListCard from "../BuggyListCardComponets/BuggyListCard";
 import Loader from '../LoadingScreen/AnimatedLoader';
 import ProgressPage from '../AssetDetails/ProgressBar';
 import CommentsPage from '../WoComments/WoCommentsScreen';
@@ -21,8 +21,9 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { WorkOrderInfoApi } from '../../service/WorkOrderInfoApi';
 import CardRenderer from '../BuggyNewCardComp/CardsMainScreen';
 import { Platform } from 'react-native';
+import InfoCard from './InstructionDetails';
 
-const BuggyListPage = ({ uuid, wo ,restricted}) => {
+const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime}) => {
   const [data, setData] = useState([]);
   const [assetDescription, setAssetDescription] = useState(''); 
   const [loading, setLoading] = useState(false);
@@ -32,6 +33,9 @@ const BuggyListPage = ({ uuid, wo ,restricted}) => {
   const animation = useState(new Animated.Value(0))[0];
   const [canComplete,setCancomplete]  = useState(false)
   const navigate = useNavigation();
+ 
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
 
   // Function to fetch buggy list data
   const loadBuggyList = async () => {
@@ -88,20 +92,42 @@ const BuggyListPage = ({ uuid, wo ,restricted}) => {
     />
   );
 
+
+
+
+
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setIsKeyboardOpen(true);
+    });
+
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setIsKeyboardOpen(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  console.log(restrictedTime,'restrictedTime on bl list')
   const toggleExpand = () => {
     const finalValue = expanded ? 0 : 1; 
     setExpanded(!expanded);
 
     Animated.timing(animation, {
       toValue: finalValue,
-      duration: 300,
+      duration: 100,
       useNativeDriver: false, 
     }).start();
   };
 
+  const {height}  = Dimensions.get('window')
   const commentsHeight = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 400], 
+    outputRange: [0, height * 0.75], 
     extrapolate: 'clamp',
   });
 
@@ -127,20 +153,24 @@ const BuggyListPage = ({ uuid, wo ,restricted}) => {
 
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
+    <View
+    style={{ flex: 1 }}
     >
+  
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollViewContainer}>
           {/* Description Section */}
-          <View style={styles.descriptionContainer}>
+          {/* <View style={styles.descriptionContainer}>
             <Text style={styles.assetDescription}>{assetDescription}</Text>
           </View>
       { restricted &&   <View className="flex flex-row gap-1 items-center justify-center">
         <FontAwesome5 name='stop-circle' size={20} color="red" />
                    <Text className="text-red-500 text-center">restriction applied</Text>
-          </View>}
+          </View>} */}
+
+          <View>
+            <InfoCard  wo={wo} restricted={restricted} restrictedTime={restrictedTime}  description={assetDescription}/>
+          </View>
           {/* List of Cards */}
 
           {data?
@@ -168,12 +198,15 @@ const BuggyListPage = ({ uuid, wo ,restricted}) => {
       </TouchableWithoutFeedback>
 
       {/* Comment input button */}
-      <View style={styles.expandButtonContainer}>
+      <View style={[styles.expandButtonContainer,{bottom:isKeyboardOpen?0:65}]}  >
       
         <Animated.View style={[styles.commentsContainer, { height: commentsHeight,overflow:"scroll" }]}>
-           
+        <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    > 
             <CommentsPage WoUuId={uuid} />
-
+</KeyboardAvoidingView>
 
         </Animated.View>
      
@@ -181,21 +214,21 @@ const BuggyListPage = ({ uuid, wo ,restricted}) => {
           <FontAwesome5 name={expanded ? 'comments' : 'comments'} size={20} color="#fff" />
         </TouchableOpacity>
       </View>
-      <View    className="w-[70%] "  style={[styles.progressBarContainer, { right:canComplete?70:10,bottom:70 }]}>
+    { !expanded && <View    className="w-[70%] "  style={[styles.progressBarContainer, { right:canComplete?70:10,bottom: isKeyboardOpen?0: 57 }]}>
       <ProgressPage 
         data={data}
         wo={wo}
         canComplete={setCancomplete}
       />
-      </View>
-    </KeyboardAvoidingView>
+      </View>}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E1F2FE',
+    backgroundColor: '#f0f4f7',
     paddingBottom:100
   },
   scrollViewContainer: {
@@ -206,7 +239,7 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
   expandButtonContainer: {
-bottom: 80,
+// bottom: 80,
 left:10,
   },
   expandButton: {
@@ -219,7 +252,8 @@ left:10,
   },
   commentsContainer: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 0,
+    height:"100%",
     width: '95%',
     backgroundColor: 'white',
     overflow: 'hidden',

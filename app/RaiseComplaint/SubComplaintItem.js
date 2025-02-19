@@ -5,10 +5,13 @@ import { useNavigation } from '@react-navigation/native';
 
 const SubComplaint = ({ route }) => {
   const { subCategory } = route.params;
+  const {category} = route.params;
   const [searchQuery, setSearchQuery] = useState(''); // State for search query
   const [loading, setLoading] = useState(false); // State for loading indicator
   const navigation = useNavigation();
 
+
+  console.log(category,'this is category')
   // Filter complaints based on search query
   const filteredComplaints = subCategory.filter(complaint =>
     complaint.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -24,7 +27,7 @@ const SubComplaint = ({ route }) => {
       <TouchableOpacity
         key={item.id}
         style={styles.cardContainer}
-        onPress={() => navigation.navigate('complaintInput', { subCategory: item })}
+        onPress={() => navigation.navigate('complaintInput', { subCategory: item ,category:category})}
       >
         <View style={styles.circleContainer}>
           <Text style={styles.circleText}>{firstLetter}</Text>

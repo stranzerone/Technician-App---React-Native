@@ -52,7 +52,7 @@ const ComplaintDropdown = () => {
     const firstLetter = firstLine.trim().charAt(0).toUpperCase(); // Get the first letter of the first line
 
     return (
-      <TouchableOpacity key={item.id} style={styles.cardContainer} onPress={()=>navigation.navigate('subComplaint',{ subCategory: item.sub_catagory})}>
+      <TouchableOpacity key={item.id} style={styles.cardContainer} onPress={()=>navigation.navigate('subComplaint',{ subCategory: item.sub_catagory,category:item})}>
         <View style={styles.circleContainer}>
           <Text style={styles.circleText}>{firstLetter}</Text>
         </View>
@@ -68,7 +68,13 @@ const ComplaintDropdown = () => {
 
   return (
     <View style={styles.scrollContainer}>
-      <View style={styles.searchContainer}>
+      <View style={styles.searchContainer} className='h-[10%] z-50'>
+     
+     <View className="bg-blue-500 p-4   rounded-l-md">
+     <FontAwesome name="search" size={20} color="white" style={styles.searchIcon} />
+
+      </View> 
+
         <TextInput
           style={styles.searchBar}
           placeholder="Search Categroy..."
@@ -76,11 +82,11 @@ const ComplaintDropdown = () => {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
-        <FontAwesome name="search" size={20} color="#1996D3" style={styles.searchIcon} />
       </View>
       {loading ? (
         <ActivityIndicator size="large" color="#1996D3" style={styles.loader} />
       ) : (
+        <View className="mt-1 h-[90%]">
         <FlatList
           contentContainerStyle={styles.container}
           data={filteredComplaints}
@@ -90,6 +96,7 @@ const ComplaintDropdown = () => {
           showsVerticalScrollIndicator={false} // Hide vertical scroll indicator
           numColumns={2} // Display two cards per row
         />
+        </View>
       )}
     </View>
   );
@@ -129,15 +136,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF', // White background for the search bar
     borderColor: '#1996D3',
     borderWidth: 1,
+    borderTopLeftRadius:0,
+    borderBottomLeftRadius:0,
     borderRadius: 8,
     paddingLeft: 40, // Added left padding for space with the icon
     fontSize: 16,
   },
-  searchIcon: {
-    position: 'absolute',
-    left: 25, // Position the icon inside the input
-    top: 15, // Center the icon vertically within the TextInput
-  },
+
   cardContainer: {
     backgroundColor: '#FFFFFF', // White background for the card
     width: '48%', // 2 cards per row

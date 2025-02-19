@@ -2,7 +2,9 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
-export const getLocationWorkOrder = async (uuid,status) => {
+export const getLocationWorkOrder = async (uuid,status,breakdownActive) => {
+
+  console.log(uuid,status,breakdownActive,'uuid,status,breakdownActive')
 //https://nppm-api.isocietymanager.com/v3/workorder/assigned/asset?
   try {
     // Fetch user info and uuid from AsyncStorage
@@ -25,13 +27,13 @@ export const getLocationWorkOrder = async (uuid,status) => {
 
       //https://nppm-api.isocietymanager.com/v3/asset/uuid1
     const params = {
-     location_uuid:uuid,
+      location_uuid:uuid,
       per_page:'10',
       page_no:'1',
       user_id: userId,
       site_id:societyId,
       Status:status,
-      breakdown:'false',
+      breakdown:breakdownActive,
       "api-token": apiToken,
       "user-id": userId,
       "api-token": apiToken,

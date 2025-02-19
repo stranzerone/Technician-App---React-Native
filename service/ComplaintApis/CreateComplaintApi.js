@@ -5,7 +5,6 @@ import { API_URL2 } from '@env';
 export const CreateComplaintApi = async (data) => {
   const userInfo = await AsyncStorage.getItem('userInfo');
 
-  console.log(data,"data")
   if (userInfo) {
 
     const parsedUserInfo = JSON.parse(userInfo);
@@ -20,22 +19,20 @@ export const CreateComplaintApi = async (data) => {
       
     };
 
-console.log(data,"complaint")
-
+console.log(data.category,'cated')
 
 // {"data": {"complaint_category": "Electricity  (बिजली की समस्या)", "complaint_category_id": "14", "created_at": "2018-02-22 20:43:15", "created_by": "2090", "disp_order": 3, "id": 3, "name": "Fan Not Working ( पंखा काम नहीं कर रहा )", "remarks": "", "society_id": 2, "unhandled": 0, "updated_at": "2021-06-22 17:33:20", "updated_by": null}, "description": "Good", "image": "https://ismdoc.s3.amazonaws.com/public/image/jpeg/2/6752ad7e0f794_wC8iIhemlulw2ll31Y0y2024120613_2c8e1809-bc2a-4dbe-ac4d-693b0aa3a462.jpeg.jpeg", "society": 4045} 
 const payload ={
-"complaint_type": data.data.complaint_category_id,
+"complaint_type": data.category.id,
 "constant_society_id": data.society,
-"self_assign": true,
+"self_assign": data.selfAssign,
 "severity": "normal",
 "sub_category": data.data.name,
 "sub_category_id": data.data.id,
 "description":data.description,
-"img_src":data.image,
+"file":data.image,
 }
 
-console.log(payload,"this is payload for complaint adding")
 
 
     const headers = {

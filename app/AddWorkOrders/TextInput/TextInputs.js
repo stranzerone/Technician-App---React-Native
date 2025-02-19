@@ -47,13 +47,13 @@ const TaskInput = ({ onChangeName, onChangeDueDate, onChangeEstimatedTime }) => 
           <View style={styles.row}>
             <Text style={styles.label}>Name</Text>
             <TextInput
-              style={[styles.input, { height: 50, width: 160 }]}
-              placeholder="Enter task name"
-              value={name}
-              onChangeText={setName}
-              onBlur={() => onChangeName(name)}
-              multiline={true}
-            />
+      style={[styles.input, { height: 50, width: 160 }]}
+      placeholder="Enter task name"
+      value={name}
+      onChangeText={setName}
+      onBlur={() => onChangeName(name)}
+      returnKeyType="done"  // Helps to close the keyboard
+    />
           </View>
 
           <TouchableOpacity onPress={() => setShowDatePicker(true)}>

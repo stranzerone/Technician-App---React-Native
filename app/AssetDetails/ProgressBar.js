@@ -9,6 +9,7 @@ import { CommonActions } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import { updateWorkOrderStatus } from '../../utils/Slices/WorkOrderSlice';
 import { GetWorkOrderInfo } from '../../service/WorkOrderApis/GetWorkOrderInfo';
+import { GetSiteUuid } from '../../service/GetSiteInfo';
 
 const ProgressPage = ({ data, wo,canComplete }) => {
   const [remark, setRemark] = useState('');
@@ -17,34 +18,10 @@ const ProgressPage = ({ data, wo,canComplete }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [canMarkComplete, setCanMarkComplete] = useState(false); // New state to track the button visibility condition
   const { ppmAsstPermissions } = usePermissions();
-  const [siteUuid,setSiteUuid] = useState('')
   const navigation = useNavigation();
 
 
-  const fetchWorkorder = async()=>{
 
-    try{
-  
-  const response = await GetWorkOrderInfo(wo.uuid)
-  if(response[0].pm){
-  setSiteUuid(response[0].pm.site_uuid)
-}else{
-  setSiteUuid(response[0].wo.asset_uuid)
-}
-    }catch(error){
-      console.error(error)
-    }
-  
-  
-  }
-
-
-useEffect(()=>{
-
-fetchWorkorder()
-},[])
-
-const string = 'sahil'
 
   const mandatoryItems = data?.filter((item) => item?.data?.optional === false || item?.data == null);
   useLayoutEffect(() => {
@@ -89,11 +66,18 @@ if(mandatoryItems.length === manCount){
     setCount(tempCount);
   }, [data]);
 
+
+  
   const handleComplete = async () => {
+
+
+if(!remark){
+  alert('Please Enter Remark To Mark As Complete')
+}else{
 
     try {
       setLock(true)
-      const response =  await MarkAsCompleteApi(wo, remark,siteUuid);
+      const response =  await MarkAsCompleteApi(wo, remark);
       setRemark(''); // Reset the remark input
       setModalVisible(false); // Close the modal
 
@@ -108,7 +92,10 @@ if(mandatoryItems.length === manCount){
     } catch (error) {
       console.error('Error marking as complete:', error);
     }
+
+  }
   };
+
 
   // Calculate progress percentage
   const progress = data.length > 0 ? count / data.length : 0; // Avoid division by zero
@@ -185,7 +172,7 @@ if(mandatoryItems.length === manCount){
               maxLength={250}
             />
             <TouchableOpacity
-              disabled={remark.length < 3  && lock}
+           
               style={styles.completeButton}
               onPress={handleComplete}
             >

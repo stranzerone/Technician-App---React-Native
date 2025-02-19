@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API_URL} from '@env';
 
 
-export const WorkOrderComments = async (WoUuId) => {
+export const WorkOrderComments = async (WoUuId,selectedButton) => {
   const userInfo = await AsyncStorage.getItem('userInfo');
   const parsedUserInfo = JSON.parse(userInfo);
 
@@ -22,13 +22,17 @@ export const WorkOrderComments = async (WoUuId) => {
       order:"desc",
       page_no:1,
       per_page:100,
-      tag:"C",
       'api-token': apiToken,
       'user-id':userId,
       'api-token': apiToken,
       'user-id':userId,
       
     };
+
+    if(selectedButton !== "all"){
+params.tag = selectedButton
+    }
+      
 
 
 
@@ -41,7 +45,7 @@ export const WorkOrderComments = async (WoUuId) => {
       })
     };
 
-    console.log(API_URL,"THis is url")
+    console.log(params,"THis are parmas called")
 
     // const apiUrl = 'https://nppm-api.isocietymanager.com/v3/comments?';
 

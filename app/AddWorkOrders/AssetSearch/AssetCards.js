@@ -1,30 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import GetAssets from '../../../service/AddWorkOrderApis/FetchAssests';
 
 const AssetCard = ({ searchQuery, onClose, onSelect }) => {
-  // State to store assets, loading, and error status
-  const [assets, setAssets] = useState([]); // Always initialize as an array
-  const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'succeeded' | 'failed'
+  const [assets, setAssets] = useState([]);
+  const [status, setStatus] = useState('idle');
   const [error, setError] = useState(null);
-
-  // Log searchQuery for debugging
 
   useEffect(() => {
     const fetchAssetsData = async () => {
       setStatus('loading');
       try {
-        // If searchQuery is empty, you can decide whether to fetch all assets or skip the fetch
         if (!searchQuery.trim()) {
-          setAssets([]);  // Or decide to fetch all assets without filtering
+          setAssets([]);
           setStatus('succeeded');
           return;
         }
 
-        const data = await GetAssets(searchQuery); // Pass searchQuery directly to the API
-      console.log(data,"data on asset search")
-        setAssets(data.data || []); // Ensure that assets is always an array
+        const data = await GetAssets(searchQuery);
+        console.log(data, "data on asset search");
+        setAssets(data.data || []);
         setStatus('succeeded');
       } catch (error) {
         setError(error.message || 'Failed to fetch assets');
@@ -32,20 +28,18 @@ const AssetCard = ({ searchQuery, onClose, onSelect }) => {
       }
     };
 
-    fetchAssetsData(); // Fetch assets data whenever searchQuery changes
-  }, [searchQuery]); // Trigger re-fetch when searchQuery changes
+    fetchAssetsData();
+  }, [searchQuery]);
 
-  // Filter assets based on the search query
   const filteredAssets = Array.isArray(assets) ? assets.filter((item) =>
     item.Name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) : []; // Ensure assets is an array before filtering
+  ) : [];
 
   const handleSelectAsset = (asset) => {
-    onSelect(asset); // Call the onSelect function with the selected asset
-    onClose(); // Close the card when an asset is selected
+    onSelect(asset);
+    onClose();
   };
 
-  // Conditional rendering for loading, error, and assets
   if (status === 'loading') {
     return <Text>Loading assets...</Text>;
   }
@@ -56,25 +50,25 @@ const AssetCard = ({ searchQuery, onClose, onSelect }) => {
 
   return (
     <View style={styles.cardContainer}>
-      {/* Close button with an icon on the top right */}
       <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-        <FontAwesome name="close" size={24} color="#B0BEC5" />
+        <FontAwesome name="close" size={24} color="black" />
       </TouchableOpacity>
 
-      {filteredAssets.length > 0 ? (
-        // Map through the filtered assets array to render each item
-        filteredAssets.map((item, index) => (
-          <TouchableOpacity
-            key={index} // Unique key for each item
-            style={styles.assetItem}
-            onPress={() => handleSelectAsset(item)} // Handle asset selection
-          >
-            <Text style={styles.assetText}>{item.Name}</Text>
-          </TouchableOpacity>
-        ))
-      ) : (
-        <Text style={styles.noAssetsText}>No assets found</Text>
-      )}
+      <ScrollView style={styles.scrollView}>
+        {filteredAssets.length > 0 ? (
+          filteredAssets.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.assetItem}
+              onPress={() => handleSelectAsset(item)}
+            >
+              <Text style={styles.assetText}>{item.Name}</Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.noAssetsText}>No assets found</Text>
+        )}
+      </ScrollView>
     </View>
   );
 };
@@ -82,7 +76,7 @@ const AssetCard = ({ searchQuery, onClose, onSelect }) => {
 const styles = StyleSheet.create({
   cardContainer: {
     zIndex: 10000,
-    position: 'absolute', // Keep it positioned above other components
+    position: 'absolute',
     alignSelf: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
@@ -101,6 +95,9 @@ const styles = StyleSheet.create({
     top: 10,
     right: 10,
     zIndex: 1,
+  },
+  scrollView: {
+    maxHeight: '100%',  // Ensure the scroll area doesn't take up the full screen
   },
   assetItem: {
     padding: 10,

@@ -81,6 +81,7 @@ const NewLoginScreen = () => {
   };
 
   const handleUserSelect = async (user) => {
+    setShowUserCard(false)
     try {
       setLoading(true);
       const data = { email, password, user };

@@ -19,10 +19,14 @@ import * as ImagePicker from 'expo-image-picker';
 import { GetComplaintLocations } from '../../service/ComplaintApis/GetComplaintLocations';
 import { ComplaintImageUploadApi } from '../../service/ComplaintApis/ComplaintImageUpload';
 import { CreateComplaintApi } from '../../service/ComplaintApis/CreateComplaintApi';
-import { useNavigation } from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import DynamicPopup from "../DynamivPopUps/DynapicPopUpScreen"
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system';
+
 const NewComplaintPage = ({ route }) => {
-  const { subCategory } = route.params;
+  const { subCategory,category } = route.params;
+  
   const [location, setLocation] = useState('');
   const [allLocations, setAllLocations] = useState([]);
   const [filteredLocations, setFilteredLocations] = useState([]);
@@ -36,6 +40,8 @@ const NewComplaintPage = ({ route }) => {
   const [popupVisible, setPopupVisible] = useState(false);
   const [popupType, setPopupType] = useState('');
   const [popupMessage, setPopupMessage] = useState('');
+  const [selfAssign, setSelfAssign] = useState(false);
+  const [longUrl, setLongUrl] = useState('');
   const navigation = useNavigation();
   // Fetch all location options on mount
   useLayoutEffect(() => {
@@ -54,6 +60,8 @@ const NewComplaintPage = ({ route }) => {
     fetchAllLocations();
   }, []);
 
+
+
   // Filter locations based on input
   const handleLocationInput = (text) => {
     setLocation(text);
@@ -68,25 +76,60 @@ const NewComplaintPage = ({ route }) => {
   };
 
 
+  const compressAndConvertToBase64 = async (uri) => {
+    try {
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 800 } }], // Resize image
+        { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG } // Compress quality
+      );
+  
+      const base64 = await FileSystem.readAsStringAsync(manipulatedImage.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+  
+      setLongUrl(`data:image/jpeg;base64,${base64}`);
+
+      return `data:image/jpeg;base64,${base64}`;
+    } catch (error) {
+      console.error('Error compressing or converting image:', error);
+      Alert.alert('Error', 'Failed to process the image. Please try again.');
+      return null;
+    }
+  };
+  
   const pickImage = async () => {
     setImageLoading(true); // Start the loading indicator when the user selects an image
   
     const result = await ImagePicker.launchCameraAsync({
-           mediaTypes: ImagePicker.MediaType,
-           allowsEditing: false,
-           quality: .5,
-         });
-  console.log(result,'image result')
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.5,
+    });
+  
+    console.log(result, 'image result');
     if (!result.canceled) {
       setImage(result.assets[0].uri); // Immediately show the image preview
   
       try {
-        // Upload image and get the URL
-        const ImageResponse = await ComplaintImageUploadApi(result.assets[0]);
-        setImageUrl(ImageResponse.data.url); // Set image URL after successful upload
-      } catch (uploadError) {
-        console.error('Error uploading image:', uploadError);
-        Alert.alert('Error', 'Failed to upload the image.');
+        // Compress and convert the image to base64
+        const base64 = await compressAndConvertToBase64(result.assets[0].uri); // Await the promise here
+  
+        if (base64) {
+          const imageData = {
+            uri: result.assets[0].uri,
+            mimeType: result.assets[0].type,
+            base64: base64, // Pass the base64 value
+            fileName: result.assets[0].fileName, // You can set a custom file name if needed
+          };
+  
+          // Upload image and get the URL
+          const ImageResponse = true;
+          console.log(ImageResponse, 'this is image response');
+          setImageUrl(ImageResponse.data.url); // Set image URL after successful upload
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
       } finally {
         setImageLoading(false); // End loading once the process is complete
       }
@@ -94,7 +137,7 @@ const NewComplaintPage = ({ route }) => {
       setImageLoading(false); // End loading if no image was selected
     }
   };
-    
+      
 
   
   const submitComplaint = async () => {
@@ -102,11 +145,19 @@ const NewComplaintPage = ({ route }) => {
     setPopupVisible(false); // Ensure popup is hidden before submission
   
     const data = {
+      category:category,
       data: subCategory,
       society: location.id,
       description: description,
-      image: imageUrl,
+      image: longUrl,
+     selfAssign:selfAssign
     };
+
+    if(subCategory.name == 'other' && !description){
+      setLoading(false); // Show loader during API request
+
+      alert("Please enter Description to add Complaint")
+    }else{
   
     try {
       const response = await CreateComplaintApi(data);
@@ -119,8 +170,12 @@ const NewComplaintPage = ({ route }) => {
         // Navigate after a delay to allow user to see the success message
         setTimeout(() => {
           setPopupVisible(false);
-          navigation.navigate('Service Request');
-        }, 2000);
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Service Request' }],
+            })
+          );        }, 1000);
       } else {
         throw new Error('Something went wrong. Please try again.');
       }
@@ -129,9 +184,12 @@ const NewComplaintPage = ({ route }) => {
       setPopupType('error');
       setPopupMessage('Failed to submit complaint. Please try again.');
       setPopupVisible(true);
-    } finally {
+    } 
+  
+    finally {
       setLoading(false); // Hide loader after API request
     }
+  }
   };
   
 
@@ -155,7 +213,7 @@ const NewComplaintPage = ({ route }) => {
           <View style={styles.section}>
             <Text style={styles.label}>Category</Text>
             <Text style={styles.valueText}>
-              {subCategory.complaint_category || 'Not selected'}
+              {category.name || 'Not selected'}
             </Text>
           </View>
 
@@ -241,16 +299,33 @@ const NewComplaintPage = ({ route }) => {
   </TouchableOpacity>
 </View>
 
+
+
+<View className="flex-row items-center justify-between mt-4 px-2">
+  {/* Label */}
+  <Text className="text-base font-medium text-gray-700">Self Assign</Text>
+  
+  {/* Custom Checkbox */}
+  <TouchableOpacity onPress={() => setSelfAssign(!selfAssign)}>
+    <View
+      className={`w-7 h-7  border-2 flex items-center justify-center transition-all duration-200 ${
+        selfAssign ? "border-[#074B7C] bg-[#074B7C]/10" : "border-[#1996D3] bg-transparent"
+      }`}
+    >
+      {selfAssign && <View className="w-4 h-4 rounded-full bg-[#074B7C] transition-all duration-200" />}
+    </View>
+  </TouchableOpacity>
+</View>
+
           {/* Submit Button */}
          {/* Submit Button */}
 <View style={styles.section}>
   <TouchableOpacity
     style={[
       styles.submitButton,
-      isSubmitDisabled && styles.submitButtonDisabled,
     ]}
     onPress={submitComplaint}
-    disabled={isSubmitDisabled || loading}
+    disabled={loading}
   >
     {loading ? (
       <ActivityIndicator color="#fff" />

@@ -29,7 +29,9 @@ export const GetAllPmsApi = async () => {
     // Define the parameters for the API call
     const params = {
       site_id: societyId,
-      user_id: userId,
+      api_token: apiToken,
+      "user-id": userId,
+      'site-id': societyId,
       'api-token': apiToken,
     };
 
@@ -46,7 +48,7 @@ export const GetAllPmsApi = async () => {
     const response = await axios.get(`${API_URL}/v3/pm/all?`, { params,headers,withCredentials: true });
     // Check the response data
     const data = response.data.data;
-  return data
+    return data
 
   } catch (error) {
     console.error('Error fetching data:', error.message || error);

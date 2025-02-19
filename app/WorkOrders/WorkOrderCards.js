@@ -36,7 +36,7 @@ const getPriorityColor = (priority) => {
     case 'Normal':
       return '#1996D3';
     default:
-      return '#CBD5E0';
+      return 'gray';
   }
 };
 
@@ -45,10 +45,15 @@ const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
   const navigation = useNavigation();
   const statusColor = getStatusColor(workOrder.wo.Status);
   const priorityColor = getPriorityColor(workOrder.wo.Priority);
-  const [teamName, setTeamName] = useState('No team assigned');
   const users = useSelector((state) => state.users.data);
-  const [siteUuid,setSiteUuid]  = useState('')
+  const teams = useSelector((state) => state.teams.data);
   const [restricted,setRestricted]  = useState(false)
+  const [restrictedTime,setRestrictedTime]  = useState(0)
+const [teamName,setTeamName]  = useState(null)
+
+
+
+
   const getUserNames = (assignedIds) => {
     if (!assignedIds || assignedIds.length === 0) {
       return 'Team';
@@ -67,6 +72,24 @@ const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
 
 
 
+  const getTeamName = (assignedTeamIds) => {
+  
+    if (!assignedTeamIds || assignedTeamIds.length === 0) {
+      return null;
+    }
+  
+    return assignedTeamIds
+      .map((teamId) => {
+        if (teamId) {
+          // Find the team in the teams array based on teamId
+          const team = teams?.find((team) => team.t._ID === teamId);
+          return team ? team.t.Name : 'Unknown Team';
+        }
+        return 'User Not Found';
+      })
+      .join(', ');
+  };
+  
 
 
 
@@ -85,23 +108,36 @@ const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
   
       
     if (timeDiff >= delTime) {
-
+      console.log(timeDiff,"this is diff time")
       setRestricted(true); // Set restricted if the time difference exceeds the restriction time
+      setRestrictedTime(timeDiff)
+
+     } else if(timeDiff < delTime){
+      setRestricted(false); // Set restricted if the time difference exceeds the restriction time
+      setRestrictedTime(delTime - timeDiff)
+     
     }else{
+      setRestrictedTime(null)
+
       setRestricted(false)
     }
 
     }, []);
-    // useEffect(() => {
+
+
+
+
+
+  //   useEffect(() => {
   //   const fetchTeamName = async () => {
   //     try {
-  //       console.log(workOrder.wo.AssignedTeam, "workOrder.wo.AssignedTeam")
   //       const assignedTeamId = workOrder.wo.AssignedTeam ; // Team ID from work order
   
   //       if (workOrder.as.site_uuid && assignedTeamId ) {
-  //         console.log("Yes, the work order has a site UUID");
   //         const response = await getAllTeams({ uuid: workOrder.as.site_uuid });
-  //         console.log(response.data,workOrder.wo.AssignedTeam, "response data");
+
+          
+  //         console.log(response.data[0],workOrder.wo.AssignedTeam, "response data");
   
   //         // Match the assigned team ID with the teams fetched from the API
   //         const matchedTeam = response.data?.find(
@@ -110,10 +146,8 @@ const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
   
   //         console.log(matchedTeam,workOrder.wo.AssignedTeam,"details of matched team")
   //         if (matchedTeam) {
-  //           console.log(matchedTeam.t.Name, "matchedTeam.t.Name");
   //           setTeamName(matchedTeam.t.Name); // Set the team name
   //         } else {
-  //           console.warn("No matching team found");
   //           setTeamName("No team assigned");
   //         }
   //       }
@@ -161,14 +195,15 @@ const handleBack=()=>{
 
 
 
-  if (!workOrder.wo.flag_delay) {
+  
 
 if(previousScreen == 'ScannedWoTag'){
   navigation.navigate('ScannedWoBuggyList',{
     workOrder: workOrder.wo.uuid,
     wo: workOrder.wo,
     previousScreen:previousScreen,
-    restricted
+    restricted:restricted,
+    restrictedTime:restrictedTime,
   })
 }else{
 
@@ -176,12 +211,13 @@ if(previousScreen == 'ScannedWoTag'){
       workOrder: workOrder.wo.uuid,
       wo: workOrder.wo,
       previousScreen:previousScreen,
-      restricted
+      restricted:restricted,
+      restrictedTime:restrictedTime
     });
 
   }
 
-}
+
 }
 
 
@@ -197,19 +233,28 @@ if(previousScreen == 'ScannedWoTag'){
       {/* Work Order ID and status */}
       <View className="flex-row justify-between items-center">
         <View className="flex flex-row gap-4">
+    
+
+        <View className='flex flex-row '>
         <Text className="text-gray-600 font-bold" style={{ fontSize }}>
-          WO-ID : {workOrder.wo['Sequence No']}
+          ID : {workOrder.wo['Sequence No']} 
         </Text>
-        {workOrder.wo.flag_delay  &&
+      {workOrder.wo['Sequence No'].split('-')[0] == 'BR' &&  <View className='bg-red-400 rounded-lg px-1 ml-2 text-white'>
+          <Text className='text-xs text-white font-black '>Breakdown</Text>
+        </View>}
+        {workOrder.wo['Sequence No'].split('-')[0] == 'HK' &&  <View className='bg-green-400 rounded-lg px-1 ml-2 text-white'>
+          <Text className='text-xs text-white font-black '>HouseKeeping</Text>
+        </View>}
+        </View>
+        {workOrder.wo.wo_restriction_time && restricted ?
 
                <Icon name="flag" size={16} color="red"  />
        
-          }
-
-{!workOrder.wo.flag_delay  && workOrder.wo.flag_pm &&
+       :  workOrder.wo.wo_restriction_time ?
 
 
-<Icon name="clock-o" size={16} color="gray"  />
+<Icon name="clock-o" size={16} color="gray"  />:
+null
 
 }
         </View>
@@ -269,7 +314,7 @@ if(previousScreen == 'ScannedWoTag'){
       </View>}
 
       {/* Assigned Team */}
-      {/* <View className="flex flex-row">
+     {workOrder.wo.AssignedTeam &&  <View className="flex flex-row">
         <View className="w-1/3 flex-row items-center">
           <Icon name="users" size={fontSize} color="#34D399" />
           <Text className="ml-2 text-gray-700 font-extrabold" style={{ fontSize }}>
@@ -277,13 +322,19 @@ if(previousScreen == 'ScannedWoTag'){
           </Text>
         </View>
         <View className="w-2/3 ml-2 flex-row items-center justify-start flex-wrap">
-          <View className="bg-green-200 px-3 py-1 rounded-full mr-2 mb-2">
+          <View >
+            {getTeamName(workOrder.wo.AssignedTeam).split(', ').map((name, index) => (
+            <View
+              key={index}
+              className="bg-green-200 px-3 py-1 rounded-full mr-2 mb-2"            >
             <Text className="font-semibold text-green-800" style={{ fontSize }}>
-              {teamName}
-            </Text>
+            {name}
+              </Text>
+            </View>
+          ))}
           </View>
         </View>
-      </View> */}
+      </View>}
 
       {/* Created Date */}
       <View className="flex-row items-center justify-between">

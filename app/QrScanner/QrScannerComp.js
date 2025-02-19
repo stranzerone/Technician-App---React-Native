@@ -71,6 +71,9 @@ export default function QrScanner({ onRefresh }) {
           style={styles.camera}
         />
       </View>
+
+
+      <View ></View>
       {/* Dynamic Popup */}
       <DynamicPopup
         visible={popupVisible}
@@ -92,6 +95,8 @@ const styles = StyleSheet.create({
   },
   cameraContainer: {
     width: "100%",
+    height:"150%",
+    marginTop:20,
     aspectRatio: 1,
     borderRadius: 20,
     overflow: "hidden",

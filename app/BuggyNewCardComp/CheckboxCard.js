@@ -10,7 +10,7 @@ const CheckboxCard = ({ title, item, onUpdate, editable }) => {
   const [isChecked, setIsChecked] = useState(item.result === "1");
 
   // Directly determine background color based on the checkbox state
-  const backgroundColor = isChecked ? "#DFF6DD" : "#FFFFFF"; // Light green when checked, white when unchecked
+  const backgroundColor = isChecked ? "#DFF6DD" :editable? "#FFFFFF":"#FEB2B2"; // Light green when checked, white when unchecked
 
   const handleCheckboxPress = async () => {
     const newState = !isChecked;

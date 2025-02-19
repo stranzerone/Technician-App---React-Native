@@ -9,7 +9,7 @@ export const PermissionsProvider = ({ children }) => {
   const [ppmAsstPermissions, setPpmAsstPermissions] = useState([]);
   const [complaintPermissions, setComplaintPermissions] = useState([]);
   const [instructionPermissions, setInstructionPermissions] = useState([]);
-
+ const [complaintFilter,setComplaintFilter]  = useState("Open")
   const loadPermissions = async () => {
  console.log("inside call permissions")
     try {
@@ -55,6 +55,8 @@ export const PermissionsProvider = ({ children }) => {
         ppmAsstPermissions,
         complaintPermissions,
         instructionPermissions,
+        complaintFilter,
+        setComplaintFilter,
         setPpmAsstPermissions,
         setComplaintPermissions,
         setInstructionPermissions,

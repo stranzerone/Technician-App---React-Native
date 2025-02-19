@@ -47,7 +47,7 @@ const WorkOrderStack = () => (
   component={RequestServiceTabs}
   options={{
     title: 'Create WO',
-    headerShown: false,
+    headerShown: true,
     headerStyle: {
       height: 40,  // Adjust height as needed
     },
@@ -62,7 +62,7 @@ const WorkOrderStack = () => (
   component={BuggyListTopTabs }
   options={{
     title: 'Create WO',
-    headerShown:false,
+    headerShown:true,
     headerStyle: {
       height: 40,  // Adjust height as needed
     },
@@ -82,20 +82,23 @@ const QRCodeStack = () => (
       name="NewScanPage"
       component={NewScanPage}
       options={{
-        title:'',
-        headerShown: false }}
+        title:'Work Orders',
+        headerShown: true }}
     />
 
 <Stack.Screen
       name="ScannedWo"
+      title="Work Orders"
       component={FilteredWorkOrderPage}
-      options={{ headerShown: false }}
+      options={{ headerShown: true }}
     />
 
 <Stack.Screen
       name="ScannedWoInsturctions"
       component={BuggyListTopTabs}
-      options={{ headerShown: false }}
+      options={{ 
+        title:"Instructions",
+        headerShown: true }}
     />
 
 
@@ -110,8 +113,8 @@ const ServiceRequestStack = () => (
       name="Service Request"
       component={ComplaintsScreen}
       options={{ 
-      
-        headerShown: false }}
+       title:"Service Request",
+        headerShown: true }}
     />
      <Stack.Screen 
           name="subComplaint"
@@ -352,18 +355,19 @@ const MyTabs = () => {
           },
         })}
       >
-        <Tab.Screen name="Work Orders" options={{ title: '' }} component={WorkOrderStack} />
+        <Tab.Screen name="Work Orders" options={{ title: 'Work Orders' }} component={WorkOrderStack} />
         {/* <Tab.Screen name="MyComplaints" options={{ title: 'Complaints' }} component={ComplaintsScreen} /> */}
 
-        <Tab.Screen name="QRCode" options={{ title: '' }} component={QRCodeStack} />
-        <Tab.Screen name="ServiceRequests" options={{ title: '' }} component={ServiceRequestStack} />
+        <Tab.Screen name="QRCode" options={{ title: 'QR Scan' }} component={QRCodeStack} />
+        <Tab.Screen name="ServiceRequests" options={{ title: 'Service Request' }} component={ServiceRequestStack} />
 
         <Tab.Screen 
           name="Notifications" 
           // component={NotificationMainPage}
           component={NotificationMainPage}
           options={{
-            title:'',
+            title:'Notifications',
+            
             tabBarBadge: totalNotifications, 
             tabBarBadgeStyle: {
               backgroundColor: 'red',    

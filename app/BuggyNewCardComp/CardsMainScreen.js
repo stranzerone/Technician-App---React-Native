@@ -24,7 +24,7 @@ const CardRenderer = ({ item, onUpdateSuccess,wo,restricted }) => {
       case 'text':
         return <TextCard item={item} onUpdate={onUpdateSuccess} editable={isEditable} />;
       case 'number':
-        return <NumberCard item={item} onUpdate={onUpdateSuccess} editable={isEditable} />;
+        return <NumberCard item={item} onUpdate={onUpdateSuccess} type={"number"} editable={isEditable} />;
       case 'dropdown':
         return <DropdownCard item={item} onUpdate={onUpdateSuccess} editable={isEditable} />;
       case 'file':

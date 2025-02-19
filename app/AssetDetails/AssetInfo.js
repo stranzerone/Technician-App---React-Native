@@ -96,14 +96,18 @@ const AssetInfo = ({ WoUuId }) => {
         </View>
 
         {/* Description Section */}
-        <View style={styles.descriptionContainer}>
-          <Text style={styles.descriptionTitle}>Work Order Description</Text>
-          <View style={styles.descriptionBox}>
-            <Text style={styles.descriptionText}>
-              {wo?.Description || 'No description available for this work order.'}
-            </Text>
-          </View>
-        </View>
+        <View className="mt-2 border-t border-gray-400 pt-2 max-h-20 overflow-hidden">
+  <ScrollView 
+    className="px-2" 
+    contentContainerStyle={{ flexGrow: 1 }}
+    showsVerticalScrollIndicator={true}
+  >
+    <Text style={styles.descriptionText}>
+      {wo?.Description || "No description available for this work order."}
+    </Text>
+  </ScrollView>
+</View>
+
 
         <View style={styles.infoContainer}>
           {/* Work Order Details */}

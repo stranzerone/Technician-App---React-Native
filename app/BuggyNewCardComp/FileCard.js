@@ -1,184 +1,147 @@
-import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, ActivityIndicator, Text, Image, Alert, Modal, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
-import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
+import React, { useState, useEffect } from "react";
+import { View, Text, Image, TouchableOpacity, Alert, Modal } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
+import { uploadImageToServer } from "../../service/ImageUploads/ConvertImageToUrlApi";
+import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
+import RemarkCard from "./RemarkCard";
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-const CommentInput = ({ value, onChangeText, onSubmit, isPosting }) => {
-  const [imagePreview, setImagePreview] = useState(null);
-  const [imageBase64, setImageBase64] = useState(null);
-  const [isPreviewVisible, setIsPreviewVisible] = useState(false); // State to manage the modal visibility
+const FileCard = ({ item,onUpdate ,editable}) => {
+  const [capturedImage, setCapturedImage] = useState(item.result || null); // Use item.result as initial value
+  const [hasPermission, setHasPermission] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false); // State to control modal visibility
 
-  // Function to resize and reduce image quality
-  const resizeImage = async (uri) => {
-    try {
-      const manipResult = await ImageManipulator.manipulateAsync(
-        uri,
-        [{ resize: { width: 800 } }], // Resize the image to a width of 800px (adjust as needed)
-        { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG } // Reduce quality to 50%
-      );
-      return manipResult.uri; // Return the URI of the resized image
-    } catch (error) {
-      Alert.alert('Error', 'Failed to resize the image.');
-      return null;
+  useEffect(() => {
+    (async () => {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      setHasPermission(status === "granted");
+    })();
+  }, []);
+
+  const handleCaptureImage = async () => {
+    if (!hasPermission) {
+      Alert.alert("Permission Required", "Camera permissions are required to capture an image.");
+      return;
     }
-  };
 
-  // Function to convert the resized image into Base64
-  const convertToBase64 = async (uri) => {
+    setLoading(true);
     try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-
-      // Convert blob to base64
-      const reader = new FileReader();
-      return new Promise((resolve, reject) => {
-        reader.onloadend = () => resolve(reader.result.split(',')[1]); // Get only the base64 part
-        reader.onerror = reject;
-        reader.readAsDataURL(blob); // Convert blob to base64
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaType,
+        allowsEditing: false,
+        quality: 0.6,
       });
+
+      if (!result.canceled && result.assets && result.assets[0].uri) {
+        const imageUri = result.assets[0].uri;
+
+        const fileData = {
+          uri: imageUri,
+          fileName: `photo_${Date.now()}.jpeg`,
+          mimeType: "image/jpeg",
+        };
+
+        // Upload image to the server
+        const uploadResponse = await uploadImageToServer(fileData, item.id, item.ref_uuid);
+
+        onUpdate()
+        // Update capturedImage with uploaded image URI
+        setCapturedImage(imageUri);
+      }
     } catch (error) {
-      Alert.alert('Error', 'Failed to process the image. Please try again.');
-      return null;
+      console.error("Error capturing image:", error);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleImageAttachment = () => {
-    launchImageLibrary(
-      {
-        mediaType: 'photo', // 'photo' for images, 'video' for videos
-        quality: 1,
-      },
-      async (response) => {
-        if (response.didCancel) {
-          return;
-        }
-        if (response.errorCode) {
-          Alert.alert('Error', 'Failed to pick an image.');
-          return;
-        }
-
-        const resizedUri = await resizeImage(response.assets[0].uri);
-        if (resizedUri) {
-          setImagePreview(resizedUri);
-
-          const base64 = await convertToBase64(resizedUri);
-          if (base64) {
-            console.log("Reduced Base64 Image:", base64);
-            setImageBase64(base64);
-          }
-        }
-      }
-    );
-  };
-
-  const handleCaptureImage = () => {
-    launchCamera(
-      {
-        mediaType: 'photo', // 'photo' for images, 'video' for videos
-        quality: 1,
-      },
-      async (response) => {
-        if (response.didCancel) {
-          return;
-        }
-        if (response.errorCode) {
-          Alert.alert('Error', 'Failed to capture an image.');
-          return;
-        }
-
-        const resizedUri = await resizeImage(response.assets[0].uri);
-        if (resizedUri) {
-          setImagePreview(resizedUri);
-
-          const base64 = await convertToBase64(resizedUri);
-          if (base64) {
-            console.log("Reduced Base64 Image:", base64);
-            setImageBase64(base64);
-          }
-        }
-      }
-    );
-  };
-
-  const handleSubmit = () => {
-    const object = {
-      remarks: value,
-      file: imageBase64,
-    };
-    onSubmit(object);
   };
 
   return (
-    <View className="flex-row items-center mb-14 bg-gray-100 p-2 rounded-lg border border-gray-300">
-      {/* Image Preview */}
-      {imagePreview && (
-        <TouchableOpacity onPress={() => setIsPreviewVisible(true)} className="mr-2">
-          <Image
-            source={{ uri: imagePreview }}
-            className="w-12 h-12 rounded-lg"
-            resizeMode="cover"
-          />
-        </TouchableOpacity>
-      )}
+    <View
+      className={`shadow-md rounded-lg p-4 mb-4 `}
+      
+      style={[styles.inputContainer, item.result || capturedImage ? { backgroundColor: "#DFF6DD" } :editable? null:{backgroundColor:"#FEB2B2"},]}
 
-      {/* Text Input */}
-      <TextInput
-        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-700"
-        placeholder="Add a new comment"
-        value={value}
-        onChangeText={onChangeText}
-      />
+   >
+      <Text style={styles.title} className="text-lg font-semibold text-[#074B7C]">{item.title}</Text>
 
-      {/* Action Buttons */}
-      <View className="flex-row items-center ml-2">
-        {/* Attach Image Icon */}
-        <TouchableOpacity onPress={handleImageAttachment} className="mr-2">
-          <FontAwesome name="paperclip" size={24} color="#1996D3" />
-        </TouchableOpacity>
+      <View className="flex flex-row">
+        {/* Image Preview Section */}
+        <View className="w-1/2 flex items-center justify-center">
+          {loading ? (
+            <Text className="text-gray-500">Loading...</Text>
+          ) : capturedImage ? (
+            <TouchableOpacity disabled={!editable} onPress={() => setModalVisible(true)}>
+              <Image style={styles.imageAttachmentContainer} source={{ uri: capturedImage }} className="w-32 h-32 rounded-md" />
+            </TouchableOpacity>
+          ) : (
+            <View className="w-32 h-32 border border-blue-900 bg-gray-200 rounded-md flex items-center justify-center">
+              <Ionicons name="image-outline" size={40} color="#CED4DA" />
+              <Text className="text-gray-500 text-xs mt-2">No image selected</Text>
+            </View>
+          )}
+        </View>
 
-        {/* Capture Image Icon */}
-        <TouchableOpacity onPress={handleCaptureImage} className="mr-2">
-          <FontAwesome name="camera" size={24} color="#1996D3" />
-        </TouchableOpacity>
-
-        {/* Submit Button */}
-        {isPosting ? (
-          <ActivityIndicator size="small" color="#fff" className="ml-2" />
-        ) : (
+        {/* Capture Image Section */}
+        <View className="w-1/2 flex items-center justify-center">
           <TouchableOpacity
-            className="bg-blue-500 px-4 py-2 rounded-lg"
-            onPress={handleSubmit}
+          style={styles.cameraButton}
+            className="bg-blue-600 py-2 px-4 rounded-md flex gap-1 items-center justify-center"
+            onPress={handleCaptureImage}
+            disabled={!editable}
           >
-            <Text className="text-white font-semibold">Post</Text>
+            <Ionicons name="camera" size={24} color="white" />
+            <Text className="text-white text-sm mt-1">Capture Image</Text>
           </TouchableOpacity>
-        )}
+        </View>
       </View>
 
-      {/* Image Preview Modal */}
-      {isPreviewVisible && (
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isPreviewVisible}
-          onRequestClose={() => setIsPreviewVisible(false)}
-        >
-          <TouchableWithoutFeedback onPress={() => setIsPreviewVisible(false)}>
-            <View
-              className="flex-1 justify-center items-center bg-black bg-opacity-50"
-              style={{ flex: 1 }}
-            >
-              <Image
-                source={{ uri: imagePreview }}
-                className="w-80 h-80"
-                resizeMode="contain"
-              />
+      <View className="mt-4"> 
+      <RemarkCard
+      className="mt-4"
+        item={item}
+        onRemarkChange={(id, newRemark) =>
+          console.log(`Remark updated for ${id}: ${newRemark}`)
+        }
+      />
+
+
+        {item?.data?.optional &&   
+            <View className="flex-1 bg-transparent justify-end py-4 ">
+            <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
+           
+              <Icon name="info-circle" size={16} color="red" />
+              <Text className="text-sm text-black mr-2">
+                Optional
+              </Text>
             </View>
-          </TouchableWithoutFeedback>
-        </Modal>
-      )}
+          </View>}
+      </View>
+      {/* Modal to View Full Image */}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+          <View className="bg-white p-2 rounded-lg relative w-full ">
+            <TouchableOpacity
+              className="absolute top-2 right-2 bg-gray-600 p-2 rounded-full"
+              onPress={() => setModalVisible(false)}
+            >
+              <Ionicons name="close" size={30} color="white" />
+            </TouchableOpacity>
+            <Image
+              source={{ uri: capturedImage }}
+              className="w-full mt-12 h-80 object-contain"
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
-export default CommentInput;
+export default FileCard;

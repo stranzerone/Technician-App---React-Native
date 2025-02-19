@@ -24,11 +24,11 @@ export const loginApi = async (user) => {
     const { data } = await axios.post(API_URL2+'/login', payload);
 
     if (data.message === 'Login Successful.') {
-      const { designation_name } = data.data;
+      const { role } = data.data;
 
       // Check authorization for specific roles
       if (
-        ['Staff', 'Admin', 'Supervisor'].includes(designation_name)
+        ['groundstaff', 'admin', 'supervisor'].includes(role)
       ) {
         // Store token and user info asynchronously
         await AsyncStorage.setItem('userInfo', JSON.stringify(data));

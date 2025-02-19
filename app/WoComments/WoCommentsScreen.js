@@ -7,11 +7,9 @@ import {
   ActivityIndicator,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  Keyboard,
   ScrollView,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import { WorkOrderAddComments } from '../../service/CommentServices/WorkOrderCommentsAddApi';
 import { WorkOrderComments } from "../../service/CommentServices/WorkOrderFetchCommentsApi";
 import CommentCard from './WoCommentsCards';
@@ -21,12 +19,13 @@ const CommentsPage = ({ WoUuId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [newComment, setNewComment] = useState('');
+  const [selectedButton, setSelectedButton] = useState('C'); // Track selected button
 
   // Function to fetch comments
   const loadComments = async () => {
     setLoading(true);
     try {
-      const response = await WorkOrderComments(WoUuId);
+      const response = await WorkOrderComments(WoUuId,selectedButton);
       setComments(response);
     } catch (error) {
       console.error('Error fetching comments:', error);
@@ -38,9 +37,7 @@ const CommentsPage = ({ WoUuId }) => {
 
   useEffect(() => {
     loadComments();
-
-  
-  }, []);
+  }, [selectedButton]);
 
   // Handle comment submission
   const handleCommentSubmit = async () => {
@@ -62,16 +59,20 @@ const CommentsPage = ({ WoUuId }) => {
   };
 
   const renderComment = ({ item }) => (
-    <CommentCard comment={item} /> // Use the CommentCard component here
+    <CommentCard comment={item} />
   );
 
-  if (loading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#1996D3" />
-      </View>
-    );
-  }
+  const handleButtonPress = (buttonName) => {
+    setSelectedButton(buttonName); // Set selected button
+  };
+
+  // if (loading) {
+  //   return (
+  //     <View style={styles.loaderContainer}>
+  //       <ActivityIndicator size="large" color="#1996D3" />
+  //     </View>
+  //   );
+  // }
 
   if (error) {
     return (
@@ -84,11 +85,13 @@ const CommentsPage = ({ WoUuId }) => {
   return (
     <View style={{ flex: 1 }}>
       {/* ScrollView for comments */}
+     { 
+      loading ? 
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#1996D3" />
+      </View>       :
       <View style={{ flex: 1 }}>
-        <ScrollView
-        className="bg-blue-200"
-          style={styles.container}
-        >
+        <ScrollView style={styles.container}>
           <FlatList
             data={comments}
             keyExtractor={(item) => item.id.toString()}
@@ -97,23 +100,18 @@ const CommentsPage = ({ WoUuId }) => {
             contentContainerStyle={styles.commentsList}
             ListEmptyComponent={
               <View style={styles.emptyList}>
-                <Text style={styles.emptyText}>No comments available</Text>
+                <Text style={styles.emptyText}>{`No ${selectedButton == "H"?"History":"Comments"} available`}</Text>
               </View>
             }
           />
         </ScrollView>
-      </View>
+      </View>}
 
       {/* Comment input section */}
-      <View
-        style={[
-          styles.commentInputContainer,
-         // Apply margin when keyboard is open
-        ]}
-      >
+    {  selectedButton === 'C' && <View style={styles.commentInputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Write a comment..."
+          placeholder=" Enter remarks up to 250 char"
           value={newComment}
           onChangeText={setNewComment}
           multiline
@@ -123,6 +121,49 @@ const CommentsPage = ({ WoUuId }) => {
         <TouchableOpacity style={styles.button} onPress={handleCommentSubmit}>
           <Text style={styles.buttonText}>Send</Text>
         </TouchableOpacity>
+      </View>}
+
+      {/* Bottom buttons for Comments, History, and All */}
+      <View style={styles.bottomButtonsContainer}>
+
+      <View  className="flex flex-row items-center justify-center w-[70%] ml-[15%]">
+        <TouchableOpacity
+          style={[
+            styles.bottomButton,
+            selectedButton === 'C' && styles.selectedButton, // Apply selected style
+          ]}
+          onPress={() => handleButtonPress('C')}
+        >
+          <Icon name="comments" size={16} color={selectedButton === 'C' ? '#fff' : '#074B7C'} />
+          <Text style={[styles.bottomButtonText, selectedButton === 'C' && { color: '#fff' }]}>
+            Comments
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.bottomButton,
+            selectedButton === 'H' && styles.selectedButton,
+          ]}
+          onPress={() => handleButtonPress('H')}
+        >
+          <Icon name="history" size={16} color={selectedButton === 'H' ? '#fff' : '#074B7C'} />
+          <Text style={[styles.bottomButtonText, selectedButton === 'H' && { color: '#fff' }]}>
+            History
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.bottomButton,
+            selectedButton === 'all' && styles.selectedButton,
+          ]}
+          onPress={() => handleButtonPress('all')}
+        >
+          <Icon name="list" size={16} color={selectedButton === 'all' ? '#fff' : '#074B7C'} />
+          <Text style={[styles.bottomButtonText, selectedButton === 'all' && { color: '#fff' }]}>
+            All
+          </Text>
+        </TouchableOpacity>
+      </View>
       </View>
     </View>
   );
@@ -130,12 +171,12 @@ const CommentsPage = ({ WoUuId }) => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    
     padding: 10,
-    borderWidth:1,
-    borderRadius:10,
-    borderColor:"#074B7C",
-  
-    zIndex:100,
+    backgroundColor: "#f9f9f9",
+    borderWidth: 1,
+    borderColor: "#074B7C",
   },
   loaderContainer: {
     justifyContent: 'center',
@@ -151,8 +192,9 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   emptyText: {
-    fontSize: 18,
-    color: '#888',
+    fontSize: 22,
+    fontWeight: "900",
+    color: '#999',
     textAlign: 'center',
   },
   errorText: {
@@ -160,11 +202,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   commentInputContainer: {
-    height: 70,  // Set a fixed height for the input container
-    paddingBottom: 10,
-    borderWidth:1,
-    backgroundColor:"gray",
-    borderColor:"gray",
+    height: 70,
+    borderWidth: 1,
+    backgroundColor: "#f2fcff",
+    borderColor: "gray",
     flexDirection: 'row',
     alignItems: 'flex-end',
     padding: 10,
@@ -179,7 +220,7 @@ const styles = StyleSheet.create({
     padding: 10,
     height: 40,
     marginRight: 10,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'white',
     textAlignVertical: 'top',
   },
   button: {
@@ -193,6 +234,32 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  bottomButtonsContainer: {
+    width: '100%',
+  
+    height:"13%",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 2,
+    backgroundColor: '#a6d1e0',
+  },
+  bottomButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 6,  // Reduced padding
+  },
+  selectedButton: {
+    borderRadius:10,
+    backgroundColor: '#074B7C', // Background color when selected
+  },
+  bottomButtonText: {
+    color: '#074B7C',
+    fontWeight: 'bold',
+    marginTop: 5,
+    fontSize: 12, // Reduced font size
   },
 });
 

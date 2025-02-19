@@ -7,15 +7,18 @@ import {
   Text,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
+  TextInput
 } from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons'; // Added MaterialIcons
 import TypeSelector from './OptionsInputs/AddType';
 import TaskInput from './TextInput/TextInputs';
 import PrioritySelector from './OptionsInputs/PriorityInput';
-import AssetSearch from './AssetSearch/AssetSearch';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 import { submitWorkOrder } from '../../service/AddWorkOrderApis/CreateWorkOrderApi';
 import { useNavigation } from '@react-navigation/native';
+import GetAssets from '../../service/AddWorkOrderApis/FetchAssests';
 
 const AddWorkOrderScreen = () => {
   const [name, setName] = useState('');
@@ -27,17 +30,25 @@ const AddWorkOrderScreen = () => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupType, setPopupType] = useState('success');
   const [popupMessage, setPopupMessage] = useState('');
+  const [assets, setAssets] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+const[optionsOpen,setOpen]  = useState(false)
+  const navigation = useNavigation();
 
-  const navigation = useNavigation()
-  const handleSubmit = async () => {
-    console.log(name, dueDate, estimatedTime, selectedAsset);
-    if (!name || !selectedAsset) {
-      setPopupType('error');
-      setPopupMessage('Please fill in all fields before submitting.');
-      setPopupVisible(true);
-      return;
-    }
 
+
+  const resetForm = () => {
+    setName('');
+    setDueDate('');
+    setEstimatedTime('');
+    setSelectedAsset(null);
+    setPriority("Normal");
+    setTypeSelected("");
+  };
+
+
+  const handleSubmit = async() => {
     const workOrderData = {
       name,
       dueDate,
@@ -46,36 +57,66 @@ const AddWorkOrderScreen = () => {
       asset: selectedAsset,
       type: typeSelected,
     };
-
-    console.log(workOrderData);
     try {
-      await submitWorkOrder(workOrderData);
+
+      if (!name || !selectedAsset) {
+        setPopupType('error');
+        setPopupMessage('Please fill in all fields before submitting.');
+        setPopupVisible(true);
+        return;
+      }
+  
+   
+    const response =  await submitWorkOrder(workOrderData);
+     
+    console.log(response.status)
+    if(response.status == "success"){
+      console.log(response.status)
       setPopupType('success');
       setPopupMessage('Work order submitted successfully!');
       setPopupVisible(true);
-      navigation.navigate('WorkOrderHomeTab')
+      navigation.navigate('WorkOrderHomeTab');
       resetForm();
+    }
+    console.log(response.data)
+
     } catch (error) {
+      console.log(error,'this is error for adding wo')
       setPopupType('error');
       setPopupMessage('Failed to submit work order. Please try again.');
       setPopupVisible(true);
     }
   };
 
-  const resetForm = () => {
-    setName('');
-    setDueDate('');
-    setEstimatedTime('');
-    setSelectedAsset(null);
-    setPriority("Normal");
-    setTypeSelected("Panned");
+  const handleSelectAsset = (asset) => {
+    console.log(asset,"this is selected asset")
+    setSelectedAsset(asset);
+    clearSearch()
+    setOpen(false)
   };
 
-  const handlePopupClose = () => {
-    setPopupVisible(false); // Hide the popup
-    if (popupType === 'success') {
-      // Optionally, reset form state or trigger other actions here if needed
+  const handleSearchAssets = async (query) => {
+    setSearchQuery(query);
+    setOpen(true)
+    if (!query.trim()) {
+      setAssets([]);
+      return;
     }
+    setLoading(true);
+    try {
+      const results = await GetAssets(query);
+      setAssets(results.data);
+    } catch (error) {
+      console.error('Error fetching assets:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setAssets([]);
+    setOpen(false)
   };
 
   return (
@@ -87,9 +128,42 @@ const AddWorkOrderScreen = () => {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.formContainer}>
-            <View style={styles.formSection}>
-              <AssetSearch onSelectAsset={setSelectedAsset} />
+
+            {/* Search Input with Search & Clear Icons */}
+            <View style={styles.searchContainer}>
+              <Ionicons name="search" size={22} color="gray" style={styles.searchIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Search for an asset..."
+                value={searchQuery }
+                onChangeText={handleSearchAssets}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={clearSearch} style={styles.clearIcon}>
+                  <Ionicons name="close-circle" size={22} color="gray" />
+                </TouchableOpacity>
+              )}
             </View>
+
+            {loading && <ActivityIndicator size="small" color="#074B7C" />}
+
+            {/* Asset List with Icons */}
+        { optionsOpen &&   <ScrollView>
+              {assets?.map((asset, index) => (
+                <TouchableOpacity key={index} style={styles.assetCard} onPress={() => handleSelectAsset(asset)}>
+                  <MaterialIcons name="inventory" size={22} color="#074B7C" />
+                  <Text style={styles.assetText}>{asset.Name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>}
+
+            {/* Selected Asset with Check Icon */}
+            {selectedAsset && (
+              <View style={styles.selectedAssetContainer}>
+                <MaterialIcons name="check-circle" size={22} color="#155B74" />
+                <Text style={styles.selectedAssetText}>{selectedAsset.Name}</Text>
+              </View>
+            )}
 
             <View style={styles.rowContainer}>
               <View style={styles.inputContainer}>
@@ -120,8 +194,8 @@ const AddWorkOrderScreen = () => {
           visible={isPopupVisible}
           type={popupType}
           message={popupMessage}
-          onClose={handlePopupClose}
-          onOk={handlePopupClose}
+          onClose={() => setPopupVisible(false)}
+          onOk={() => setPopupVisible(false)}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -129,10 +203,72 @@ const AddWorkOrderScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  // Existing styles remain unchanged...
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: "flex-start",
+    height: 50,
+    textAlign:'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: "#074B7C",
+    paddingHorizontal: 10,
+    marginVertical: 15,
+  },
+  searchIcon: {
+    backgroundColor:"#074B7C",
+    padding:6,
+    color:"white",
+    borderRadius:10,
+    marginRight: 10,
+  },
+  assetCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap:4,
+    justifyContent:"flex-start",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#074B7C",
+    backgroundColor: '#FFF',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  assetText: {
+    fontSize: 17,
+    fontWeight: '500',
+    color: '#2C3E50',
+    marginLeft: 0, // Space between icon and text
+  },
+  selectedAssetContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#D1ECF1',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#17A2B8',
+  },
+  selectedAssetText: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#155B74',
+    marginLeft: 10, 
+  },
+
   screenContainer: {
     flex: 1,
     width: '100%',
-    backgroundColor: '#F8F9FA', // Single background color for the entire screen
+    backgroundColor: '#F8F9FA',
     paddingHorizontal: 20,
   },
   scrollContainer: {
@@ -141,13 +277,27 @@ const styles = StyleSheet.create({
   formContainer: {
     marginBottom: 20,
   },
+
+  input: {
+    flex: 1,
+    width: '100%',
+  
+    marginTop:10,
+    padding:0,
+    paddingVertical: 10,
+    paddingHorizontal:10,
+    fontSize: 16,
+  },
+  clearIcon: {
+    marginLeft: 10,
+  },
   formSection: {
     borderRadius: 12,
     padding: 10,
     paddingHorizontal: 0,
     marginBottom: 25,
     paddingTop: 20,
-    backgroundColor: '#FFFFFF', // Uniform background color for form sections
+    backgroundColor: '#FFFFFF',
   },
   rowContainer: {
     flexDirection: 'row',
@@ -160,7 +310,6 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     alignItems: 'center',
-    marginTop: 0,
   },
   button: {
     backgroundColor: '#074B7C',
@@ -181,6 +330,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-});
+
+
+  assetText: {
+    fontSize: 17,
+    fontWeight: '500',
+    color: '#2C3E50', // Darker grey for readability
+  },
+  
+  selectedAssetContainer: {
+    marginVertical: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#D1ECF1', // Light cyan for better visibility
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#17A2B8', // Matching border with the theme
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  
+  selectedAssetText: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#155B74', // Deep blue for contrast
+    flex: 1,
+  },
+  });
 
 export default AddWorkOrderScreen;

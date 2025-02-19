@@ -22,7 +22,7 @@ const PhoneNumberPage = ({ navigation }) => {
 
   const handleSendOtp = async () => {
     console.log(phoneNumber, 'Phone Number');
-    if (phoneNumber.length !== 10) {
+    if (phoneNumber.length < 1) {
       setPopupMessage('Please enter a valid phone number.');
       setPopupVisible(true);
       return;
@@ -75,9 +75,9 @@ const PhoneNumberPage = ({ navigation }) => {
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Enter Phone Number"
-            keyboardType="phone-pad"
-            maxLength={10}
+            placeholder="Enter Phone Number Or Email"
+         
+          minLength={1}
             value={phoneNumber}
             onChangeText={setPhoneNumber}
           />

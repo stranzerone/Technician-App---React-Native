@@ -2,7 +2,10 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
-export const GetSingleWorkOrders = async (uuid,status) => {
+export const GetSingleWorkOrders = async (uuid,status,breakdownActive) => {
+
+
+  console.log(uuid,status,breakdownActive,'uuid,status,breakdownActive')
 //https://nppm-api.isocietymanager.com/v3/workorder/assigned/asset?
   try {
     // Fetch user info and uuid from AsyncStorage
@@ -28,12 +31,12 @@ export const GetSingleWorkOrders = async (uuid,status) => {
       asset_uuid:uuid,
       per_page:'10',
       page_no:'1',
-      user_id: userId,
+      "user_id": userId,
       site_id:societyId,
       Status:status,
-      breakdown:'false',
+      breakdown:breakdownActive,
       "api-token": apiToken,
-     " user-id": userId,
+     "user-id": userId,
       "api-token": apiToken,
       "user-id": userId
     };
@@ -53,9 +56,14 @@ export const GetSingleWorkOrders = async (uuid,status) => {
     // Make the API request
     const response = await axios.get(`${API_URL}/v3/workorder/assigned/asset?`, { params,headers,withCredentials: true });
     // Check the response data
+    console.log(response.data,'on asset ')
+    if(response.data.data){
 
+    
   return response.data.data
-
+    }else{
+      return []
+    }
   } catch (error) {
     console.error('Error fetching data:', error.message || error);
     throw error; // Rethrow error to handle it later

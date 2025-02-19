@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { GetComplaintComments } from '../../service/RaiseComplaintApis/GetComplaintComments';
@@ -37,6 +38,8 @@ const ComplaintCloseScreen = ({ route }) => {
     fetchComments();
   }, []);
 
+console.log(complaint,'this is complaint check')
+
   const fetchComments = async () => {
     try {
       const fetchedComments = await GetComplaintComments(complaint.id);
@@ -45,6 +48,7 @@ const ComplaintCloseScreen = ({ route }) => {
       Alert.alert('Error', 'Failed to fetch comments. Please try again.');
     }
   };
+
 
   const handleAddComment = async (data) => {
     if (newComment.trim()) {
@@ -101,9 +105,12 @@ const ComplaintCloseScreen = ({ route }) => {
               message: 'An error occurred. Please try again.',
             });
             setPopupVisible(true);
+            navigation.goBack()
+
           }
         },
         onCancel: () => setPopupVisible(false),
+        
       });
       setPopupVisible(true);
     }
@@ -139,11 +146,14 @@ const ComplaintCloseScreen = ({ route }) => {
           message: 'An error occurred. Please try again.',
         });
         setPopupVisible(true);
+        
       }
     } else {
       Alert.alert('Error', 'Please enter a valid 4-digit OTP.');
     }
   };
+
+  
 
   return (
     <KeyboardAvoidingView
@@ -153,7 +163,17 @@ const ComplaintCloseScreen = ({ route }) => {
       <View className="flex-1 bg-gray-50 p-4">
         {/* Complaint Details */}
         <View className="relative bg-white p-4 rounded-lg shadow-md mb-4">
-          <Text className="text-lg font-bold text-gray-900">{complaint.com_no}</Text>
+        <View>
+  {complaint.img_src ? (
+    <Image 
+      source={{ uri: complaint.img_src }} 
+      style={{ width: '100%', height: 200, resizeMode: 'cover', borderRadius: 10 }} 
+    />
+  ) : (
+    null
+  )}
+</View>
+          <Text className="text-lg py-2 font-bold text-gray-900">{complaint.com_no}</Text>
           <Text className="text-gray-600 font-bold mt-2">{complaint.description}</Text>
           <View className="flex-row mt-2">
             <Text className="text-gray-600">Created on: </Text>

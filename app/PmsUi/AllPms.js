@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import Loader from "../LoadingScreen/AnimatedLoader"
 import { GetAllPmsApi } from "../../service/PMS/GetAllPms";
 import { CreatePmsApi } from "../../service/PMS/CreatePms";
 import DynamicPopup from "../DynamivPopUps/DynapicPopUpScreen";
@@ -29,19 +29,13 @@ const PMList = () => {
   // Function to load PMs from AsyncStorage or fetch from API
   const loadPms = async () => {
     try {
-      const storedPms = await AsyncStorage.getItem("pmsData");
-      if (storedPms) {
-        // If data is available in AsyncStorage, use it
-        const parsedPms = JSON.parse(storedPms);
-        setPms(parsedPms);
-        setFilteredPms(parsedPms);
-      } else {
+   
+   
         // If data is not available in AsyncStorage, fetch from API
         const data = await GetAllPmsApi();
         setPms(data);
         setFilteredPms(data);
-        await AsyncStorage.setItem("pmsData", JSON.stringify(data)); // Store data in AsyncStorage
-      }
+      
     } catch (error) {
       console.error("Error loading PMs:", error);
     } finally {
@@ -134,8 +128,9 @@ const PMList = () => {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#1996D3" style={styles.loader} />
-      ) : filteredPms.length > 0 && searchQuery ? (
+        <Loader />
+        // <ActivityIndicator size="large" color="#1996D3" style={styles.loader} />
+      ) : filteredPms.length > 0  ? (
         <FlatList
           data={filteredPms}
           renderItem={renderItem}
@@ -179,6 +174,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F8F8F8",
     padding: 16,
+    marginBottom:30,
   },
   searchContainer: {
     flexDirection: "row",
@@ -186,7 +182,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     borderRadius: 8,
     padding: 8,
-    marginBottom: 16,
+    marginBottom: 4,
     borderWidth: 1,
     borderColor: "#DDD",
     elevation: 2,

@@ -11,6 +11,8 @@ export const submitWorkOrder = async (workOrderData) => {
 
   try {
     const userInfo = await AsyncStorage.getItem('userInfo');
+    const societyInfo = await AsyncStorage.getItem('societyInfo');
+
     console.log(userInfo, "info");
 
     if (!userInfo) {
@@ -21,6 +23,7 @@ export const submitWorkOrder = async (workOrderData) => {
     const userId = parsedUserInfo.data.id;
     const apiToken = parsedUserInfo.data.api_token;
     const societyId =parsedUserInfo.data.societyId
+    const site_uuid =  JSON.parse(societyInfo);
     const headers = {
       'Content-Type': 'application/json',
       'ism-auth': JSON.stringify({
@@ -43,7 +46,7 @@ export const submitWorkOrder = async (workOrderData) => {
       "breakdown": false,
       "Status": "OPEN",
       "status_uuid": "bac5f1f1-78c3-4d51-85cf-249e2f09b775",
-      "site_uuid": workOrderData.asset.site_uuid,
+      "site_uuid":site_uuid,
       "created_by": userId
     };
 

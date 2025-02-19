@@ -12,7 +12,6 @@ console.log("calling to get all complaints")
     const apiToken = parsedUserInfo.data.api_token
     const societyId =parsedUserInfo.data.societyId
 
-    // const apiUrl = 'https://api.isocietymanager.com/getcomplaintcategory';
 
      const params = {
     "user-id":userId,

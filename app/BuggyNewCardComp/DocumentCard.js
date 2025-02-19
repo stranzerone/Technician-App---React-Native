@@ -9,96 +9,83 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 const DocumentCard = ({ item, onUpdate, editable }) => {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [uploadSuccess, setUploadSuccess] = useState(false); // State to track upload status
-  const [isUploading, setIsUploading] = useState(false); // State for loading spinner
-
-  console.log(item, "this is card of pdf");
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleUpload = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: "application/pdf",
+        type: "*/*",
         copyToCacheDirectory: true,
       });
-  
-      console.log(result, "this is result pdf");
-  
-      if (!result.canceled && result.assets[0].uri) {
-        const fileSizeInMB = result.assets[0].size / (1024 * 1024); // Convert size from bytes to MB
-  
+
+      if (!result.canceled && result.assets?.[0]?.uri) {
+        const fileSizeInMB = (result.assets?.[0]?.size || 0) / (1024 * 1024);
         if (fileSizeInMB > 10) {
           Alert.alert("Error", "The selected file is too large. Please upload a file smaller than 10MB.");
-          return; // Prevent further action if the file size exceeds 10MB
+          return;
         }
-  
+
         setSelectedFile(result);
-        setIsUploading(true); // Show the loading spinner
+        setIsUploading(true);
+
         const uploadResponse = await uplodPdfToServer(result.assets[0], item.id, item.ref_uuid);
-        console.log(uploadResponse, "response on uploading pdf");
-  
         if (uploadResponse) {
           onUpdate();
-          setUploadSuccess(true); // Mark upload as successful
+          setUploadSuccess(true);
         }
       }
     } catch (error) {
-      console.error("Error selecting document: ", error);
       Alert.alert("Error", "An error occurred while selecting the document.");
     } finally {
-      setIsUploading(false); // Hide the loading spinner once done
+      setIsUploading(false);
     }
   };
-    const handleDownload = () => {
-    if (item.result) {
-      // If item.result exists, open the document URL
-      Linking.openURL(item.result).catch((err) => {
-        Alert.alert("Error", "Unable to open the document.");
-      });
-    } else {
+
+  const handleDownload = async () => {
+    if (!item.result) {
       Alert.alert("No Document", "There is no document to download.");
+      return;
+    }
+
+    try {
+      const supported = await Linking.canOpenURL(item.result);
+      if (supported) {
+        Linking.openURL(item.result);
+      } else {
+        Alert.alert("Error", "Unable to open the document.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "An error occurred while attempting to download the file.");
     }
   };
 
   const extractFileNameFromNewBill = (url) => {
-    // Split the URL by '/' to get the last part (file name)
-    const urlParts = url.split('/');
-    const fileNameWithExtension = urlParts[urlParts.length - 1]; // Get the last part
-    
-    // Decode the URL-encoded file name (e.g., %20 to space)
-    const decodedFileName = decodeURIComponent(fileNameWithExtension);
-    console.log(decodedFileName,"file decoded")
-    // Extract the file name starting from "NEW Bill"
-    const fileNameStartFromNewBill = decodedFileName.split("_")[2]; // Extract from "NEW Bill" onward
-    console.log(fileNameStartFromNewBill[2])
-    return fileNameStartFromNewBill  || "no name for pdf"; // Return the full name starting from "NEW Bill"
+    const fileName = decodeURIComponent(url.split('/').pop());
+    const nameOfFile = fileName.split('_')[2];
+    console.log(nameOfFile,'this is name of file')
+    return nameOfFile || "No name for PDF";
   };
-  
 
   return (
     <View
       style={[
         styles.inputContainer,
-        item.result || selectedFile
-          ? { backgroundColor: "#DFF6DD" }
-          : { backgroundColor: "white" }, // Green if item.result or upload is successful
+        item.result || selectedFile ? { backgroundColor: "#DFF6DD" } :editable? { backgroundColor: "white" }:{backgroundColor:"#FEB2B2"},
       ]}
     >
-      {/* Title Section */}
       <Text style={styles.title}>{item.title}</Text>
 
-      {/* Buttons Section */}
       <View className="flex-row justify-between items-center">
-        {/* Upload PDF Button */}
         <TouchableOpacity
-          disabled={!editable || isUploading} // Disable button while uploading
+          disabled={!editable || isUploading}
           onPress={handleUpload}
           className="flex-row items-center bg-[#1996D3] px-4 py-2 rounded-md"
         >
           <FontAwesome name="upload" size={16} color="#fff" />
-          <Text className="text-white ml-2 text-sm font-medium">Upload PDF</Text>
+          <Text className="text-white ml-2 text-sm font-medium">Upload File</Text>
         </TouchableOpacity>
 
-        {/* Show loading spinner or Download PDF button */}
         {isUploading ? (
           <ActivityIndicator size="small" color="#1996D3" />
         ) : (
@@ -111,38 +98,32 @@ const DocumentCard = ({ item, onUpdate, editable }) => {
           >
             <FontAwesome name="download" size={16} color="#fff" />
             <Text className="text-white ml-2 text-sm font-medium">
-              {item.result ? "Download PDF" : "No File"}
+              {item.result ? "Download File" : "No File"}
             </Text>
           </TouchableOpacity>
         )}
-  {item?.data?.optional &&   
-      <View className="flex-1 bg-transparent justify-end py-4 ">
-      <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
-     
-        <Icon name="info-circle" size={16} color="red" />
-        <Text className="text-sm text-black mr-2">
-          Optional
-        </Text>
-      </View>
-    </View>}
-       
+        
+        {item?.data?.optional && (
+          <View className="flex-1 bg-transparent justify-end py-4">
+            <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
+              <Icon name="info-circle" size={16} color="red" />
+              <Text className="text-sm text-black mr-2">Optional</Text>
+            </View>
+          </View>
+        )}
       </View>
 
-      {
-  item.result && (
-    <View className="flex flex-row px-4 py-3 items-center mt-2 space-x-2">
-      <FontAwesome name="file-pdf-o" size={16} color="#074B7C" />
-      <Text className="text-gray-500 text-sm font-medium">
-        {extractFileNameFromNewBill(item.result)}
-      </Text>
-    </View>
-  )
-}
-
-     
+      {item.result && (
+        <View className="flex flex-row px-4 py-3 items-center mt-2 space-x-2">
+          <FontAwesome name="file-pdf-o" size={16} color="#074B7C" />
+          <Text className="text-gray-500 text-sm font-medium">
+            {extractFileNameFromNewBill(item.result)}
+          </Text>
+        </View>
+      )}
 
       <View className="mt-4">
-      <RemarkCard item={item} editable={editable} />
+        <RemarkCard item={item} editable={editable} />
       </View>
     </View>
   );

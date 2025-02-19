@@ -11,27 +11,31 @@ export const RenderComment = ({ item }) => {
   };
 
   return (
-    <View className="flex-row p-3 border border-blue-200 bg-white shadow-sm rounded-lg mb-3 relative">
-      <FontAwesome name="comment" size={18} color="#1996D3" className="mr-2" />
+    <View className="flex-row p-4 border border-blue-200 bg-white shadow-sm rounded-lg mb-3">
+      <FontAwesome name="comment" size={18} color="#1996D3" className="mr-3 mt-1" />
+
       <View className="flex-1">
-        <Text className="text-blue-700 ml-2 font-semibold">{item.name}</Text>
-        <Text className="text-gray-600 ml-2">{item.remarks}</Text>
+        {/* Staff Name */}
+        <Text className="text-blue-700 font-semibold ml-1 mb-1">{item.name}</Text>
+        
+        {/* Comment */}
+        <Text className="text-gray-600">{item.remarks}</Text>
+
+        {/* Date and Time aligned to bottom-right */}
+        <Text className="text-xs text-gray-500 mt-2 self-end">
+          {useConvertToSystemTime(item.created_at)}
+        </Text>
       </View>
 
       {/* Show Image Preview if img_src is available */}
       {item.img_src && (
-        <TouchableOpacity onPress={toggleImageModal}>
+        <TouchableOpacity onPress={toggleImageModal} className="ml-3">
           <Image
             source={{ uri: item.img_src }}
             style={{ width: 70, height: 70, borderRadius: 10 }}
           />
         </TouchableOpacity>
       )}
-
-      {/* Display created_at at the bottom-left corner */}
-      <Text className="absolute bottom-0 left-0 text-xs text-gray-500 ml-2">
-        {useConvertToSystemTime(item.created_at)}
-      </Text>
 
       {/* Image Preview Modal */}
       {isImageModalVisible && (
@@ -42,21 +46,10 @@ export const RenderComment = ({ item }) => {
           onRequestClose={toggleImageModal}
         >
           <TouchableWithoutFeedback onPress={toggleImageModal}>
-            <View
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "rgba(0, 0, 0, 0.8)",
-              }}
-            >
+            <View className="flex-1 justify-center items-center bg-black/80">
               <Image
                 source={{ uri: item.img_src }}
-                style={{
-                  width: "90%",
-                  height: "80%",
-                  borderRadius: 10,
-                }}
+                className="w-11/12 h-4/5 rounded-lg"
                 resizeMode="contain"
               />
             </View>

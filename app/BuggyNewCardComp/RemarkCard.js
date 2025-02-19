@@ -48,7 +48,7 @@ const RemarkCard = ({ item,editable }) => {
           style={styles.inputContainer}
           value={remark}
           onChangeText={handleRemarkChange}
-          placeholder="Enter your remark"
+          placeholder="Enter remark upto 250 char"
           className="border border-gray-300 rounded p-2 mt-2"
           autoFocus
           onBlur={handleBlur} // Close editing, save, and dismiss keyboard when focus is lost
