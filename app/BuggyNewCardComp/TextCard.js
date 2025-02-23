@@ -40,7 +40,8 @@ const TextCard = ({ item, onUpdate, editable, type }) => {
       <View
         style={[
           styles.inputContainer,
-          value ? { backgroundColor: "#DFF6DD" } :editable? null:{backgroundColor:"#FEB2B2"},
+          editable?value? { backgroundColor: "#DFF6DD" } :{backgroundColor:"white"}:value?{ backgroundColor: "#DCFCE7" } : { backgroundColor: "#E5E7EB" }, // Light green if a value is selected
+
         ]}
       >
         <Text style={styles.title}>{item.title}</Text>

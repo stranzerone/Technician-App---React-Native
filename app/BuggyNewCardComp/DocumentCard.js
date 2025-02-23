@@ -71,7 +71,7 @@ const DocumentCard = ({ item, onUpdate, editable }) => {
     <View
       style={[
         styles.inputContainer,
-        item.result || selectedFile ? { backgroundColor: "#DFF6DD" } :editable? { backgroundColor: "white" }:{backgroundColor:"#FEB2B2"},
+     editable? item.result || selectedFile ? { backgroundColor: "#DFF6DD" } : { backgroundColor: "white" } : item.result || selectedFile ? { backgroundColor: "#DCFCE7" } : { backgroundColor: "#E5E7EB" }
       ]}
     >
       <Text style={styles.title}>{item.title}</Text>

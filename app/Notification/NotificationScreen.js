@@ -64,7 +64,7 @@ initializeNotifications()
       )}
       
       {/* Show loader if notifications are being fetched */}
-      {status === 'loading' ? (
+      {status === 'loading' || notifications.length === 0 ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#0000ff" />
           <Text style={styles.loadingText}>

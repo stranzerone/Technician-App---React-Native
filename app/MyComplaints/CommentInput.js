@@ -109,7 +109,6 @@ const CommentInput = ({ value, onChangeText, onSubmit, isPosting }) => {
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 54,
         backgroundColor: '#f3f4f6',
         padding: 8,
         borderRadius: 8,

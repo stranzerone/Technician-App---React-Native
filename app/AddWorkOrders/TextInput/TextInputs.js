@@ -47,7 +47,7 @@ const TaskInput = ({ onChangeName, onChangeDueDate, onChangeEstimatedTime }) => 
           <View style={styles.row}>
             <Text style={styles.label}>Name</Text>
             <TextInput
-      style={[styles.input, { height: 50, width: 160 }]}
+      style={[styles.input, styles.inputRow, { height: 50, width: 160 }]}
       placeholder="Enter task name"
       value={name}
       onChangeText={setName}
@@ -59,7 +59,10 @@ const TaskInput = ({ onChangeName, onChangeDueDate, onChangeEstimatedTime }) => 
           <TouchableOpacity onPress={() => setShowDatePicker(true)}>
             <View style={styles.row}>
               <Text style={styles.label}>Due Date</Text>
-              <View style={styles.dateContainer}>
+              
+              <View
+      style={[styles.dateContainer, styles.inputRow, { height: 50, width: 160 }]}
+      >
                 <Text style={styles.dateText}>
                   {selectedDueDate.toISOString().split('T')[0]}
                 </Text>
@@ -80,7 +83,7 @@ const TaskInput = ({ onChangeName, onChangeDueDate, onChangeEstimatedTime }) => 
             />
           )}
 
-          <View style={styles.row}>
+          <View className="" style={styles.row}>
             <Text style={styles.label}>Est Time</Text>
             <TextInput
               style={[styles.input, styles.inputRow, { height: 40, width: 160 }]}
@@ -90,7 +93,9 @@ const TaskInput = ({ onChangeName, onChangeDueDate, onChangeEstimatedTime }) => 
               keyboardType="numeric"
               onBlur={() => onChangeEstimatedTime(estimatedTime)}
             />
+            
           </View>
+          
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -135,11 +140,12 @@ const styles = StyleSheet.create({
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-  gap:20,
+  justifyContent: 'space-between',
     borderColor: '#1996D3',
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
+    marginBottom: 15,
     height: 40,
     backgroundColor: '#FFFFFF',
   },

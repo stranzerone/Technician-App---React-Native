@@ -43,7 +43,6 @@ const fetchQrAssets = async () => {
     // Make the API request using axios
     const response = await axios.get(`${API_URL}/v3/asset/all/display?`, { params, headers });
     // Return the API response data
-    console.log(response.data,'this is resposne data')
     return response.data;
   
   } catch (error) {

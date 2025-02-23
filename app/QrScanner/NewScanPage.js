@@ -4,16 +4,30 @@ import { Ionicons } from "@expo/vector-icons";
 import QrScanner from "./QrScannerComp";
 import fetchQrAssets from "../../service/AddWorkOrderApis/FetchAssetsforQr"; 
 import { useNavigation } from "@react-navigation/native";
+import { usePermissions } from "../GlobalVariables/PermissionsContext";
 
 export default function MainScannerPage() {
   const [scanned, setScanned] = useState(false);
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showOptions, setShowOptions] = useState(false); // Controls visibility of options
-
+ const [hasPermission,setPermission]  = useState(false)
+  const {ppmAsstPermissions}  = usePermissions()
   const navigation = useNavigation();
 
+
+
+
+
+
+
   useEffect(() => {
+
+
+    if(  ppmAsstPermissions && ppmAsstPermissions.some(permission => permission.includes('R'))){
+      setPermission(true)
+    }
+    
     const fetchAssetOptions = async () => {
       try {
         setLoading(true);
@@ -35,7 +49,9 @@ export default function MainScannerPage() {
       }
     };
 
-    fetchAssetOptions();
+ 
+      fetchAssetOptions();
+
   }, []);
 
   const handleAssetSelect = (item) => {
@@ -45,8 +61,11 @@ export default function MainScannerPage() {
 
   return (
     <View style={styles.container}>
-      <View className="h-[10%]">
-      <TouchableOpacity
+  
+  
+
+  <View className="h-[10%]">
+    {hasPermission &&  <TouchableOpacity
       className="bg-[#074B7C] font-black"
         style={styles.assetButton}
         onPress={() => setShowOptions(!showOptions)}
@@ -58,10 +77,15 @@ export default function MainScannerPage() {
 <Ionicons    name="chevron-down" size={20} color="white" />
 
       }
-      </TouchableOpacity>
+      </TouchableOpacity>}
 
 </View>
-      {loading ? (
+
+
+
+
+
+      {loading  && hasPermission ? (
         <ActivityIndicator size="large" color="#074B7C" style={styles.loadingIndicator} />
       ) : showOptions ? (
         <View className="bg-white rounded-lg shadow-md p-1 mt-1">

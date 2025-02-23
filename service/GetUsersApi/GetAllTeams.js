@@ -3,10 +3,10 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
-export const getAllTeams = async () => {
+export const getAllTeams = async (siteUuId) => {
   const userInfo = await AsyncStorage.getItem('userInfo');
   const soceityInfo = await AsyncStorage.getItem('societyInfo');
-console.log("get all Teams")
+console.log("get all Teams for",siteUuId)
   if (userInfo) {
 
     const parsedUserInfo = JSON.parse(userInfo);
@@ -16,12 +16,17 @@ console.log("get all Teams")
     const societyId =parsedUserInfo.data.societyId
     // const apiUrl = 'https://nppm-api.isocietymanager.com/v3/teams?';
 
+    console.log(siteUuId,'this is site_uuid',soceityInfo,'this is society info')
+
      const params = {
-   "site_uuid":site_uuid,
+     site_uuid:siteUuId,
     "user-id":userId,
     "api-token":apiToken,
       
     };
+
+
+    console.log(params,'this are params')
 
     const headers = {
         'Content-Type': 'application/json',
@@ -35,6 +40,7 @@ console.log("get all Teams")
     try {
       const response = await axios.get(`${API_URL}/v3/teams?`, { params,headers, withCredentials: true });
     
+
       return response.data
 
 

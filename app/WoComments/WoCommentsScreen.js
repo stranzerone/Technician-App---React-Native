@@ -8,6 +8,9 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { WorkOrderAddComments } from '../../service/CommentServices/WorkOrderCommentsAddApi';
@@ -20,7 +23,7 @@ const CommentsPage = ({ WoUuId }) => {
   const [error, setError] = useState(null);
   const [newComment, setNewComment] = useState('');
   const [selectedButton, setSelectedButton] = useState('C'); // Track selected button
-
+  const { height } = Dimensions.get('window');
   // Function to fetch comments
   const loadComments = async () => {
     setLoading(true);
@@ -83,7 +86,10 @@ const CommentsPage = ({ WoUuId }) => {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+ style={{height:500}}
+  >
       {/* ScrollView for comments */}
      { 
       loading ? 
@@ -165,7 +171,7 @@ const CommentsPage = ({ WoUuId }) => {
         </TouchableOpacity>
       </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

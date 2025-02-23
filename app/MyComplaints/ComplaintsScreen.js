@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   FlatList,
@@ -14,75 +14,69 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import FilterOptions from '../WorkOrders/WorkOrderFilter';
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
 import Loader from '../LoadingScreen/AnimatedLoader';
+import { GetAllMyComplaints } from '../../service/ComplaintApis/GetMyAllComplaints';
 
 const ComplaintsScreen = () => {
   const [complaints, setComplaints] = useState([]);
   const [filteredComplaints, setFilteredComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
   const navigation = useNavigation();
   const { complaintPermissions, complaintFilter, setComplaintFilter } = usePermissions();
+  const [categories, setCategories] = useState([]);
 
-  const fetchComplaints = async () => {
-
-    console.log("calling for fetch complaints")
+  // ✅ Memoize API calls to avoid redundant re-fetching
+  const fetchComplaints = useCallback(async () => {
     try {
       setLoading(true);
       const response = await GetMyComplaints();
-      setComplaints(response.data);
-      filterComplaints(response.data, complaintFilter);
+      setComplaints(response.data || []);
     } catch (err) {
-      setError('Failed to load complaints');
+      setComplaints([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await GetAllMyComplaints();
+      if (response?.data) {
+        setCategories(Object.values(response.data));
+      }
+    } catch (error) {
+      console.error("Error fetching complaints:", error);
+    }
+  }, []);
+
+  // ✅ Fetch complaints only when filter changes
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       fetchComplaints();
-      filterComplaints(complaints, complaintFilter);
-
-    }, [complaintFilter])
+    }, [fetchComplaints])
   );
 
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
-
-  const filterComplaints = (complaintsList, status) => {
-    console.log("calling for filter complaints")
-    if (status === 'All') {
-      setFilteredComplaints(complaintsList);
-    } else {
-      setFilteredComplaints(complaintsList.filter(complaint => complaint.status === status));
-    }
-  };
-
-  const handleStatusChange = (status) => {
-    setComplaintFilter(status);
-    filterComplaints(complaints, status);
-    setShowFilter(false);
-  };
+  // ✅ Memoize filtered complaints for better performance
+  const filteredComplaintsMemoized = useMemo(() => {
+    if (complaintFilter === 'All') return complaints;
+    return complaints.filter((complaint) => complaint.status === complaintFilter);
+  }, [complaints, complaintFilter]);
 
   const onRefresh = () => {
     setRefreshing(true);
     fetchComplaints();
   };
 
-  if (loading && refreshing) {
+  // ✅ Show loader only when necessary
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Loader />
-        <Text style={styles.loadingText}>Loading complaints...</Text>
-      </View>
-    );
-  }
-
-  else if (error || complaints.length === 0) {
-    return (
-      <View style={styles.noComplaintsContainer}>
         <Loader />
         <Text style={styles.loadingText}>Loading complaints...</Text>
       </View>
@@ -98,10 +92,12 @@ const ComplaintsScreen = () => {
         </TouchableOpacity>
 
         <View style={styles.selectedStatusContainer}>
-          <Text className="bg-gray-300 font-bold px-3 py-2 rounded-lg"  style={styles.selectedStatus}>{complaintFilter.toUpperCase()}</Text>
+          <Text className="bg-gray-300 font-bold px-3 py-2 rounded-lg" style={styles.selectedStatus}>
+            {complaintFilter.toUpperCase()}
+          </Text>
         </View>
 
-        {complaintPermissions.some(permission => permission.includes('C')) && (
+        {complaintPermissions.some((permission) => permission.includes('C')) && (
           <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('RaiseComplaint')}>
             <FontAwesome name="plus" size={18} color="#fff" />
             <Text style={styles.addButtonText}>Add</Text>
@@ -110,32 +106,34 @@ const ComplaintsScreen = () => {
       </View>
 
       {showFilter && (
-        <FilterOptions
-          filters={['All', 'Open', 'Hold', 'Cancelled', 'WIP', 'Closed', 'Reopen', 'Completed', 'Resolved', 'Working']}
-          selectedFilter={complaintFilter}
-          applyFilter={handleStatusChange}
-          closeFilter={() => setShowFilter(false)}
-        />
+       <FilterOptions
+       filters={['All', 'Open', 'Hold', 'Cancelled', 'WIP', 'Closed', 'Reopen', 'Completed', 'Resolved', 'Working']}
+       selectedFilter={complaintFilter}
+       applyFilter={(status) => {
+         setComplaintFilter(status);  // Update filter
+         setShowFilter(false);        // Close modal
+       }}
+       closeFilter={() => setShowFilter(false)}
+     />
+     
       )}
 
-      {filteredComplaints.length === 0 ? (
+      {filteredComplaintsMemoized.length === 0 ? (
         <View style={styles.noComplaintsContainer}>
           <FontAwesome name="exclamation-circle" size={30} color="#999" />
           <Text style={styles.noComplaintsText}>No Complaints Found</Text>
         </View>
+      ) : complaintPermissions.some((permission) => permission.includes('R')) ? (
+        <FlatList
+          data={filteredComplaintsMemoized}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => <ComplaintCard data={item} categroy={categories} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        />
       ) : (
-        complaintPermissions.some(permission => permission.includes('R')) ? (
-          <FlatList
-            data={filteredComplaints}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => <ComplaintCard data={item} />}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          />
-        ) : (
-          <View style={styles.noComplaintsContainer}>
-            <Text>Not Authorized to view complaints</Text>
-          </View>
-        )
+        <View style={styles.noComplaintsContainer}>
+          <Text>Not Authorized to view complaints</Text>
+        </View>
       )}
     </View>
   );
@@ -145,11 +143,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    paddingBottom: 70,
     backgroundColor: '#f9f9f9',
   },
   loadingContainer: {
     flex: 1,
-    width:"100vw",
     justifyContent: 'center',
     alignItems: 'center',
   },

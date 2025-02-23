@@ -7,6 +7,8 @@ import technicianImage from '../../assets/SvgImages/Technician.png';
 import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 import UserCard from './MultipleUserCards/MultipleUserCards';
 import { APP_VERSION } from '@env';
+import { useDispatch } from 'react-redux';
+import { fetchAllTeams } from '../../utils/Slices/TeamSlice';
 const NewLoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,6 +20,7 @@ const NewLoginScreen = () => {
   const [showUserCard, setShowUserCard] = useState(false);
   const navigation = useNavigation();
 
+  const dispatch = useDispatch()
   useLayoutEffect(() => {
     const checkLoginStatus = async () => {
       try {
@@ -55,6 +58,9 @@ const NewLoginScreen = () => {
       if (response && response.status === 'success') {
         setEmail('');
         setPassword('');
+
+
+        dispatch(fetchAllTeams())
         navigation.dispatch(
           CommonActions.reset({
             index: 0,

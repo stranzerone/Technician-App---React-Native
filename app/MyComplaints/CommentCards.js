@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import { Image, Text, View, Modal, TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import useConvertToSystemTime from "../TimeConvertot/ConvertUtcToIst";
+import ImageViewing from "react-native-image-viewing";
 
 export const RenderComment = ({ item }) => {
   const [isImageModalVisible, setImageModalVisible] = useState(false);
 
   const toggleImageModal = () => {
-    setImageModalVisible(!isImageModalVisible);
+    setImageModalVisible(true);
   };
 
   return (
@@ -22,40 +23,38 @@ export const RenderComment = ({ item }) => {
         <Text className="text-gray-600">{item.remarks}</Text>
 
         {/* Date and Time aligned to bottom-right */}
-        <Text className="text-xs text-gray-500 mt-2 self-end">
+        <Text className="text-xs text-gray-500 font-bold mt-4 self-start pt-2">
           {useConvertToSystemTime(item.created_at)}
         </Text>
       </View>
 
       {/* Show Image Preview if img_src is available */}
-      {item.img_src && (
+    
+
+      {/* Image Preview Modal */}
+      {isImageModalVisible ? (
+
+<ImageViewing
+images={[{ uri: item.img_src }]}
+imageIndex={0}
+visible={isImageModalVisible}
+onRequestClose={() => setImageModalVisible(false)}
+/>
+      )
+    :(
+      item.img_src && (
         <TouchableOpacity onPress={toggleImageModal} className="ml-3">
           <Image
             source={{ uri: item.img_src }}
             style={{ width: 70, height: 70, borderRadius: 10 }}
           />
         </TouchableOpacity>
-      )}
+      
 
-      {/* Image Preview Modal */}
-      {isImageModalVisible && (
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isImageModalVisible}
-          onRequestClose={toggleImageModal}
-        >
-          <TouchableWithoutFeedback onPress={toggleImageModal}>
-            <View className="flex-1 justify-center items-center bg-black/80">
-              <Image
-                source={{ uri: item.img_src }}
-                className="w-11/12 h-4/5 rounded-lg"
-                resizeMode="contain"
-              />
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
-      )}
+    )
+    )
+    
+    }
     </View>
   );
 };

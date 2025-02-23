@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     paddingHorizontal: 10,
-    paddingVertical: Platform.OS === 'ios' ? 12 : 10,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
   },

@@ -26,12 +26,12 @@ import WorkOrderPage from '../WorkOrders/WorkOrderScreen';
 import ComplaintCloseScreen from '../MyComplaints/CloseComplaint';
 import SubComplaint from '../RaiseComplaint/SubComplaintItem';
 import NewComplaintPage from '../RaiseComplaint/CompaintInput';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import FilteredWorkOrderPage from '../WorkOrders/ScannedWorkOrder';
 import BuggyListTopTabs from '../BuggyListTopTabs/BuggyListTopTabs';
 import { Image } from 'react-native'; 
-import { clearAllTeams } from '../../utils/Slices/TeamSlice';
-import { clearAllUsers } from '../../utils/Slices/UsersSlice';
+import { clearAllTeams, fetchAllTeams } from '../../utils/Slices/TeamSlice';
+import { clearAllUsers, fetchAllUsers } from '../../utils/Slices/UsersSlice';
 import { Keyboard } from 'react-native';
 import { GetSiteUuid } from '../../service/GetSiteInfo';
 const Tab = createBottomTabNavigator();
@@ -205,7 +205,8 @@ const MyTabs = () => {
 
 
   }, []); // Dependency array includes setPpmAsstPermissions
-
+  const users = useSelector((state) => state.users.data);
+  const teams = useSelector((state) => state.teams.data);
 
   useEffect(() => {
     // Define the fetchLogo function inside useEffect
@@ -238,7 +239,14 @@ const StoreSociety = async() =>{
 
     fetchLogo(); // Call the function to fetch logo
     StoreSociety()
+    if (!users?.length || !teams?.length) {
+      dispatch(fetchAllTeams());
+      dispatch(fetchAllUsers());
+    }
   }, []); // Empty dependency array ensures this runs once when the component mounts
+
+
+
 
 
 
@@ -356,11 +364,12 @@ const StoreSociety = async() =>{
       <View className="flex border-1 rounded-r-md h-12 items-start justify-start flex-row gap-1" style={styles.logoContainer}>
 {siteLogo &&
   <Image
-  className="w-24 h-24 rounded-lg"
+  className="w-24 h-32"
   source={{ uri: siteLogo }}
-  style={[styles.logo, { borderRadius: 20 }]}
+  style={[styles.logo, { borderRadius: 48, overflow: 'hidden' }]} 
   resizeMode="contain"
 />
+
         }
   {/* {Platform.OS === "android" && ( // Conditionally render society name for Android
     <Text className="text-center h-5 text-white px-0 text-sm font-black">
@@ -405,7 +414,7 @@ const StoreSociety = async() =>{
         <Tab.Screen name="Work Orders" options={{ title: 'Work Orders' ,headerShown: true, }} component={WorkOrderStack} />
         {/* <Tab.Screen name="MyComplaints" options={{ title: 'Complaints' }} component={ComplaintsScreen} /> */}
 
-        <Tab.Screen name="QRCode" options={{ title: 'Qr Code', headerShown: true, }} component={QRCodeStack} />
+        <Tab.Screen name="QRCode" options={{ title: 'QR Scan', headerShown: true, }} component={QRCodeStack} />
         <Tab.Screen name="ServiceRequests" options={{ title: 'Service Request', headerShown: true, }} component={ServiceRequestStack} />
 
         <Tab.Screen 
@@ -465,7 +474,9 @@ const styles = StyleSheet.create({
   
   logo: {
     maxHeight:"100%",
-    marginLeft:20
+    marginLeft:20,
+    borderRadius:50
+
   },
   activeIconContainer: {
     backgroundColor: '#074B7C',

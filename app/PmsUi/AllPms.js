@@ -3,7 +3,6 @@ import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
   TouchableOpacity,
   TextInput,
   StyleSheet,
@@ -47,6 +46,9 @@ const PMList = () => {
   useEffect(() => {
     loadPms();
   }, []);
+
+
+  console.log(pms[0],'this are pms')
 
   const handleSearch = (query) => {
     setSearchQuery(query);

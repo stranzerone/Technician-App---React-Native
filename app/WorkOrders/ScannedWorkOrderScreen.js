@@ -30,7 +30,6 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
   const [loading, setLoading] = useState(false);
   const [inputNumber, setInputNumber] = useState('');
   const [refreshing, setRefreshing] = useState(false);
-
   const type = route?.params?.type || null;
   const uuid = route?.params?.uuid || passedUuid || null;
 
@@ -58,34 +57,41 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
       fetchWorkOrders();
     }, [uuid, type, selectedFilter, listType,breakdownActive])
   );
-  const fetchWorkOrders = async () => {
-    console.log('fetching work orders',selectedFilter,breakdownActive);
-    setLoading(true);
-    try {
-      let hk = [];
-      let work =[];
-      let breakWork =[]
-      if (type === 'LC') {
-      
-        work = await getLocationWorkOrder(uuid, selectedFilter,false); // Fetch based on location
-        breakWork = await getLocationWorkOrder(uuid, selectedFilter,true); // Fetch based on location
 
 
-          hk = await getLocationHk(uuid, selectedFilter,false); 
-          setWorkOrders([...work,...breakWork,...hk]); // Ensure response is an array
 
 
-      } else {
-        breakWork = await GetSingleWorkOrders(uuid, selectedFilter,true); // Fetch based on single work order
-        work = await GetSingleWorkOrders(uuid, selectedFilter,false); // Fetch based on single work order
-        setWorkOrders([...work,...breakWork]); // Ensure response is an array
+const fetchWorkOrders = async () => {
+  console.log('Fetching work orders:', selectedFilter, breakdownActive);
+  setLoading(true);
 
-      }
-    } finally {
-      setLoading(false);
+  try {
+    let response = [];
+    
+    if (type === 'LC') {
+      response = listType
+        ?
+        await getLocationHk(uuid, selectedFilter, breakdownActive)
+        
+        : 
+        await getLocationWorkOrder(uuid, selectedFilter, breakdownActive)
 
+    } else {
+      response = await GetSingleWorkOrders(uuid, selectedFilter, breakdownActive);
     }
-  };
+
+    console.log('API Response:',listType,breakdownActive,type);
+
+    // Ensure response is an array before setting state
+    setWorkOrders(response || []);
+  } catch (error) {
+    console.error('Error fetching work orders:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
 
   const applyFilter = (filter) => {
@@ -129,19 +135,16 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
   }, []); // Empty dependency array ensures this runs once when the component mounts
 
 
-  const hkClicked = () =>{
-
-    setListType(!listType)
-    onRefresh()
-
-  }
-
-
-  const breakdownClicked = () =>{
-    console.log('breakdown clicked',breakdownActive)
-    setBreakdownActive(!breakdownActive)
+  const hkClicked = () => {
+    setListType((prevListType) => !prevListType);
+  };
   
-  }
+  const breakdownClicked = () => {
+    setBreakdownActive((prevBreakdownActive) => !prevBreakdownActive);
+  };
+  
+
+
   return (
     <View style={styles.container}className="text-center">
       <View className="flex bg-[#1996D3] p-2 h-14 items-center justify-start  flex-row gap-3">
@@ -153,7 +156,7 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
     style={styles.logo}
     resizeMode="contain"
   />}
-        <Text className="font-bold text-white  text-center text-lg">{listType?"Work Orders":"Housekeeping WO"}</Text>
+        <Text className="font-bold text-white  text-center text-lg">{listType?"HouseKeeping Wo":"Work Orders"}</Text>
 
     
       </View>
@@ -187,18 +190,17 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
 
 
 
-
-      <View className="flex flex-row  gap-4 items-center justify-start w-full p-2">
+ <View className="flex flex-row  gap-1 items-center justify-between w-full p-2">
   {/* Back Button */}
   <TouchableOpacity
-    className="bg-blue-500 p-2 rounded-md w-[15vw] flex flex-row justify-center items-center"
+    className="bg-blue-500 p-2 rounded-md w-[10vw] flex flex-row justify-center items-center"
     onPress={() => navigation.goBack()}
   >
     <Icon name="arrow-left" size={20} color="white" />
   </TouchableOpacity>
 
   {/* Search Input */}
-  <View className="flex flex-row gap-1 items-center w-[70vw] border border-gray-500 rounded-md px-1">
+  <View className="flex flex-row gap-1 items-center  w-[50vw] border border-gray-500 rounded-md px-1">
     <Icon name="search" size={18} color="#074B7C" className="mr-2" />
     <TextInput
       style={styles.numberInput}
@@ -212,7 +214,32 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
   </View>
 
 
+{ type === "LC" && <TouchableOpacity
+    className={`${listType?"bg-green-500":"bg-white text-green-400 border border-green-400"}  p-2 rounded-md w-[15vw] flex flex-row justify-center items-center`}
+    onPress={() => hkClicked()}
+  >
+    <Text className={`${listType?"text-white":"text-green-600"} font-extrabold text-md`}>HK</Text>
+  </TouchableOpacity>}
+
+
+
+  <TouchableOpacity
+  
+    className={`${breakdownActive?"bg-red-500":"bg-white text-red-400 border border-red-400"} p-2 rounded-md w-[15vw] flex flex-row justify-center items-center`}
+    onPress={() => breakdownClicked()}
+  >
+
+<Text className={` ${breakdownActive?"text-white":"text-red-400"} font-extrabold text-md`}>BRKD</Text>
+
+  </TouchableOpacity>
+
+
 </View>
+
+
+
+
+
 
       {/* Content */}
       {loading ? (
@@ -327,7 +354,7 @@ const styles = StyleSheet.create({
   },
   numberInput: {
     flex: 1,
-    height: 40,
+    height: 30,
     color: '#333',
   },
 

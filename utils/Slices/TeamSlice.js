@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getAllTeams } from '../../service/GetUsersApi/GetAllTeams';
+import { GetSiteUuid } from '../../service/GetSiteInfo';
 
 // Async thunk to fetch all Teams
 export const fetchAllTeams = createAsyncThunk(
@@ -7,10 +8,13 @@ export const fetchAllTeams = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       console.log("fetching all team Names")
-      const response = await getAllTeams();
+      const siteUuId = await GetSiteUuid()
+      const response = await getAllTeams(siteUuId);
       const teamsArray = Array.isArray(response.data)
         ? response.data
         : Object.values(response.data || {});
+
+        console.log("fetching team completed")
       return teamsArray; // Ensure the payload is an array
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to fetch Teams');

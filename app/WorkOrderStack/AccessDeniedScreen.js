@@ -148,7 +148,6 @@ const styles = StyleSheet.create({
   },
   qrContainer: {
     width: '100%',
-    backgroundColor: 'rgba(25, 150, 211, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -156,7 +155,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#1996D3',
     overflow: 'hidden',
-    elevation: 5,
   },
 });
 

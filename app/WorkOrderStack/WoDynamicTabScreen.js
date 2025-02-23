@@ -17,6 +17,8 @@ const WorkOrderHomeTab = () => {
     }, [])
   );
 
+  console.log(ppmAsstPermissions, 'this is ppmAsstPermissions')
+
   return (
     <View style={styles.container}>
       {ppmAsstPermissions && ppmAsstPermissions.some(permission => permission.includes('R')) ? (

@@ -49,7 +49,6 @@ const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
   const teams = useSelector((state) => state.teams.data);
   const [restricted,setRestricted]  = useState(false)
   const [restrictedTime,setRestrictedTime]  = useState(0)
-const [teamName,setTeamName]  = useState(null)
 
 
 
@@ -108,7 +107,6 @@ const [teamName,setTeamName]  = useState(null)
   
       
     if (timeDiff >= delTime) {
-      console.log(timeDiff,"this is diff time")
       setRestricted(true); // Set restricted if the time difference exceeds the restriction time
       setRestrictedTime(timeDiff)
 
@@ -240,10 +238,10 @@ if(previousScreen == 'ScannedWoTag'){
           ID : {workOrder.wo['Sequence No']} 
         </Text>
       {workOrder.wo['Sequence No'].split('-')[0] == 'BR' &&  <View className='bg-red-400 rounded-lg px-1 ml-2 text-white'>
-          <Text className='text-xs text-white font-black '>Breakdown</Text>
+          <Text className='text-xs text-white font-black '>BRKD</Text>
         </View>}
         {workOrder.wo['Sequence No'].split('-')[0] == 'HK' &&  <View className='bg-green-400 rounded-lg px-1 ml-2 text-white'>
-          <Text className='text-xs text-white font-black '>HouseKeeping</Text>
+          <Text className='text-xs text-white font-black '>HK</Text>
         </View>}
         </View>
         {workOrder.wo.wo_restriction_time && restricted ?
@@ -288,54 +286,40 @@ null
         </Text>
       </View>
 
-      {/* Assigned To */}
-    { 
-    
-    users[0] !== "error" && workOrder.wo.Assigned &&
-    <View className="flex flex-row">
-        <View className="w-1/3 flex-row items-center">
-          <Icon name="user" size={fontSize} color="#1996D3" />
-          <Text className="ml-2 text-gray-700 font-extrabold" style={{ fontSize }}>
-            Assigned To :
-          </Text>
-        </View>
-        <View className="flex-row ml-2 mt-1 w-2/3 flex-wrap">
-          {getUserNames(workOrder.wo.Assigned).split(', ').map((name, index) => (
-            <View
-              key={index}
-              className="bg-blue-100 px-2 py-0.5 rounded-full text-xs mr-1 ml-1 mb-1"
-            >
-              <Text className="font-semibold" style={{ fontSize }}>
-                {name}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>}
+{/* Assigned To */}
+{(users[0] !== "error" && workOrder.wo.Assigned) || workOrder.wo.AssignedTeam ? (
+  <View className="flex flex-row">
+    <View className="w-1/3 flex-row items-center">
+      <Icon name="user" size={fontSize} color="#1996D3" />
+      <Text className="ml-2 text-gray-700 font-extrabold" style={{ fontSize }}>
+        Assigned To :
+      </Text>
+    </View>
+    <View className="flex-row ml-2 mt-1 w-2/3 flex-wrap">
+      {/* Assigned Users */}
+      {users[0] !== "error" &&
+        workOrder.wo.Assigned &&
+        getUserNames(workOrder.wo.Assigned).split(", ").map((name, index) => (
+          <View key={`user-${index}`} className="bg-blue-100 px-2 py-0.5 rounded-full text-xs mr-1 ml-1 mb-1">
+            <Text className="font-semibold" style={{ fontSize }}>
+  {name.length > 15 ? name.slice(0, 15) + "..." : name}
+</Text>
 
-      {/* Assigned Team */}
-     {workOrder.wo.AssignedTeam &&  <View className="flex flex-row">
-        <View className="w-1/3 flex-row items-center">
-          <Icon name="users" size={fontSize} color="#34D399" />
-          <Text className="ml-2 text-gray-700 font-extrabold" style={{ fontSize }}>
-            Team :
-          </Text>
-        </View>
-        <View className="w-2/3 ml-2 flex-row items-center justify-start flex-wrap">
-          <View >
-            {getTeamName(workOrder.wo.AssignedTeam).split(', ').map((name, index) => (
-            <View
-              key={index}
-              className="bg-green-200 px-3 py-1 rounded-full mr-2 mb-2"            >
-            <Text className="font-semibold text-green-800" style={{ fontSize }}>
-            {name}
-              </Text>
-            </View>
-          ))}
           </View>
-        </View>
-      </View>}
+        ))}
+      {/* Assigned Team */}
+      {workOrder.wo.AssignedTeam &&
+        getTeamName(workOrder.wo.AssignedTeam).split(", ").map((name, index) => (
+          <View key={`team-${index}`} className="bg-green-200 px-3  rounded-full mr-2 mb-2">
+            <Text className="font-semibold text-green-800" style={{ fontSize }}>
+  {name.length > 15 ? name.slice(0, 15) + "..." : name}
+</Text>
 
+          </View>
+        ))}
+    </View>
+  </View>
+) : null}
       {/* Created Date */}
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center">

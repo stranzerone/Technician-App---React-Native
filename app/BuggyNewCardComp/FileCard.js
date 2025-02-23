@@ -61,8 +61,12 @@ const FileCard = ({ item,onUpdate ,editable}) => {
     <View
       className={`shadow-md rounded-lg p-4 mb-4 `}
       
-      style={[styles.inputContainer, item.result || capturedImage ? { backgroundColor: "#DFF6DD" } :editable? null:{backgroundColor:"#FEB2B2"},]}
+      style={[
+        styles.inputContainer,
+        editable?item.result || capturedImage ? { backgroundColor: "#DFF6DD" } :{backgroundColor:"white"}:item.result || capturedImage?{ backgroundColor: "#DCFCE7" } : { backgroundColor: "#E5E7EB" }, // Light green if a value is selected
 
+      ]}
+   
    >
       <Text style={styles.title} className="text-lg font-semibold text-[#074B7C]">{item.title}</Text>
 
@@ -101,6 +105,7 @@ const FileCard = ({ item,onUpdate ,editable}) => {
       <RemarkCard
       className="mt-4"
         item={item}
+        editable={editable}
         onRemarkChange={(id, newRemark) =>
           console.log(`Remark updated for ${id}: ${newRemark}`)
         }

@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Keyboard,
   Image
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
@@ -21,7 +22,7 @@ import useConvertToIST from '../TimeConvertot/ConvertUtcToIst';
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
 import CommentInput from './CommentInput';
 import { RenderComment } from './CommentCards';
-
+import ImageViewing from "react-native-image-viewing";
 const ComplaintCloseScreen = ({ route }) => {
   const { complaint } = route.params;
   const [comments, setComments] = useState([]);
@@ -33,9 +34,29 @@ const ComplaintCloseScreen = ({ route }) => {
   const [popupConfig, setPopupConfig] = useState({});
   const navigation = useNavigation();
   const { complaintPermissions } = usePermissions();
-
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [isImageVisible, setIsImageVisible] = useState(false);
   useEffect(() => {
     fetchComments();
+  }, []);
+
+
+
+
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
   }, []);
 
 console.log(complaint,'this is complaint check')
@@ -160,28 +181,47 @@ console.log(complaint,'this is complaint check')
       className="flex-1"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View className="flex-1 bg-gray-50 p-4">
+         <ScrollView>
+      <View className="flex-1 bg-gray-50 p-4 pb-48">
         {/* Complaint Details */}
         <View className="relative bg-white p-4 rounded-lg shadow-md mb-4">
         <View>
-  {complaint.img_src ? (
-    <Image 
-      source={{ uri: complaint.img_src }} 
-      style={{ width: '100%', height: 200, resizeMode: 'cover', borderRadius: 10 }} 
-    />
-  ) : (
-    null
-  )}
+
+        {complaint.img_src && (
+  <>
+    {/* Clickable Image */}
+    <TouchableOpacity onPress={() => setIsImageVisible(true)}>
+      <Image 
+        source={{ uri: complaint.img_src }} 
+        style={{ width: '100%', height: 200, resizeMode: 'cover', borderRadius: 10 }} 
+      />
+    </TouchableOpacity>
+
+    {/* Zoomable Image Modal */}
+    {isImageVisible && (
+      <ImageViewing
+        images={[{ uri: complaint.img_src }]}
+        imageIndex={0}
+        visible={isImageVisible}
+        onRequestClose={() => setIsImageVisible(false)}
+      />
+    )}
+  </>
+)}
+
 </View>
-          <Text className="text-lg py-2 font-bold text-gray-900">{complaint.com_no}</Text>
-          <Text className="text-gray-600 font-bold mt-2">{complaint.description}</Text>
+<View className="flex flex-row items-center bg-gray-100 p-2 rounded-lg mt-2 justify-between">
+<Text className="text-lg py-2 font-bold text-blue-500">{complaint.com_no}</Text>
+
+<Text className=" bg-green-400 text-white font-extrabold px-2 py-1 rounded-full ">{complaint.status}</Text>
+
+</View>
+          <Text className="text-gray-600 bg-gray-100 p-2 rounded-lg font-bold mt-2">{complaint.description}</Text>
           <View className="flex-row mt-2">
             <Text className="text-gray-600">Created on: </Text>
             <Text className="text-black font-bold">{useConvertToIST(complaint.created_at)}</Text>
           </View>
           <View className="flex-row items-center justify-between mt-4">
-            <Text className="text-gray-600">Status: </Text>
-            <Text className="text-black font-bold">{complaint.status}</Text>
             {complaint.status !== 'Closed' && complaintPermissions.some((permission) => permission.includes('U')) && (
               <TouchableOpacity
                 className="bg-blue-500 px-4 py-2 rounded-lg"
@@ -209,14 +249,25 @@ console.log(complaint,'this is complaint check')
           )}
         </ScrollView>
       </View>
-
-      {/* Comment Input */}
+      </ScrollView>
+            {/* Comment Input */}
+     
+      <View style={{ 
+  position: 'absolute', 
+  bottom: keyboardVisible ? 0 : 55,
+    left: 0, 
+  right: 0, 
+  padding: 8, 
+  borderTopWidth: 1, 
+  borderColor: '#d1d5db' 
+}}>
       <CommentInput
         value={newComment}
         onChangeText={setNewComment}
         onSubmit={handleAddComment}
         isPosting={isPosting}
       />
+      </View>
 
       {/* OTP Modal */}
       <Modal visible={isOtpMode} transparent animationType="slide">
@@ -257,6 +308,7 @@ console.log(complaint,'this is complaint check')
         />
       )}
     </KeyboardAvoidingView>
+ 
   );
 };
 

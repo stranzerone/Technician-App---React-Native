@@ -151,29 +151,28 @@ const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime}) => {
   }
 
 
+  if(data){
+    console.log(data.length,'true')
+  }else{
+    console.log(data.length,'in else')
+  }
+
 
   return (
     <View
-    style={{ flex: 1 }}
+    style={{ flex: 1}}
     >
   
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollViewContainer}>
-          {/* Description Section */}
-          {/* <View style={styles.descriptionContainer}>
-            <Text style={styles.assetDescription}>{assetDescription}</Text>
-          </View>
-      { restricted &&   <View className="flex flex-row gap-1 items-center justify-center">
-        <FontAwesome5 name='stop-circle' size={20} color="red" />
-                   <Text className="text-red-500 text-center">restriction applied</Text>
-          </View>} */}
+       
 
           <View>
             <InfoCard  wo={wo} restricted={restricted} restrictedTime={restrictedTime}  description={assetDescription}/>
           </View>
           {/* List of Cards */}
 
-          {data?
+          {data.length !== 0?
           <FlatList
             data={data}
             renderItem={renderCard}
@@ -252,7 +251,7 @@ left:10,
   },
   commentsContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 5,
     height:"100%",
     width: '95%',
     backgroundColor: 'white',
@@ -277,7 +276,7 @@ left:10,
     color: 'red',
   },
   emptyContainer: {
-    flex: 1,
+    flex:1,
     textAlign:'center',
     justifyContent: 'center',
     alignItems: 'center',
@@ -285,6 +284,7 @@ left:10,
   emptyText: {
     textAlign:"center",
     color: 'red',
+    textAlignVertical:'center'
   },
 });
 

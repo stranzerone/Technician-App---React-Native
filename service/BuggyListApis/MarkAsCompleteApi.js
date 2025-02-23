@@ -19,7 +19,7 @@ export const MarkAsCompleteApi = async (item,remark,siteUuid) => {
     const apiToken = parsedUserInfo.data.api_token
     const societyId =parsedUserInfo.data.societyId
     const site_uuid = parsedSocietyInfo
-    console.log(societyInfo,'this is from localstorate for societyUuid')
+    console.log(societyInfo,'this is from localstorate for societyUuid',site_uuid,'this si site uuid')
 
     // Construct the payload correctly
 

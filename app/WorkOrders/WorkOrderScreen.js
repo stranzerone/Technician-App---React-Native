@@ -35,13 +35,20 @@ const WorkOrderPage = () => {
   const teams = useSelector((state) => state.teams.data);
   const { ppmAsstPermissions } = usePermissions();
 
+
+
   useEffect(() => {
     if (!users || !teams || users.length === 0 || teams.length === 0) {
-      console.log(teams,'this are teams')
-      dispatch(fetchAllUsers());
+      console.log(teams.length,'this are teams')
       dispatch(fetchAllTeams());
+
+      dispatch(fetchAllUsers());
     }
-  }, [dispatch]);
+  }, []);
+
+
+  console.log(teams.length,"this is on mount")
+
 
   const fetchWorkOrders = async () => {
     setLoading(true);
@@ -64,6 +71,7 @@ const WorkOrderPage = () => {
       fetchWorkOrders();
     }, [selectedFilter, flag])
   );
+
 
 
   // useEffect(() => {

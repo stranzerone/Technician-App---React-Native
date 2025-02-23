@@ -40,7 +40,7 @@ const DropdownCard = ({ item, onUpdate,editable }) => {
     <View
       style={[
         styles.inputContainer,
-        selectedValue ? { backgroundColor: "#DFF6DD" } :editable? null:{backgroundColor:"#FEB2B2"}, // Light green if a value is selected
+    editable?selectedValue ? { backgroundColor: "#DFF6DD" } :{backgroundColor:"white"}:selectedValue?{ backgroundColor: "#DCFCE7" } : { backgroundColor: "#E5E7EB" }, // Light green if a value is selected
       ]}
     >
       {/* Title */}

@@ -44,9 +44,10 @@ export const GetSiteUuid = async () => {
     const response = await axios.get(`${API_URL2}/linkedsites?`, {params,headers});
     // Check the response data
     const data = response.data.data[societyId].ppm_site.uuid    ;
+  console.log(data,'this is site info on get site uuid')
     await AsyncStorage.setItem('societyInfo', JSON.stringify(data));
 
-  return true
+  return  data
 
   } catch (error) {
     console.error('Error fetching data:', error.message || error);

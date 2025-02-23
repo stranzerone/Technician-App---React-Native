@@ -10,8 +10,8 @@ const CheckboxCard = ({ title, item, onUpdate, editable }) => {
   const [isChecked, setIsChecked] = useState(item.result === "1");
 
   // Directly determine background color based on the checkbox state
-  const backgroundColor = isChecked ? "#DFF6DD" :editable? "#FFFFFF":"#FEB2B2"; // Light green when checked, white when unchecked
-
+  // const backgroundColor = isChecked ? "#DFF6DD" :editable? "#FFFFFF": isChecked? "#F5FFFA":"#F3F4F6"; // Light green when checked, white when unchecked
+  const backgroundColor = editable?isChecked?    "#DFF6DD" : "#FFFFFF" : isChecked? "#DCFCE7":"#E5E7EB";  
   const handleCheckboxPress = async () => {
     const newState = !isChecked;
     setIsChecked(newState);
@@ -42,7 +42,7 @@ const CheckboxCard = ({ title, item, onUpdate, editable }) => {
       className="p-5 border border-gray-200 rounded-lg mb-4 bg-white shadow-md"
     >
       {/* Checkbox and title container */}
-      <View className="flex-row items-center mb-5">
+      <View className="flex-row items-center justify-center mb-5">
         {/* Circular Checkbox */}
         <CircularCheckbox editable={editable} isChecked={isChecked} onPress={handleCheckboxPress} />
 
@@ -57,10 +57,10 @@ const CheckboxCard = ({ title, item, onUpdate, editable }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Render the RemarkCard component */}
       <RemarkCard item={item} editable={editable} />
 
-      {/* Optional info section */}
+
+
       {item?.data?.optional && (
         <View className="flex-1 bg-transparent justify-end py-4">
           <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
