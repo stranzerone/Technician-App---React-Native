@@ -23,11 +23,11 @@ import CardRenderer from '../BuggyNewCardComp/CardsMainScreen';
 import { Platform } from 'react-native';
 import InfoCard from './InstructionDetails';
 
-const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime}) => {
+const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime,id,type,sequence}) => {
   const [data, setData] = useState([]);
   const [assetDescription, setAssetDescription] = useState(''); 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(false);
   const [expanded, setExpanded] = useState(false); 
   const [keyboardOffset, setKeyboardOffset] = useState(0);
   const animation = useState(new Animated.Value(0))[0];
@@ -38,9 +38,17 @@ const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime}) => {
 
 
   // Function to fetch buggy list data
+
   const loadBuggyList = async () => {
     try {
-      const result = await GetInstructionsApi(uuid);
+      let result ;
+      if(sequence == 'HK'){
+       result = await GetInstructionsApi({WoUuId:uuid,type:"HW"});
+     
+
+      }else{
+       result = await GetInstructionsApi({WoUuId:uuid,type:"WO"});
+      }
       if(result){
         setData(result);
 
@@ -67,15 +75,17 @@ const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime}) => {
   useEffect(() => {
     setLoading(true)
     loadBuggyList();
+    if(sequence !== "HK"){
     loadAssetDescription(); 
+    }
   }, [uuid]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      loadBuggyList(); 
-      loadAssetDescription(); 
-    }, [uuid])
-  );
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     loadBuggyList(); 
+  //     loadAssetDescription(); 
+  //   }, [uuid])
+  // );
 
   const handleRefreshData = async () => {
     await loadBuggyList(); 
@@ -112,7 +122,6 @@ const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime}) => {
     };
   }, []);
 
-  console.log(restrictedTime,'restrictedTime on bl list')
   const toggleExpand = () => {
     const finalValue = expanded ? 0 : 1; 
     setExpanded(!expanded);
@@ -124,10 +133,10 @@ const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime}) => {
     }).start();
   };
 
-  const {height}  = Dimensions.get('window')
+  const {height}  = Dimensions.get('screen')
   const commentsHeight = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, height * 0.75], 
+    outputRange: [0, height >= 800? height * 0.70 : height <= 800 ?height * 0.65 :height * 0.80], 
     extrapolate: 'clamp',
   });
 
@@ -151,11 +160,6 @@ const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime}) => {
   }
 
 
-  if(data){
-    console.log(data.length,'true')
-  }else{
-    console.log(data.length,'in else')
-  }
 
 
   return (
@@ -213,11 +217,15 @@ const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime}) => {
           <FontAwesome5 name={expanded ? 'comments' : 'comments'} size={20} color="#fff" />
         </TouchableOpacity>
       </View>
-    { !expanded && <View    className="w-[70%] "  style={[styles.progressBarContainer, { right:canComplete?70:10,bottom: isKeyboardOpen?0: 57 }]}>
+    { !expanded && <View    className="w-[70%]"  style={[styles.progressBarContainer, { right:canComplete?70:0,left:canComplete?null:40, bottom: isKeyboardOpen?0: 57 }]}>
       <ProgressPage 
+      id={id}
+        type={type}
+        uuid={uuid}
         data={data}
         wo={wo}
         canComplete={setCancomplete}
+        sequence={sequence}
       />
       </View>}
     </View>

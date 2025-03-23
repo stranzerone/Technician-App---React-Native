@@ -18,12 +18,10 @@ export const CloseComplaintApi = async (data, otp) => {
     };
 
 
-    
-    console.log(data.ask_otp,"check otp required or not")
+console.log(data,'this is data on getting complaint')
 
 let payload
 if(data.ask_otp == -1){
-console.log("no otp required")
    payload = {
     ...data, 
     status: "Closed",
@@ -38,8 +36,6 @@ console.log("no otp required")
   };
 }
 
-    console.log(otp, "otp");
-    console.log(payload, 'data after adding otp as a separate field');
 
     const headers = {
       'Content-Type': 'application/json',
@@ -53,7 +49,7 @@ console.log("no otp required")
 
     try {
       const response = await axios.put(`${API_URL2}/staff/updatecomplaint`, payload, { params, headers });
-      console.log(response.data, "this is response for closing");
+    console.log(payload,'this is paylod to close')
       return response.data;
     } catch (error) {
       console.error('Error fetching data:', error);

@@ -6,11 +6,14 @@ import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
 import { uplodPdfToServer } from "../../service/ImageUploads/ConvertPdfToUrl";
 import RemarkCard from "./RemarkCard";
 import Icon from 'react-native-vector-icons/FontAwesome';
+import useConvertToSystemTime from "../TimeConvertot/ConvertUtcToIst";
+import { uploadImageToServer } from "../../service/ImageUploads/ConvertImageToUrlApi";
 
 const DocumentCard = ({ item, onUpdate, editable }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const updatedTime =useConvertToSystemTime(item?.updated_at)
 
   const handleUpload = async () => {
     try {
@@ -26,10 +29,20 @@ const DocumentCard = ({ item, onUpdate, editable }) => {
           return;
         }
 
+
+
+        console.log(result,'this is result for file uplod')
+        const fileData = {
+          uri: result.assets?.[0]?.uri,
+          fileName: result.assets?.[0]?.name,
+          mimeType: result.assets?.[0]?.mimeType,
+        };
+        console.log(fileData,'this is filedata for file uplod')
+
         setSelectedFile(result);
         setIsUploading(true);
 
-        const uploadResponse = await uplodPdfToServer(result.assets[0], item.id, item.ref_uuid);
+        const uploadResponse = await uploadImageToServer(fileData, item.id, item.ref_uuid);
         if (uploadResponse) {
           onUpdate();
           setUploadSuccess(true);
@@ -63,12 +76,12 @@ const DocumentCard = ({ item, onUpdate, editable }) => {
   const extractFileNameFromNewBill = (url) => {
     const fileName = decodeURIComponent(url.split('/').pop());
     const nameOfFile = fileName.split('_')[2];
-    console.log(nameOfFile,'this is name of file')
     return nameOfFile || "No name for PDF";
   };
 
   return (
     <View
+    className="pb-2"
       style={[
         styles.inputContainer,
      editable? item.result || selectedFile ? { backgroundColor: "#DFF6DD" } : { backgroundColor: "white" } : item.result || selectedFile ? { backgroundColor: "#DCFCE7" } : { backgroundColor: "#E5E7EB" }
@@ -103,14 +116,7 @@ const DocumentCard = ({ item, onUpdate, editable }) => {
           </TouchableOpacity>
         )}
         
-        {item?.data?.optional && (
-          <View className="flex-1 bg-transparent justify-end py-4">
-            <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
-              <Icon name="info-circle" size={16} color="red" />
-              <Text className="text-sm text-black mr-2">Optional</Text>
-            </View>
-          </View>
-        )}
+  
       </View>
 
       {item.result && (
@@ -122,9 +128,30 @@ const DocumentCard = ({ item, onUpdate, editable }) => {
         </View>
       )}
 
+
+
       <View className="mt-4">
         <RemarkCard item={item} editable={editable} />
+        <View className="flex-1 bg-transparent justify-end  px-4 py-2 mt-4 h-8 ">
+
+   { item.result || item?.data?.optional? 
+     <View >
+{item.result &&  <Text className="text-gray-500 text-[11px]  font-bold">
+   Updated at : {updatedTime}
+  </Text>}
+
+          </View>:null}
+          {item?.data?.optional && (
+            <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
+              <Icon name="info-circle" size={16} color="red" />
+              <Text className="text-xs text-red-800 font-bold mr-2">Optional</Text>
+            </View>
+                  )}
+</View>
       </View>
+
+
+
     </View>
   );
 };

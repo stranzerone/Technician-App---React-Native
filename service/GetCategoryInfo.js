@@ -36,7 +36,6 @@ export const GetCategory = async () => {
 
     };
 
-    console.log(params,'this are params for category')
     const headers = {
       'Content-Type': 'application/json',
       'ism-auth': JSON.stringify({

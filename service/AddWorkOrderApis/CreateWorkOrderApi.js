@@ -7,13 +7,11 @@ import { API_URL } from '@env';
 
 
 export const submitWorkOrder = async (workOrderData) => {
-  console.log(workOrderData,"recieved payload")
 
   try {
     const userInfo = await AsyncStorage.getItem('userInfo');
     const societyInfo = await AsyncStorage.getItem('societyInfo');
 
-    console.log(userInfo, "info");
 
     if (!userInfo) {
       throw new Error("User info not found");
@@ -24,6 +22,8 @@ export const submitWorkOrder = async (workOrderData) => {
     const apiToken = parsedUserInfo.data.api_token;
     const societyId =parsedUserInfo.data.societyId
     const site_uuid =  JSON.parse(societyInfo);
+
+    
     const headers = {
       'Content-Type': 'application/json',
       'ism-auth': JSON.stringify({
@@ -33,29 +33,29 @@ export const submitWorkOrder = async (workOrderData) => {
       })
     };
 
+    console.log(workOrderData.dueDate,'this is the due date')
         const payload = {
       "Name": workOrderData.name,
       "Type": workOrderData.type,
-      "Asset": workOrderData.asset.Name,
-      // "Assigned": workOrderData.user,
+      "Asset": workOrderData.asset?.Name || "", // If undefined, set it to an empty string
+          // "Assigned": workOrderData.user,
       "Due Date": workOrderData.dueDate,
       "Estimated Time": workOrderData.estimatedTime,
-      "Priority": workOrderData.priority.Value,
+      "Priority": workOrderData.priority,
       "user_id": userId,
-      "asset_uuid": workOrderData.asset.uuid,
-      "breakdown": false,
+      "asset_uuid": workOrderData.asset?.uuid || '',
+      "breakdown": workOrderData.woType === "breakdown", 
       "Status": "OPEN",
       "status_uuid": "bac5f1f1-78c3-4d51-85cf-249e2f09b775",
       "site_uuid":site_uuid,
       "created_by": userId
     };
 
-    console.log(payload, "payload");
 
     // Pass payload as the second argument and headers as the third argument
-    const response = await axios.post(`${API_URL}/v3/workorder`, payload, { headers });
-    console.log(response.data, "response for adding");
+    const response = await axios.post(`${API_URL}/v3/`+workOrderData.woType, payload, { headers });
 
+    console.log(response.data,'this is response for adding wo')
     return response.data; // Return the response data if needed
   } catch (error) {
     console.error('API Error:', error);

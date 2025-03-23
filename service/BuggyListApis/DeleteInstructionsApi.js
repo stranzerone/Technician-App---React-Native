@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
 export const DeleteInstructionApi = async (item) => {
-  console.log(item, "values"); // Check the values being passed
 
   // Fetch user info from AsyncStorage
   const userInfo = await AsyncStorage.getItem('userInfo');
@@ -34,7 +33,6 @@ export const DeleteInstructionApi = async (item) => {
         data: item // If you need to send item data, include it in the data field (optional)
       });
 
-      console.log(response.data);
 
       // Check if the response is as expected
       if (response.data.message === 'Deleted') {

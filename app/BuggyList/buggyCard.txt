@@ -59,7 +59,6 @@ const BuggyListCard = ({ item, onUpdateSuccess, WoUuId }) => {
       type: ['application/pdf', 'image/*'],
     });
 
-    console.log(result,"image picked")
     if (result.assets[0].mimeType === 'image/jpeg' || "application/pdf") {
 
         const uploadResponse = await uploadImageToServer(result.assets[0].uri, item.id, WoUuId,result.assets[0].mimeType);

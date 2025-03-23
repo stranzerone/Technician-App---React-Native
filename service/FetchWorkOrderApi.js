@@ -2,7 +2,6 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 export const fetchServiceRequests = async (selectedFilter,flag) => {
-  console.log(selectedFilter,flag, 'selected filter');
   try {
     // Fetch user info and uuid from AsyncStorage
     const userInfo = await AsyncStorage.getItem('userInfo');
@@ -58,9 +57,8 @@ export const fetchServiceRequests = async (selectedFilter,flag) => {
 
     // Check the response data
     const data = response.data.data;
-     console.log(params,"this are params")
     // Return the data if it's available, otherwise return false
-    if (response.data.metadata.count) {
+    if (Array.isArray(response.data.data)) {
       return data;
     } else {
       return false;

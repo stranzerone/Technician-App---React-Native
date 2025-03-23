@@ -5,13 +5,12 @@ import { GetWorkOrderInfo } from "../../service/WorkOrderApis/GetWorkOrderInfo";
 import { UpdateWorkOrder } from "../../service/WorkOrderApis/UpdateWorkOrderApi";
 import { ScrollView } from "react-native";
 import { GetCategory } from "../../service/GetCategoryInfo";
+import useConvertToSystemTime from "../TimeConvertot/ConvertUtcToIst";
 
 const formatRestrictedTime = (time) => {
-  console.log(time, "time");
   const hours = Math.floor(time);
   const minutes = Math.round((time - hours) * 60);
   const totalHours = hours + minutes / 60;
-console.log(minutes,"minutes")
   if (totalHours >= 48) {
     const days = Math.floor(totalHours / 24);
     return `${days} day${days > 1 ? "s" : ""} `;
@@ -100,19 +99,24 @@ setCategory(cat?.Name)
   };
 
   return (
-    <View className="w-full max-h-[40vh] p-2 rounded-md shadow-lg border-b-2 bg-blue-100 border-blue-300">
+    <View className="w-full max-h-[40vh] p-2 rounded-md shadow-lg border-b-2 bg-blue-50 border-blue-200">
+      <View>
       <View className="flex-row items-center mb-2">
+     
         <FontAwesome name="tag" size={20} color="#074B7C" />
         <Text className="ml-2 px-2 text-lg font-bold text-blue-900">{wo.Name}</Text>
+     </View>
+  
+
       </View>
 
       <View className="flex-row flex-wrap gap-2">
-        <View className="flex-row items-center bg-blue-200 px-2 py-1 rounded-full">
+        <View className="flex-row items-center bg-blue-200 px-2 py-1 rounded-md">
           <FontAwesome name="id-badge" size={16} color="#074B7C" />
           <Text className="ml-2 font-bold text-sm text-blue-800">{wo["Sequence No"]}</Text>
         </View>
 
-{ category && <View className="flex-row items-center bg-green-200 px-2 py-1 rounded-full">
+{ category && <View className="flex-row items-center bg-green-200 px-2 py-1 rounded-md">
 <FontAwesome name="folder" size={16} color="#074B7C" />
 <Text className="ml-2 font-bold text-sm text-green-800">
   {category?.length > 12 ? category.slice(0, 12) + "..." : category}
@@ -120,14 +124,14 @@ setCategory(cat?.Name)
 </View>}
 
 
-        <View className="flex-row items-center bg-yellow-200 px-2 py-1 rounded-full">
+        <View className="flex-row items-center bg-yellow-100 px-2 py-1 rounded-md">
           <FontAwesome name="exclamation-circle" size={16} color="#074B7C" />
           <Text className="ml-2 font-bold text-sm text-black">{wo.Type}</Text>
         </View>
 
         {wo.wo_restriction_time &&(
-          <View className={`flex-row items-center bg-white border-2 ${restricted?"border-red-400":"border-green-400"} px-2 py-1 rounded-full`}>
-            <FontAwesome name="clock-o" size={16} color="gray" />
+          <View className={`flex-row items-center bg-white border-2 ${restricted?"border-red-400":"border-green-400"} px-2 py-1 rounded-md`}>
+            <FontAwesome name="clock-o" size={16} color="black" />
             <Text className={`ml-2 font-black text-sm   ${restricted?"text-red-500":"text-green-500"}`} >{restricted?null:"In"} {formattedTime} {restricted?"ago":null}</Text>
           </View>
         )}
@@ -141,7 +145,7 @@ setCategory(cat?.Name)
           </View>
 
           {/* Delay Reason Section */}
-          <View className="mt-2 flex-row items-center rounded-md px-4 py-4 bg-gray-100">
+          <View className="mt-2 flex-row items-center rounded-md px-4 py-4 bg-white">
             {!showInput ? (
               <TouchableOpacity onPress={() => setShowInput(true)} className="flex-1">
                 <Text className="font-black">Delay Reason</Text>
@@ -174,13 +178,29 @@ setCategory(cat?.Name)
         </View>
       )}
 
-<View className="mt-2 border-t border-gray-400 pt-2 max-h-30">
-  <ScrollView className="px-2">
-    <Text className="text-sm text-center italic font-bold text-gray-900">
-      ** {description} **
-    </Text>
-  </ScrollView>
+<View className="mt-2 border-t border-gray-400 pt-2">
+  <View className="max-h-16 min-h-2"> 
+  <View className="flex flex-row items-center justify-start mr-2 space-x-2 font-bold">
+     <FontAwesome name="clock-o" size={16} color="gray" />
+     <Text className="text-gray-700 font-extrabold text-xs ">
+    Created at:  <Text className="text-blue-900 text-xs">{useConvertToSystemTime(wo.created_at)}</Text>
+  </Text>
 </View>
+    <ScrollView 
+      className="px-2" 
+      nestedScrollEnabled={true}  // Allow inner scroll separately
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={true}  // Make sure the scroll is visible
+    >
+      <Text className="text-sm text-left italic font-bold text-gray-900">
+        ** {description} **
+      </Text>
+    </ScrollView>
+  </View>
+</View>
+
+
+
 
     </View>
   );

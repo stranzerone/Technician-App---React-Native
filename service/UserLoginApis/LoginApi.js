@@ -15,7 +15,6 @@ export const loginApi = async (user) => {
   };
 
 
-  console.log(user,payload,'this is login issue')
   try {
     const { data } = await axios.post(API_URL2+'/login', payload);
 

@@ -2,8 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
-export const MarkAsCompleteApi = async (item,remark,siteUuid) => {
-  console.log(item,remark, "item values for closing"); // Check the values being passed
+export const MarkAsCompleteApi = async ({item,remark,sequence,siteUuid}) => {
 
   // Fetch user info from AsyncStorage
   const userInfo = await AsyncStorage.getItem('userInfo');
@@ -12,14 +11,14 @@ export const MarkAsCompleteApi = async (item,remark,siteUuid) => {
   const parsedUserInfo = JSON.parse(userInfo);
  const parsedSocietyInfo = JSON.parse(societyInfo)
  
-
+ const v = sequence === "HK"?"v5":"v3"
+const name =  sequence === "HK"?"housekeeping":"workorder"
 
   if (userInfo) {
     const userId = parsedUserInfo.data.id
     const apiToken = parsedUserInfo.data.api_token
     const societyId =parsedUserInfo.data.societyId
     const site_uuid = parsedSocietyInfo
-    console.log(societyInfo,'this is from localstorate for societyUuid',site_uuid,'this si site uuid')
 
     // Construct the payload correctly
 
@@ -35,7 +34,6 @@ export const MarkAsCompleteApi = async (item,remark,siteUuid) => {
     instruction_remark:remark,
     uuid: item.uuid,
     };
-    console.log(payload,'payload',siteUuid)
 
 
     const headers = {
@@ -50,9 +48,9 @@ export const MarkAsCompleteApi = async (item,remark,siteUuid) => {
 
     try {
       // Send the PUT request
-      const response = await axios.put(`${API_URL}/v3/workorder`, payload, { headers, withCredentials: true });
-         console.log(response.data,'from api to mark as complete')
+      const response = await axios.put(`${API_URL}/${v}/${name}`, payload, { headers, withCredentials: true });
       // Check if the response is as expected
+      console.log("Mark as complete response",response.data)
       if (response.data.status === 'success') {
         return true; // Return success
       } else {

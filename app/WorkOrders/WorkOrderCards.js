@@ -7,6 +7,7 @@ import useConvertToIST from '../TimeConvertot/ConvertUtcToIst';
 import { getAllTeams } from '../../service/GetUsersApi/GetAllTeams';
 import { GetWorkOrderInfo } from '../../service/WorkOrderApis/GetWorkOrderInfo';
 import moment from 'moment';
+import { usePermissions } from '../GlobalVariables/PermissionsContext';
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -40,7 +41,7 @@ const getPriorityColor = (priority) => {
   }
 };
 
-const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
+const WorkOrderCard = React.memo(({ workOrder,previousScreen,type,uuid }) => {
 
   const navigation = useNavigation();
   const statusColor = getStatusColor(workOrder.wo.Status);
@@ -50,6 +51,8 @@ const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
   const [restricted,setRestricted]  = useState(false)
   const [restrictedTime,setRestrictedTime]  = useState(0)
 
+
+  const {instructionPermissions}  = usePermissions()
 
 
 
@@ -62,7 +65,7 @@ const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
       .map((userId) => {
         if (users[0] === 'success') {
           const user = users[1]?.find((user) => user.user_id === userId);
-          return user ? user.name : 'Unknown User';
+          return user ? user.name : null;
         }
         return 'User Not Found';
       })
@@ -82,7 +85,7 @@ const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
         if (teamId) {
           // Find the team in the teams array based on teamId
           const team = teams?.find((team) => team.t._ID === teamId);
-          return team ? team.t.Name : 'Unknown Team';
+          return team ? team.t.Name : null;
         }
         return 'User Not Found';
       })
@@ -90,8 +93,7 @@ const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
   };
   
 
-
-
+  
 
 
   useEffect(() => {
@@ -99,7 +101,7 @@ const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
     const delTime = workOrder.wo.wo_restriction_time; // Time in hours
   
     // Parse created time as UTC
-    const creTime = moment.utc(workOrder.wo.created_at); // Force UTC interpretation for 'created_at'
+    const creTime = moment(workOrder.wo["Due Date"]);
   
     const currTime = moment(); // Get current local time
   
@@ -188,20 +190,22 @@ const WorkOrderCard = React.memo(({ workOrder,previousScreen }) => {
 
 
 
-
 const handleBack=()=>{
 
 
 
-  
+  if(instructionPermissions.some((permission) => permission.includes('R'))){
 
 if(previousScreen == 'ScannedWoTag'){
   navigation.navigate('ScannedWoBuggyList',{
     workOrder: workOrder.wo.uuid,
     wo: workOrder.wo,
     previousScreen:previousScreen,
+    type:type,
+    uuid:uuid,
     restricted:restricted,
     restrictedTime:restrictedTime,
+    
   })
 }else{
 
@@ -215,15 +219,15 @@ if(previousScreen == 'ScannedWoTag'){
 
   }
 
-
+  }
 }
 
 
-  const fontSize = Platform.OS === 'ios' ? 13 : 14;
+  const fontSize = Platform.OS === 'ios' ? 13 : 13;
   const largeFontSize = Platform.OS === 'ios' ? 16 : 18;
   return (
     <TouchableOpacity
-    className="bg-white border p-4 rounded-md my-2 shadow-lg relative"
+    className="bg-white border p-4 rounded-md shadow-lg my-1 relative"
     style={{ borderColor: 'darkblue' }}
     onPress={handleBack}
   >
@@ -233,15 +237,15 @@ if(previousScreen == 'ScannedWoTag'){
         <View className="flex flex-row gap-4">
     
 
-        <View className='flex flex-row '>
+        <View className='flex flex-row'>
         <Text className="text-gray-600 font-bold" style={{ fontSize }}>
           ID : {workOrder.wo['Sequence No']} 
         </Text>
-      {workOrder.wo['Sequence No'].split('-')[0] == 'BR' &&  <View className='bg-red-400 rounded-lg px-1 ml-2 text-white'>
-          <Text className='text-xs text-white font-black '>BRKD</Text>
+      {workOrder.wo['Sequence No'].split('-')[0] == 'BR' &&  <View className='bg-red-400 rounded-lg text-white ml-2 px-1'>
+          <Text className='text-white text-xs font-black'>BRKD</Text>
         </View>}
-        {workOrder.wo['Sequence No'].split('-')[0] == 'HK' &&  <View className='bg-green-400 rounded-lg px-1 ml-2 text-white'>
-          <Text className='text-xs text-white font-black '>HK</Text>
+        {workOrder.wo['Sequence No'].split('-')[0] == 'HK' &&  <View className='bg-green-400 rounded-lg text-white ml-2 px-1'>
+          <Text className='text-white text-xs font-black'>HK</Text>
         </View>}
         </View>
         {workOrder.wo.wo_restriction_time && restricted ?
@@ -281,7 +285,7 @@ null
       {/* Work Order Name */}
       <View className="flex-row items-center my-2">
         <Icon name="cogs" size={fontSize} color="#074B7C" />
-        <Text className="font-bold ml-2 text-blue-800" style={{ fontSize: largeFontSize }}>
+        <Text className="text-blue-800 font-bold ml-2" style={{ fontSize: largeFontSize }}>
           {workOrder.wo.Name || 'Unnamed Work Order'}
         </Text>
       </View>
@@ -289,46 +293,59 @@ null
 {/* Assigned To */}
 {(users[0] !== "error" && workOrder.wo.Assigned) || workOrder.wo.AssignedTeam ? (
   <View className="flex flex-row">
-    <View className="w-1/3 flex-row items-center">
+    <View className="flex-row w-1/3 items-center">
       <Icon name="user" size={fontSize} color="#1996D3" />
-      <Text className="ml-2 text-gray-700 font-extrabold" style={{ fontSize }}>
+      <Text className="text-gray-700 font-extrabold ml-2" style={{ fontSize }}>
         Assigned To :
       </Text>
     </View>
-    <View className="flex-row ml-2 mt-1 w-2/3 flex-wrap">
+    <View className="flex-row flex-wrap w-2/3 ml-2 mt-1">
       {/* Assigned Users */}
       {users[0] !== "error" &&
         workOrder.wo.Assigned &&
         getUserNames(workOrder.wo.Assigned).split(", ").map((name, index) => (
-          <View key={`user-${index}`} className="bg-blue-100 px-2 py-0.5 rounded-full text-xs mr-1 ml-1 mb-1">
+          <View key={`user-${index}`} className="bg-blue-100 rounded-md text-xs mb-1 ml-1 mr-1 px-2 py-0.5">
             <Text className="font-semibold" style={{ fontSize }}>
-  {name.length > 15 ? name.slice(0, 15) + "..." : name}
+  {name.length > 10 ? name.slice(0, 10) + ".." : name}
 </Text>
 
           </View>
         ))}
       {/* Assigned Team */}
       {workOrder.wo.AssignedTeam &&
-        getTeamName(workOrder.wo.AssignedTeam).split(", ").map((name, index) => (
-          <View key={`team-${index}`} className="bg-green-200 px-3  rounded-full mr-2 mb-2">
-            <Text className="font-semibold text-green-800" style={{ fontSize }}>
-  {name.length > 15 ? name.slice(0, 15) + "..." : name}
-</Text>
-
-          </View>
+        getTeamName(workOrder.wo.AssignedTeam).split(", ").filter((name) => name && name.trim() !== "").map((name, index) => (
+          <View
+          key={`team-${index}`}
+          className="bg-green-200 rounded-md mb-2 mr-2 px-3"
+          style={{ maxWidth: 110 }} // Adjust maxWidth as needed
+        >
+          <Text
+            className="text-green-800 font-semibold"
+            style={{ fontSize }}
+       
+          >
+  {name.length > 7 ? name.slice(0, 7) + ".." : name}
+  </Text>
+        </View>
+        
         ))}
     </View>
   </View>
 ) : null}
-      {/* Created Date */}
-      <View className="flex-row items-center justify-between">
+      
+
+
+      <View className="flex-row justify-between items-center">
         <View className="flex-row items-center">
           <Icon name="calendar" size={fontSize} color="#1996D3" />
-          <Text className="ml-2 text-gray-700 font-extrabold" style={{ fontSize }}>
-            {workOrder.wo.created_at
-              ? useConvertToIST(workOrder.wo.created_at)
-              : 'N/A'}
-          </Text>
+          <Text className="text-gray-700 font-extrabold ml-2" style={{ fontSize }}>
+  {workOrder.wo['Due Date'] 
+    ? (/\d{2}:\d{2}/.test(workOrder.wo['Due Date']) 
+        ? workOrder.wo['Due Date'] 
+        : `${workOrder.wo['Due Date']} 12:00 AM`) 
+    : 'N/A'}
+</Text>
+
         </View>
       </View>
 

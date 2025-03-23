@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './app/Login/Login';
@@ -15,16 +15,17 @@ import NewComplaintPage from './app/RaiseComplaint/CompaintInput';
 import ComplaintCloseScreen from './app/MyComplaints/CloseComplaint';
 import ComplaintDropdown from './app/RaiseComplaint/ComplaintDropdown';
 import BuggyListTopTabs from './app/BuggyListTopTabs/BuggyListTopTabsQr.android';
+import UpdateAppScreen from './app/TabNavigatorsWo/VersionHandler';
 const Stack = createNativeStackNavigator();
 
 export default function MainNavigation() {
 
-
-  
-
+  const [modalVisible, setModalVisible] = useState(true);
 
 
-  
+
+
+
   return (
     <PermissionsProvider>
     <StatusBar
@@ -48,8 +49,8 @@ export default function MainNavigation() {
           </Stack.Screen>
           <Stack.Screen name="Home" component={MyTabs} options={{ headerShown: false }} />
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-          <Stack.Screen name="OtpLogin" component={OtpLogin} />
-          <Stack.Screen name="OtpEnter" component={OtpEnterPage} />
+          <Stack.Screen options={{ title:"Request OTP"}} name="OtpLogin" component={OtpLogin} />
+          <Stack.Screen  options={{ title:"OTP Verification"}} name="OtpEnter" component={OtpEnterPage} />
           <Stack.Screen
       name="ScannedWoTag"
       component={FilteredWorkOrderPage}
@@ -84,6 +85,7 @@ export default function MainNavigation() {
            /> */}
         </Stack.Navigator>
       </NavigationContainer>
+      {modalVisible && <UpdateAppScreen />}
     </PermissionsProvider>
   );
 }

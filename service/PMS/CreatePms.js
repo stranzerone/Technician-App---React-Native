@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
 export const CreatePmsApi = async ({ uuid }) => {
-  console.log(uuid, 'UUID for API call');
   try {
     // Fetch user info from AsyncStorage
     const userInfo = await AsyncStorage.getItem('userInfo');
@@ -18,7 +17,6 @@ export const CreatePmsApi = async ({ uuid }) => {
     const siteId = parsedUserInfo.data.societyId; // Adjust this to match your API
 
     // Log request details for debugging
-    console.log({ userId, apiToken, uuid, siteId }, 'Request Details');
 
     // Construct headers for authentication
     const headers = {
@@ -39,7 +37,6 @@ export const CreatePmsApi = async ({ uuid }) => {
 
     // Extract and return response data
     const data = response.data;
-    console.log(data, 'Response for adding PMS');
     return data;
   } catch (error) {
     console.error('Error creating PMS:', error.message || error);

@@ -33,13 +33,12 @@ const WorkOrderPage = () => {
   const dispatch = useDispatch(); // Use dispatch to dispatch actions
   const users = useSelector((state) => state.users.data);
   const teams = useSelector((state) => state.teams.data);
-  const { ppmAsstPermissions } = usePermissions();
+  const { ppmAsstPermissions,ppmWorkorder } = usePermissions();
 
 
 
   useEffect(() => {
     if (!users || !teams || users.length === 0 || teams.length === 0) {
-      console.log(teams.length,'this are teams')
       dispatch(fetchAllTeams());
 
       dispatch(fetchAllUsers());
@@ -47,13 +46,11 @@ const WorkOrderPage = () => {
   }, []);
 
 
-  console.log(teams.length,"this is on mount")
 
 
   const fetchWorkOrders = async () => {
     setLoading(true);
     try {
-      console.log(selectedFilter,"this is selectedfilter")
       // Fetch work orders based on the selected filter and flag
       const data = await fetchServiceRequests(selectedFilter, flag); // Pass flag to the API call
       setWorkOrders(data || []);
@@ -66,10 +63,13 @@ const WorkOrderPage = () => {
   };
 
 
-  useFocusEffect(
-    useCallback(() => {
+  const permissionToAdd = ppmWorkorder.some((permission) => permission.includes('C'))
+
+
+  useEffect(()=>{
       fetchWorkOrders();
-    }, [selectedFilter, flag])
+  
+  },[selectedFilter, flag]
   );
 
 
@@ -102,7 +102,7 @@ const WorkOrderPage = () => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.headerContainer}>
+      {/* <View style={styles.headerContainer}>
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => setFilterVisible((prev) => !prev)}
@@ -115,21 +115,20 @@ const WorkOrderPage = () => {
           <View style={styles.statusTextContainer}>
             <Text style={styles.statusText}>{selectedFilter}</Text>
           </View>
-          {ppmAsstPermissions.some((permission) => permission.includes('C')) && (
+          {ppmWorkorder.some((permission) => permission.includes('C')) && (
             <TouchableOpacity
-              onPress={() => navigation.navigate('AddWo')}
-              style={styles.addButton}
+              onPress={() => navigation.navigate('AddWo',{qr:"no",type:null,uuid:null})}
+              style={[styles.addButton,{backgroundColor:permissionToAdd ? '#1996D3' : '#52B0E0'}]}
+              disabled={!permissionToAdd}
+              
             >
               <Icon name="plus" size={20} color="#074B7C" style={styles.searchIcon} />
               <Text style={styles.addButtonText}>Add WO</Text>
             </TouchableOpacity>
           )}
         </View>
-      </View>
 
-      {/* Search Input */}
-      <View style={styles.inputContainer}>
-        <Icon name="search" size={20} color="#074B7C" style={styles.searchIcon} />
+                {/* <Icon name="search" size={20} color="#074B7C" style={styles.searchIcon} />
         <TextInput
           style={styles.numberInput}
           onChangeText={(text) => setInputNumber(text)}
@@ -137,22 +136,50 @@ const WorkOrderPage = () => {
           placeholder="Search WO ID"
           keyboardType="numeric"
           placeholderTextColor="#888"
-        />
+        /> 
+      </View> */}
 
-        {/* Flag button */}
-        <TouchableOpacity
-  className={`p-2 rounded-md border shadow-lg border-gray-400 bg-blue-200 flex justify-center items-center}`}
-  onPress={toggleFlag}
->
-  <Icon
-    name="flag"
-    
-    size={20}
-    color={flag ? 'red' : '#074B7C'} // Change color based on flag state
-  />
-</TouchableOpacity>
+      {/* Search Input */}
+      <View className="flex flex-row items-center justify-between p-3 mt-1 bg-[#074B7C] rounded-md shadow-md">
+  {/* Left Side: Flag & Filter */}
+  <View className="flex flex-row items-center space-x-3">
+    {/* Flag Button */}
+    <TouchableOpacity
+      className="py-1 px-2 rounded-md border border-gray-400 bg-[#f8f9fa] shadow-md flex items-center justify-center"
+      onPress={toggleFlag}
+    >
+      <Icon name="flag" size={17} color={flag ? 'red' : '#074B7C'} />
+    </TouchableOpacity>
 
-      </View>
+    {/* Filter Button */}
+    <TouchableOpacity
+      onPress={() => setFilterVisible((prev) => !prev)}
+      className="flex flex-row  items-center px-2 py-1 bg-[#f8f9fa] rounded-md shadow-md"
+    >
+      <Icon name="filter" size={17} color="#074B7C" className="mr-2" />
+      <Text className="text-[#074B7C] font-semibold">Filter</Text>
+    </TouchableOpacity>
+  </View>
+
+  {/* Center: Current Status */}
+  <Text className="text-white font-semibold text-lg">{selectedFilter}</Text>
+
+  {/* Right Side: Add Button */}
+  {ppmWorkorder.some((permission) => permission.includes('C')) && (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('AddWo', { qr: "no", type: null, uuid: null })}
+      className={`flex flex-row items-center px-4 py-1 rounded-md shadow-md ${
+        permissionToAdd ? 'bg-white' : 'bg-gray-300'
+      }`}
+      disabled={!permissionToAdd}
+    >
+      <Icon name="plus" size={17} color={permissionToAdd ? '#074B7C' : 'gray'} className="mr-2" />
+      <Text className={`font-semibold ${permissionToAdd ? 'text-[#074B7C]' : 'text-gray-500'}`}>
+        Add
+      </Text>
+    </TouchableOpacity>
+  )}
+</View>
 
       {/* Content */}
       {loading ? (
@@ -239,7 +266,6 @@ const styles = StyleSheet.create({
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1996D3',
     width: 90,
     paddingVertical: 5,
     paddingHorizontal: 10,
@@ -267,6 +293,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent:"flex-end",
     gap: 10,
     paddingHorizontal: 25,
     paddingTop: 10,

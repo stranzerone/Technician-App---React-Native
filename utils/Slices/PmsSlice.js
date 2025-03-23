@@ -20,7 +20,6 @@ const pmsSlice = createSlice({
   reducers: {
     sendPmsOnRequest: (state) => {
       // Action to send all Pms data
-      console.log('Sending all Pms data:', state.list);
     },
   },
   extraReducers: (builder) => {

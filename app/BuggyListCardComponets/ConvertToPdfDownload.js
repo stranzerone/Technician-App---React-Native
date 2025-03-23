@@ -1,7 +1,6 @@
 import { Platform } from 'react-native';
 
 const convertBlobToBase64 = (blob) => {
-    console.log(blob,"pdf recived")
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result); // Get the Base64 result
@@ -11,7 +10,6 @@ const convertBlobToBase64 = (blob) => {
 };
 
 const convertPdfUrlToBase64 = async (pdfUrl) => {
-  console.log(pdfUrl, "PDF URL received for conversion");
   try {
     // Fetch the PDF from the URL as a Blob
     const response = await fetch(pdfUrl);
@@ -22,7 +20,6 @@ const convertPdfUrlToBase64 = async (pdfUrl) => {
 
     // Convert the response to a Blob
     const blob = await response.blob();
-    console.log("Blob size:", blob.size);
 
     // Convert Blob to Base64
     const base64Url = await convertBlobToBase64(blob);

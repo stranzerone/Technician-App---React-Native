@@ -4,11 +4,12 @@ import RemarkCard from "./RemarkCard"; // Import RemarkCard component
 import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
 import { UpdateInstructionApi } from "../../service/BuggyListApis/UpdateInstructionApi";
 import Icon from 'react-native-vector-icons/FontAwesome';
+import useConvertToSystemTime from "../TimeConvertot/ConvertUtcToIst";
 
 const CheckboxCard = ({ title, item, onUpdate, editable }) => {
   // Set the initial checkbox state based on item.result
   const [isChecked, setIsChecked] = useState(item.result === "1");
-
+const updatedTime =useConvertToSystemTime(item?.updated_at)
   // Directly determine background color based on the checkbox state
   // const backgroundColor = isChecked ? "#DFF6DD" :editable? "#FFFFFF": isChecked? "#F5FFFA":"#F3F4F6"; // Light green when checked, white when unchecked
   const backgroundColor = editable?isChecked?    "#DFF6DD" : "#FFFFFF" : isChecked? "#DCFCE7":"#E5E7EB";  
@@ -59,16 +60,21 @@ const CheckboxCard = ({ title, item, onUpdate, editable }) => {
 
       <RemarkCard item={item} editable={editable} />
 
+<View className="flex-1  justify-end bg-transparent px-4 py-2 mt-4 h-8">
+      { item.result || item?.data?.optional ?  
+    <View >
+{<Text className="text-gray-500 text-[11px]  font-bold">
+   Updated at : {updatedTime}
+  </Text>}
 
-
-      {item?.data?.optional && (
-        <View className="flex-1 bg-transparent justify-end py-4">
-          <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
-            <Icon name="info-circle" size={16} color="red" />
-            <Text className="text-sm text-black mr-2">Optional</Text>
-          </View>
-        </View>
-      )}
+          </View>:null}
+          {item?.data?.optional && (
+            <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
+              <Icon name="info-circle" size={16} color="red" />
+              <Text className="text-xs text-red-800 font-bold mr-2">Optional</Text>
+            </View>
+                  )}
+  </View>
     </View>
   );
 };

@@ -3,7 +3,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL2 } from '@env';
 
 const GetStaff = async (text) => {
-  console.log(text, "text received");
   try {
     const userInfo = await AsyncStorage.getItem('userInfo');
 

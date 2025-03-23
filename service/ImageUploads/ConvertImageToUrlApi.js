@@ -4,7 +4,6 @@ import { UpdateInstructionApi } from '../BuggyListApis/UpdateInstructionApi';
 import { API_URL3 } from '@env';
 
 export const uploadImageToServer = async (data, itemId, WoUuId) => {
-  console.log(data, itemId, WoUuId, "API called");
 
   try {
     // Fetch user information from AsyncStorage
@@ -38,7 +37,6 @@ export const uploadImageToServer = async (data, itemId, WoUuId) => {
       type: data.mimeType, // MIME type (e.g., image/jpeg)
     });
 
-    console.log("FormData for upload:", formData);
 
     // Append user-id and api-token to the form data
     formData.append('user-id', userId);
@@ -53,7 +51,6 @@ export const uploadImageToServer = async (data, itemId, WoUuId) => {
 
     // Handle the response from the image upload
     if (response.data.status === 'success') {
-      console.log('Image successfully uploaded:', response.data);
 
       // Call UpdateInstructionApi with the image URL and metadata
       const updateInstResponse = await UpdateInstructionApi({

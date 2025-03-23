@@ -6,7 +6,6 @@ export const fetchAllUsers = createAsyncThunk(
   'allUsers/fetchAllUsers',
   async (_, { rejectWithValue }) => {
     try {
-      console.log('Fetching all users...');
       const response = await getAllUsersApi();
 
       // Ensure the response is converted to an array

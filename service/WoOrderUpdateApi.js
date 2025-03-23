@@ -9,7 +9,6 @@ export const UpdateWorkOrderApi = async ({ siteUUID, description }) => {
 
   if (userInfo) {
     const { id: userId, api_token: apiToken, site_id: siteId,societyId:societyId } = JSON.parse(userInfo);
-    console.log(userId, apiToken, siteUUID, description, "info");
 
     // Get current date and time in the required format (YYYY-MM-DD HH:mm:ss)
     const currentDate = new Date();

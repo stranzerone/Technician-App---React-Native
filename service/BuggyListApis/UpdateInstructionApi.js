@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
 export const UpdateInstructionApi = async ({id, value , remark,type,WoUuId}) => {
-  console.log(id, value,remark,WoUuId, type,"values from PDF UPLoad"); // Check the values being passed
 
   // Fetch user info from AsyncStorage
   const userInfo = await AsyncStorage.getItem('userInfo');
@@ -14,10 +13,7 @@ export const UpdateInstructionApi = async ({id, value , remark,type,WoUuId}) => 
     const societyId =parsedUserInfo.data.societyId
 
     // Make sure your params are set correctly
-    const params = {
-      ref_uuid: WoUuId,
-      ref_type: "WO"
-    };
+
 
    
     // Construct the payload correctly
@@ -46,7 +42,6 @@ export const UpdateInstructionApi = async ({id, value , remark,type,WoUuId}) => 
         remarks:remark
       };
     
-console.log(payload,"this is payload for updating instructions")
 
     const headers = {
       'Content-Type': 'application/json',
@@ -60,8 +55,7 @@ console.log(payload,"this is payload for updating instructions")
 
     try {
       // Send the PUT request
-      const response = await axios.put(`${API_URL}/v3/inst`, payload, { params, headers, withCredentials: true });
-      console.log(response.data,"response on updating card")
+      const response = await axios.put(`${API_URL}/v3/inst`, payload, {  headers, withCredentials: true });
       // Check if the response is as expected
       if (response.data.status === 'success') {
         return true; // Return success

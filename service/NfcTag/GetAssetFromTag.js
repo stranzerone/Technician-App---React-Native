@@ -9,7 +9,6 @@ export default GetAssetForTag = async () => {
   try {
     const userInfo = await AsyncStorage.getItem('userInfo');
    
-    console.log(id,"this is the id i am getting")
 
     if (userInfo) {
       const parsedUserInfo = JSON.parse(userInfo);
@@ -35,7 +34,6 @@ export default GetAssetForTag = async () => {
         withCredentials: true,
       });
 
-   console.log(response.data.status)
 
      if(response.data.status =='success'){
         console.log("navigation created")

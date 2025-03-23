@@ -180,7 +180,6 @@ const MyTabs = () => {
     // };
 
 
- console.log('call for permissions')
 
     loadPermissions(); // Call the function on mount
 
@@ -216,7 +215,6 @@ const MyTabs = () => {
   const fetchTotalNotifications = async () => {
     try {
       const response = notificationsCount; // Call your API to get notifications
-     console.log(response,"this is the total notifcations")
       setTotalNotifications(response || 0); // Update the state with the total notifications count
     } catch (error) {
       console.error("Error fetching notifications count:", error);
@@ -231,11 +229,9 @@ const MyTabs = () => {
 
   const handleLogout = async () => {
     try {
-      console.log('Logging out...');
       await AsyncStorage.removeItem('userInfo');
     const teams =   await dispatch(clearAllTeams())
       await dispatch(clearAllUsers())
-      console.log(teams,"this is teams")
       navigation.replace("Login");
 
     } catch (error) {

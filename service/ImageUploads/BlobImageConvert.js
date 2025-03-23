@@ -1,7 +1,6 @@
 
 const convertBlobToBase64 = (blob) => {
 
-  console.log("converting image to base url")
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result); // Get the Base64 result

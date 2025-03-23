@@ -87,7 +87,6 @@ const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, WoUuId, 
   };
 
   const closeModal = () => {
-    console.log("closing model")
 
     setIsModalVisible(false);
   };

@@ -19,7 +19,6 @@ export const CreateComplaintApi = async (data) => {
       
     };
 
-console.log(data.category,'cated')
 
 // {"data": {"complaint_category": "Electricity  (बिजली की समस्या)", "complaint_category_id": "14", "created_at": "2018-02-22 20:43:15", "created_by": "2090", "disp_order": 3, "id": 3, "name": "Fan Not Working ( पंखा काम नहीं कर रहा )", "remarks": "", "society_id": 2, "unhandled": 0, "updated_at": "2021-06-22 17:33:20", "updated_by": null}, "description": "Good", "image": "https://ismdoc.s3.amazonaws.com/public/image/jpeg/2/6752ad7e0f794_wC8iIhemlulw2ll31Y0y2024120613_2c8e1809-bc2a-4dbe-ac4d-693b0aa3a462.jpeg.jpeg", "society": 4045} 
 const payload ={
@@ -48,7 +47,6 @@ const payload ={
     try {
       const response = await axios.post(`${API_URL2}/addComplaint`,payload,{ params,headers});
 
- console.log(response.data)
       return response.data
 
 

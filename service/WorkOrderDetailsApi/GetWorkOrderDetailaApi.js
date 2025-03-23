@@ -9,7 +9,6 @@ export const GetInstructionsApi = async () => {
   if (userInfo) {
 
 const parsedUserInfo = JSON.parse(userInfo);
-console.log(parsedUserInfo,'parsed')
 const userId = parsedUserInfo.data.userId;
 const apiToken = parsedUserInfo.data.api_token
 const societyId =parsedUserInfo.data.societyId
@@ -33,7 +32,6 @@ const societyId =parsedUserInfo.data.societyId
       };
 
 
-      console.log(headers,params,"detailsapi")
 
     try {
       const response = await axios.get(`${API_URL}/v3/insts`, { params,headers, withCredentials: true });

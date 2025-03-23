@@ -6,12 +6,10 @@ const API_BASE_URL = 'https://api.isocietymanager.com/logmein?token=ijFCLdBu8KV4
 
 // Function to check if a user exists based on API token
 const MultipleUserLogin = async (user) => {
- console.log(user,"multiple user response")
 
     try {
         const response = await axios.post(API_BASE_URL, user); // Use POST request with payload
 
-        console.log(response);
 
         // Assuming the API returns a JSON object with an 'exists' property
         return response.data; // Adjust according to your API response structure

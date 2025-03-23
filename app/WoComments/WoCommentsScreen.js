@@ -48,7 +48,6 @@ const CommentsPage = ({ WoUuId }) => {
 
     try {
       const response = await WorkOrderAddComments({ newComment }, WoUuId);
-      console.log(response, 'console at ui');
 
       if (response) {
         // Fetch comments again to refresh the list

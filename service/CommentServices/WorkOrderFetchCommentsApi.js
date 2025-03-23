@@ -45,14 +45,12 @@ params.tag = selectedButton
       })
     };
 
-    console.log(params,"THis are parmas called")
 
     // const apiUrl = 'https://nppm-api.isocietymanager.com/v3/comments?';
 
     try {
       const response = await axios.get(`${API_URL}/v3/comments?`, { params,headers,withCredentials:true});
       const data = response.data.data
-console.log(response.data.data[0])
 
   if(response.data != null){
     return data; // Return the relevant data

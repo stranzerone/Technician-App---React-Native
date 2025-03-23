@@ -52,10 +52,10 @@ const ComplaintsScreen = () => {
   }, []);
 
   // ✅ Fetch complaints only when filter changes
-  useFocusEffect(
-    useCallback(() => {
+  useEffect(()=>{
       fetchComplaints();
-    }, [fetchComplaints])
+
+  },[]
   );
 
   useEffect(() => {
@@ -97,12 +97,16 @@ const ComplaintsScreen = () => {
           </Text>
         </View>
 
-        {complaintPermissions.some((permission) => permission.includes('C')) && (
-          <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('RaiseComplaint')}>
-            <FontAwesome name="plus" size={18} color="#fff" />
+          <TouchableOpacity
+          disabled={!complaintPermissions.some((permission) => permission.includes('C'))}
+          style={[
+            styles.addButton,
+            { backgroundColor: complaintPermissions.some((permission) => permission.includes('C')) ? "#074B7C" : "#B0B0B0" }
+          ]} >
+                      <FontAwesome name="plus" size={18} color="#fff" />
             <Text style={styles.addButtonText}>Add</Text>
           </TouchableOpacity>
-        )}
+    
       </View>
 
       {showFilter && (
@@ -194,7 +198,7 @@ const styles = StyleSheet.create({
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#074B7C',
+    // backgroundColor: '#074B7C',
     padding: 10,
     borderRadius: 8,
   },

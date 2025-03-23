@@ -21,7 +21,6 @@ import { LogMeInWithOtp } from '../../../service/LoginWithOtp/LoginMeInWithOtp';
 
 const OtpPage = ({ route }) => {
   const data = route.params.response.data;
-  console.log(data,"this is the data")
   const [otp, setOtp] = useState(['', '', '', '']);
   const [activeInputIndex, setActiveInputIndex] = useState(null);
   const [attemptsRemaining, setAttemptsRemaining] = useState(data.try);
@@ -77,6 +76,16 @@ const OtpPage = ({ route }) => {
           });
           setPopupVisible(true);
           setAttemptsRemaining((prev) => Math.max(prev - 1, 0));
+          if(attemptsRemaining === 0){
+            setPopupData({
+              type: 'hint',
+              message: 'You have exceeded the maximum number of attempts. Please try again after 15 min.',
+            });
+            setPopupVisible(true);
+
+
+            navigation.navigate('Login');
+          }
         }
       } catch (error) {
         setPopupData({
@@ -87,7 +96,7 @@ const OtpPage = ({ route }) => {
       }
     } else {
       setPopupData({
-        type: 'warning',
+        type: 'hint',
         message: 'Please enter a valid 4-digit OTP.',
       });
       setPopupVisible(true);
@@ -133,7 +142,7 @@ const OtpPage = ({ route }) => {
           </View>
 
           <TouchableOpacity
-            style={styles.verifyOtpButton}
+            style={[styles.verifyOtpButton,{backgroundColor: attemptsRemaining === 0 ? '#ccc' : '#1996D3'}]}
             onPress={handleVerifyOtp}
             disabled={attemptsRemaining === 0}
           >
@@ -270,7 +279,6 @@ const styles = StyleSheet.create({
     width: '80%',
     padding: 14,
     alignSelf: 'center',
-    backgroundColor: '#1996D3',
     borderRadius: 12,
     alignItems: 'center',
   },

@@ -6,7 +6,6 @@ import { GetInstructionsApi } from '../../service/BuggyListApis/GetInstructionsA
 export const fetchDataByUuid = createAsyncThunk(
   'buggyList/fetchDataByUuid',
   async (uuid) => {
-    console.log(uuid, "Fetching data for UUID");
     const response = await GetInstructionsApi(uuid); // Await the API call
     return { uuid, data: response.data }; // Returning UUID and full response data
   }

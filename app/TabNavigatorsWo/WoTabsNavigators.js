@@ -7,7 +7,7 @@ import WorkOrderHomeTab from '../WorkOrderStack/WoDynamicTabScreen';
 import NfcManager, { NfcEvents } from 'react-native-nfc-manager';
 import GetUuIdForTag from '../../service/NfcTag/GetUuId';
 import { useEffect,useState } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 const Stack = createStackNavigator();
 
@@ -18,7 +18,7 @@ const WorkOrderStack = () => {
   const [nfcEnabled, setNfcEnabled] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState(""); // To dynamically set the message in the popup
-
+const [modelType,setModelType]  = useState('warning')
   useEffect(() => {
     const initNfc = async () => {
       try {
@@ -65,11 +65,19 @@ const WorkOrderStack = () => {
 
       const response = await GetUuIdForTag(tag.id.toLowerCase());
       console.log("NFC tag detected:", tag.id, response);
+      setModalVisible(true);
+
+      setModelType("success")
+      setModalMessage(<>Tag <Text style={{ fontWeight: 'bold' }}>${tag.id.toLowerCase()}</Text> detected Successfully</>);
 
       if (response.status === "success") {
         const count = response.metadata?.count;
         if (count == "0") {
-          setModalMessage("It seems tag is not associated with any asset or location");
+          setModelType("warning")
+
+          setModalMessage( <>
+    It seems tag <Text style={{ fontWeight: 'bold' }}> {tag.id.toLowerCase()}</Text> is not associated with any asset or location.
+  </>);
           setModalVisible(true);
           console.log("This NFC is not associated with any asset or location");
         } else {
@@ -110,7 +118,7 @@ const WorkOrderStack = () => {
       {modalVisible && (
         <DynamicPopup
           visible={modalVisible}
-          type="warning"
+          type={modelType}
           message={modalMessage}
           onClose={() => setModalVisible(false)}
           onOk={() => {

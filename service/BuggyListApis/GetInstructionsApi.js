@@ -2,10 +2,9 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
-export const GetInstructionsApi = async (WoUuId) => {
+export const GetInstructionsApi = async ({WoUuId,type}) => {
   const userInfo = await AsyncStorage.getItem('userInfo');
 
-  console.log(WoUuId,"from api of getinst")
   if (userInfo) {
 
     const parsedUserInfo = JSON.parse(userInfo);
@@ -13,13 +12,11 @@ export const GetInstructionsApi = async (WoUuId) => {
     const apiToken = parsedUserInfo.data.api_token
     const societyId =parsedUserInfo.data.societyId
 
-    const apiUrl = 'https://nppm-api.isocietymanager.com/v3/insts';
     const params = {
         ref_uuid:WoUuId,
-        ref_type:"WO"
+        ref_type:type
       
     };
-console.log(params,"api parmas")
 
     const headers = {
         'Content-Type': 'application/json',
@@ -31,10 +28,9 @@ console.log(params,"api parmas")
       };
 
     try {
-      const response = await axios.get(apiUrl, { params,headers, withCredentials: true });
+      const response = await axios.get(API_URL+"/v3/insts", { params,headers });
       const data = response.data.data
   if(response.data.metadata.count){
-console.log("data sent for",WoUuId)
     return data; // Return the relevant data
 
   }else{

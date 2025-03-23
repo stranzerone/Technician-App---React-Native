@@ -126,7 +126,7 @@ const NewComplaintPage = ({ route }) => {
           // Upload image and get the URL
           const ImageResponse = true;
           console.log(ImageResponse, 'this is image response');
-          setImageUrl(ImageResponse.data.url); // Set image URL after successful upload
+          setImageUrl(ImageResponse.data?.url); // Set image URL after successful upload
         }
       } catch (error) {
         console.error('Error uploading image:', error);

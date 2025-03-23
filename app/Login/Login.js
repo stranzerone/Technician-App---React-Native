@@ -54,7 +54,6 @@ const NewLoginScreen = () => {
       setLoading(true);
       const data = { email, password };
       const response = await loginApi(data);
-      console.log(response,"this is login response 1")
       if (response && response.status === 'success') {
         setEmail('');
         setPassword('');
@@ -71,7 +70,6 @@ const NewLoginScreen = () => {
         setMultipleUsers(response.data);
         setShowUserCard(true);
       } else {
-        console.log(response.message,"message on login")
         setPopupMessage(response.message || 'Unknown error');
         setWarningType('error');
         setPopupVisible(true);
@@ -168,9 +166,9 @@ const NewLoginScreen = () => {
           <Text style={styles.loginButtonText}>{loading ? 'Logging in...' : 'Login'}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotPasswordLink}>
+        {/* <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotPasswordLink}>
           <Text style={styles.link}>Forgot Password?</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
 
         <Text className='text-gray-500 text-center mt-10'>{APP_VERSION}</Text>

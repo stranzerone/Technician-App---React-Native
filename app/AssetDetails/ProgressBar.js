@@ -11,7 +11,7 @@ import { updateWorkOrderStatus } from '../../utils/Slices/WorkOrderSlice';
 import { GetWorkOrderInfo } from '../../service/WorkOrderApis/GetWorkOrderInfo';
 import { GetSiteUuid } from '../../service/GetSiteInfo';
 
-const ProgressPage = ({ data, wo,canComplete }) => {
+const ProgressPage = ({ data, wo,canComplete,id,sequence }) => {
   const [remark, setRemark] = useState('');
   const [lock,setLock] = useState(false)
   const [count, setCount] = useState(0);
@@ -69,6 +69,7 @@ if(mandatoryItems.length === manCount){
 
   
   const handleComplete = async () => {
+    console.log(sequence,'thi sis sequcne in wait')
 
 
 if(!remark){
@@ -77,15 +78,24 @@ if(!remark){
 
     try {
       setLock(true)
-      const response =  await MarkAsCompleteApi(wo, remark);
+      const response =  await MarkAsCompleteApi({item:wo, remark:remark,sequence:sequence});
       setRemark(''); // Reset the remark input
       setModalVisible(false); // Close the modal
 
 
       if (response) {
         // Once the status update is successful, navigate
-    
-          navigation.goBack(); // Fallback if no screen is passed
+    if(id){
+
+navigation.goBack()
+    }else{
+         navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Home' }],
+                  })
+                );
+    }
         
         
       }
@@ -105,12 +115,12 @@ if(!remark){
   return (
     <View style={styles.container}>
       <View style={styles.progressContainer}>
-        <View className="flex   flex-row gap-0 items-center justify-normal fixed">
+        <View className="flex flex-row justify-normal fixed gap-0 items-center">
           {
             wo.Status !== 'COMPLETED' &&
             canMarkComplete ?(
             <TouchableOpacity
-              className="flex bg-green-500 py-1 flex-row gap-1"
+              className="flex flex-row bg-green-500 gap-1 py-1"
               style={[
                 styles.tickContainer,
                 wo.Status === 'COMPLETED' && styles.disabledTickContainer, // Apply faint style if completed
@@ -118,12 +128,12 @@ if(!remark){
               onPress={() => wo.Status !== 'COMPLETED' && setModalVisible(true)} // Prevent opening modal if completed
               disabled={wo.Status === 'COMPLETED'} // Disable button if completed
             >
-              <Text className="text-white text-xs font-black">{wo.Status === 'COMPLETED' ? 'Completed' : 'Mark Complete'}</Text>
+              <Text className="text-white text-xs font-black">{wo.Status === 'COMPLETED' ? 'Completed' : 'Mark As Complete'}</Text>
             </TouchableOpacity>
             ):(
                wo.Status == 'COMPLETED'?(
                 <TouchableOpacity
-                className="flex bg-green-500 py-1 flex-row gap-1"
+                className="flex flex-row bg-green-500 gap-1 py-1"
                 style={[
                   styles.tickContainer,
                   wo.Status === 'COMPLETED' && styles.disabledTickContainer, // Apply faint style if completed
@@ -196,7 +206,7 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
     bottom: 0,
-    left: 300,
+    left: 250,
     flexDirection: 'row',
     width: 70,
     height: 70,
@@ -210,9 +220,9 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   tickContainer: {
-    width: 120,
+    width: 220,
     height: 40,
-    marginLeft: 30,
+    marginRight: 10,
     marginTop: 10,
     backgroundColor: '#4CAF50',
     borderRadius: 25,

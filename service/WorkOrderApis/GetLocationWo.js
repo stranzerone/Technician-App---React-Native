@@ -4,7 +4,6 @@ import { API_URL } from '@env';
 
 export const getLocationWorkOrder = async (uuid,status,breakdownActive) => {
 
-  console.log(uuid,status,breakdownActive,'uuid,status,breakdownActive')
 //https://nppm-api.isocietymanager.com/v3/workorder/assigned/asset?
   try {
     // Fetch user info and uuid from AsyncStorage

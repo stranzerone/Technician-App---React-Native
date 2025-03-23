@@ -21,7 +21,6 @@ const PhoneNumberPage = ({ navigation }) => {
   const [popupMessage, setPopupMessage] = useState(''); // State for storing popup message
 
   const handleSendOtp = async () => {
-    console.log(phoneNumber, 'Phone Number');
     if (phoneNumber.length < 1) {
       setPopupMessage('Please enter a valid phone number.');
       setPopupVisible(true);
@@ -34,7 +33,6 @@ const PhoneNumberPage = ({ navigation }) => {
     setLoading(true);
     try {
       const response = await otpLoginApi(phoneNumber);
-            console.log(response, 'data for ui');
       
       // Delay navigation to allow keyboard to dismiss
       setTimeout(() => {

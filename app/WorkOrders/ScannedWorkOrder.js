@@ -48,7 +48,6 @@ const FilteredWorkOrderPage = ({ route, uuids: passedUuid }) => {
 
 
   
-console.log(uuid,type,'this are the values')
 
   useEffect(() => {
     if (uuid && type) {

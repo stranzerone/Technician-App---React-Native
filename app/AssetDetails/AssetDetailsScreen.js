@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, SafeAreaView, TouchableOpacity, Text, Animated, KeyboardAvoidingView, Platform } from 'react-native';
 import AssetInfo from './AssetInfo';
-import CommentsPage from '../WoComments/WoCommentsScreen';
-import { FontAwesome5 } from '@expo/vector-icons'; // Import FontAwesome5
 const AssetDetailsMain = ({ uuid }) => {
-  const [expanded, setExpanded] = useState(false); // State for managing expand/collapse
-  const animation = useState(new Animated.Value(0))[0]; // Initialize animation state
 
   const WoUuId = uuid;
   console.log(WoUuId, 'Uuid at infomain');

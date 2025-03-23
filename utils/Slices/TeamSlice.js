@@ -7,14 +7,12 @@ export const fetchAllTeams = createAsyncThunk(
   'teams/fetchAllTeams',
   async (_, { rejectWithValue }) => {
     try {
-      console.log("fetching all team Names")
       const siteUuId = await GetSiteUuid()
       const response = await getAllTeams(siteUuId);
       const teamsArray = Array.isArray(response.data)
         ? response.data
         : Object.values(response.data || {});
 
-        console.log("fetching team completed")
       return teamsArray; // Ensure the payload is an array
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to fetch Teams');

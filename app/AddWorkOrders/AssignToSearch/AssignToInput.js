@@ -13,7 +13,6 @@ const MainScreen = ({ onSelectStaff }) => { // Accept the onStaffSelect prop
   // Function to handle the selection of an Staff
   const handleSelectStaff = (staff) => {
     // Check if the staff is already selected
-    console.log(staff,"selected staff")
     if (!selectedStaff.includes(staff)) {
       setSelectedStaff((prev) => [...prev, staff]); // Add selected staff to the array
       onSelectStaff([...selectedStaff, staff]); // Call the prop function to send the updated Staff to the parent

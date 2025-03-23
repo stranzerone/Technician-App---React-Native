@@ -5,7 +5,6 @@ import { API_URL } from '@env';
 export const GetSingleWorkOrders = async (uuid,status,breakdownActive) => {
 
 
-  console.log(uuid,status,breakdownActive,'uuid,status,breakdownActive')
 //https://nppm-api.isocietymanager.com/v3/workorder/assigned/asset?
   try {
     // Fetch user info and uuid from AsyncStorage
@@ -56,10 +55,9 @@ export const GetSingleWorkOrders = async (uuid,status,breakdownActive) => {
     // Make the API request
     const response = await axios.get(`${API_URL}/v3/workorder/assigned/asset?`, { params,headers,withCredentials: true });
     // Check the response data
-    console.log(response.data,'on asset ')
     if(response.data.data){
 
-    
+    console.log(response.data,'this is breakdonw')
   return response.data.data
     }else{
       return []

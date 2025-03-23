@@ -14,5 +14,4 @@ export const fetchAllReduxData = async (dispatch) => {
     dispatch(fetchAssets()),
     dispatch(fetchAllPms()),
   ]);
-  console.log('All Redux data fetched successfully.');
 };

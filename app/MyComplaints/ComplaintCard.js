@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import useConvertToSystemTime from '../TimeConvertot/ConvertUtcToIst';
@@ -25,12 +25,11 @@ const getStatusStyles = (status) => {
 const ComplaintCard = ({ data,categroy }) => {
   const navigation = useNavigation();
   const { color, icon } = getStatusStyles(data.status);
-const [myCat,setMyCat] = useState('')
+// const [myCat,setMyCat] = useState('')
   const handlePress = () => {
-    navigation.navigate('CloseComplaint', { complaint: data });
+    navigation.navigate('CloseComplaint', { complaint: data, category: myCat,creator :createdByName});
   };
 
-  // console.log(data)
 
   
   const users = useSelector((state) => state.users.data);
@@ -42,22 +41,19 @@ const getUserNames = (assignedId) => {
 
   if (users[0] === 'success') {
     const user = users[1]?.find((user) => user.user_id === assignedId);
-    return user ? user.name : 'Unknown User';
+    return user ? user.name : null;
   }
 
   return 'User Not Found';
 };
 
 
-
-useEffect(() => {
-
-const filtered = categroy.find((cat) => cat.id === data.complaint_type)
-
-setMyCat(filtered?.name)
-},[])
+const myCat = useMemo(() => {
+  return categroy.find((cat) => cat.id === data.complaint_type)?.name || "";
+}, [categroy, data.complaint_type]);
 
 
+const createdByName = getUserNames(data.created_by);
 
 
 
@@ -77,21 +73,22 @@ setMyCat(filtered?.name)
 
 
 <View>
-<View className="flex flex-row gap-1 my-2 items-center " >
+{myCat && <View className="flex flex-row gap-1 my-2 items-center " >
 <Icon name="list-alt" size={16} color="#60A5FA" />
 
   <Text className="font-bold">Category : </Text><Text className="bg-blue-400 rounded-lg text-white font-bold px-2 py-1">{myCat}</Text>
-</View>
+</View>}
 </View>
       {/* Description (Truncated) */}
       <Text style={styles.description} numberOfLines={2}>{data.description}</Text>
 
-      {/* Footer Section */}
+
       <View style={styles.footerContainer}>
-        <View style={styles.infoItem}>
+
+     { createdByName &&  <View style={styles.infoItem}>
           <Icon name="user" size={16} color="#074B7C" />
-          <Text className="font-bold " style={styles.infoText}>Created By: { getUserNames(data.created_by)}</Text>
-        </View>
+          <Text className="font-bold " style={styles.infoText}>Created By: {createdByName}</Text>
+        </View>}
      
         <View style={styles.infoItem}>
           <Icon name="calendar" size={16} color="#34A853" />
@@ -121,7 +118,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 15,
     padding: 18,
-    marginVertical: 12,
+    marginVertical: 5,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 6 },

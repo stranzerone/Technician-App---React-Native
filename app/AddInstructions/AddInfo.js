@@ -45,7 +45,6 @@ const AddInfo = () => {
 
     try {
       const response = await AddInstructionApi(instructionData);
-      console.log('Instruction added successfully:', response);
       Alert.alert('Success', 'Instruction added successfully.');
       resetForm();
     } catch (error) {

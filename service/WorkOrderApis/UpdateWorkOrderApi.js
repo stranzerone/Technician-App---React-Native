@@ -41,7 +41,6 @@ export const UpdateWorkOrder = async ( uuid, delayReason ) => {
     // Make the API request
     const response = await axios.put(`${API_URL}/v3/workorder`, payload, { headers });
 
-    console.log(response,'this is response for uplod fo delay ')
     // Check the response data
     return response.data;
 

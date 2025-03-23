@@ -11,30 +11,33 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { FontAwesome6 } from '@expo/vector-icons';
 
-const TaskInput = ({ onChangeName, onChangeDueDate, onChangeEstimatedTime }) => {
+const TaskInput = ({ onChangeName, onChangeDueDate, onChangeEstimatedTime,workOrderType,onChangeBreakDonwHours }) => {
   const [name, setName] = useState('');
   const [estimatedTime, setEstimatedTime] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDueDate, setSelectedDueDate] = useState(new Date());
+  const [selectedDueDate, setSelectedDueDate] = useState(null); // Initialize as null
+ const [breakdownHours,setBreakdownHours]  = useState('')
+ const handleDateChange = (event, selectedDate) => {
+  setShowDatePicker(false);
+  if (event.type === "set" && selectedDate) {
+    const formattedDate = selectedDate.toISOString().split("T")[0]; // Extract YYYY-MM-DD
+    setSelectedDueDate(formattedDate); // Store only date
+    onChangeDueDate(formattedDate); // Pass only date to parent
+  }
+};
 
-  const handleDateChange = (event, selectedDate) => {
-    if (event.type === 'set' && selectedDate) {
-      setSelectedDueDate(selectedDate);
-      onChangeDueDate(selectedDate);
-    }
-    setShowDatePicker(false);
-  };
 
-  const handleEstimatedTimeChange = (value) => {
-    let formattedValue = value.replace(/[^0-9]/g, '');
+  // Function to format date as DD-MM-YYYY
+  const formatDate = (isoDate) => {
+    if (!isoDate) return "DD-MM-YYYY"; // Default placeholder
 
-    if (formattedValue.length > 2) {
-      formattedValue = `${formattedValue.slice(0, 2)}-${formattedValue.slice(2, 4)}`;
-    }
-
-    setEstimatedTime(formattedValue);
+    const date = new Date(isoDate);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   };
 
   return (
@@ -46,36 +49,43 @@ const TaskInput = ({ onChangeName, onChangeDueDate, onChangeEstimatedTime }) => 
         <View style={styles.innerContainer}>
           <View style={styles.row}>
             <Text style={styles.label}>Name</Text>
-            <TextInput
-      style={[styles.input, styles.inputRow, { height: 50, width: 160 }]}
-      placeholder="Enter task name"
-      value={name}
-      onChangeText={setName}
-      onBlur={() => onChangeName(name)}
-      returnKeyType="done"  // Helps to close the keyboard
-    />
+            <View>
+              <TextInput
+                style={[styles.input, styles.inputRow, { height: 50, width: 170 }]}
+                placeholder="Enter task name"
+                value={name}
+                onChangeText={setName}
+                onBlur={() => onChangeName(name)}
+                returnKeyType="done"
+              />
+              <View className='flex-row items-center mt-[-13px]'>
+                <Text className='text-red-500 text-[10px] ml-1'>
+                  <FontAwesome6 name="star-of-life" size={8} color="red" /> mandatory
+                </Text>
+              </View>
+            </View>
           </View>
 
+          {/* Due Date Picker */}
           <TouchableOpacity onPress={() => setShowDatePicker(true)}>
             <View style={styles.row}>
               <Text style={styles.label}>Due Date</Text>
-              
-              <View
-      style={[styles.dateContainer, styles.inputRow, { height: 50, width: 160 }]}
-      >
-                <Text style={styles.dateText}>
-                  {selectedDueDate.toISOString().split('T')[0]}
-                </Text>
-
-
-                <FontAwesome name="calendar" size={18} color="#1996D3" />
+              <View>
+                <View style={[styles.dateContainer, styles.inputRow, { height: 50, width: 170 }]}>
+                  <Text style={styles.dateText}>{formatDate(selectedDueDate)}</Text>
+                </View>
+                <View className='flex-row items-center mt-[-13px]'>
+                  <Text className='text-red-500 text-[10px] ml-1'>
+                    <FontAwesome6 name="star-of-life" size={8} color="red" /> mandatory
+                  </Text>
+                </View>
               </View>
             </View>
           </TouchableOpacity>
 
           {showDatePicker && (
             <DateTimePicker
-              value={selectedDueDate}
+              value={selectedDueDate ? new Date(selectedDueDate) : new Date()} // Ensure valid date
               mode="date"
               display="default"
               onChange={handleDateChange}
@@ -83,19 +93,45 @@ const TaskInput = ({ onChangeName, onChangeDueDate, onChangeEstimatedTime }) => 
             />
           )}
 
-          <View className="" style={styles.row}>
+          {/* Estimated Time */}
+          <View style={styles.row}>
             <Text style={styles.label}>Est Time</Text>
-            <TextInput
-              style={[styles.input, styles.inputRow, { height: 40, width: 160 }]}
-              placeholder="HH-MM"
-              value={estimatedTime}
-              onChangeText={handleEstimatedTimeChange}
-              keyboardType="numeric"
-              onBlur={() => onChangeEstimatedTime(estimatedTime)}
-            />
+            <View>
+              <TextInput
+                style={[styles.input, styles.inputRow, { height: 40, width: 170 }]}
+                placeholder="Estimated Hours"
+                value={estimatedTime}
+                onChangeText={setEstimatedTime}
+                keyboardType="numeric"
+                onBlur={() => onChangeEstimatedTime(estimatedTime)}
+              />
+            </View>
             
           </View>
+
+
+  { workOrderType === "breakdown"  &&     
+    <View style={styles.row}>
+            <Text style={styles.label}>Breakdown Hours</Text>
+            <View>
+              <TextInput
+                style={[styles.input, styles.inputRow, { height: 40, width: 170 }]}
+                placeholder="Breakdown Hours"
+                value={breakdownHours}
+                onChangeText={setBreakdownHours}
+                keyboardType="numeric"
+                onBlur={() => onChangeBreakDonwHours(breakdownHours)}
+              />
+                 <View className='flex-row items-center mt-[-13px]'>
+                  <Text className='text-red-500 text-[10px] ml-1'>
+                    <FontAwesome6 name="star-of-life" size={8} color="red" /> mandatory
+                  </Text>
+    </View>
+            </View>
+ 
+          </View>
           
+          }
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -140,7 +176,7 @@ const styles = StyleSheet.create({
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-  justifyContent: 'space-between',
+    justifyContent: 'space-between',
     borderColor: '#1996D3',
     borderWidth: 1,
     borderRadius: 5,

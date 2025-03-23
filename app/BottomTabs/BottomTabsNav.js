@@ -1,3 +1,4 @@
+// import '../../utils/AxiosInterceptor/axiosIntercepter' 
 import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -34,6 +35,7 @@ import { clearAllTeams, fetchAllTeams } from '../../utils/Slices/TeamSlice';
 import { clearAllUsers, fetchAllUsers } from '../../utils/Slices/UsersSlice';
 import { Keyboard } from 'react-native';
 import { GetSiteUuid } from '../../service/GetSiteInfo';
+import UpdateAppScreen from '../TabNavigatorsWo/VersionHandler';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -44,6 +46,7 @@ const WorkOrderStack = () => (
       component={WorkOrderHomeTab}
       options={{ headerShown: false }}
     />
+
   <Stack.Screen 
   name="AddWo"
   component={RequestServiceTabs}
@@ -87,6 +90,16 @@ const QRCodeStack = () => (
         title:'',
         headerShown: false }}
     />
+      <Stack.Screen
+    
+    name="AddWoQr"
+    component={RequestServiceTabs}
+    options={{
+      title:'',
+      headerShown: false }}
+  />
+
+
 
 <Stack.Screen
       name="ScannedWo"
@@ -124,10 +137,10 @@ const ServiceRequestStack = () => (
           <Stack.Screen 
            name="complaintInput"
            component={NewComplaintPage}
-           options={{ title: 'Report Complaint', headerShown: true }}
+           options={{ title: 'Add service request', headerShown: true }}
            />
           <Stack.Screen
-          options={{title:'Complaint Screen'}}
+          options={{title:'Service request details'}}
           name="CloseComplaint" component={ComplaintCloseScreen} />
           <Stack.Screen 
           name="RaiseComplaint"
@@ -143,7 +156,7 @@ const MyTabs = () => {
   const [totalNotifications, setTotalNotifications] = useState(); // Initialize notification count
  const [dispatchCount,setDispatchCount]  =useState(0)
   const navigation = useNavigation();
-  const { setPpmAsstPermissions,notificationsCount,setComplaintPermissions,setInstructionPermissions} = usePermissions(); // Extract context permissions function
+  const { setPpmAsstPermissions,notificationsCount,setComplaintPermissions,setInstructionPermissions,setPpmWorkorder} = usePermissions(); // Extract context permissions function
   const [user,setUser] = useState({})
   const [siteLogo,setSiteLogo]  = useState(null)
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
@@ -161,7 +174,6 @@ const MyTabs = () => {
         if (savedPermissions) {
           const userInfo = JSON.parse(savedPermissions); // Parse the stored string into an object
         
-        console.log(userInfo.data.society.name,"this is name of society in bottom tabs")
         // console.log(userInfo.data.society.name,"this is userinfo in bottomTabs")
           setUser(userInfo.data.society)
 
@@ -175,6 +187,15 @@ const MyTabs = () => {
             
               setPpmAsstPermissions(filteredPermissions); // Set permissions in context
 
+
+
+
+              const filteredPpmWorkorderPermissions = userInfo.data.permissions
+              .filter(item => item.startsWith('PPM_WRK.')) // Get items starting with 'PPMASST'
+              .map(item => item.split('.')[1]); // Split at the first dot and take the second part
+            
+
+              setPpmWorkorder(filteredPpmWorkorderPermissions)
 
               const filteredComplaintPermissions = userInfo.data.permissions
               .filter(item => item.startsWith('COM.')) // Get items starting with 'PPMASST'
@@ -197,7 +218,6 @@ const MyTabs = () => {
     };
 
 
- console.log('call for permissions')
 
     loadPermissions(); // Call the function on mount
 
@@ -263,7 +283,6 @@ const StoreSociety = async() =>{
   const fetchTotalNotifications = async () => {
     try {
       const response = notificationsCount; // Call your API to get notifications
-     console.log(response,"this is the total notifcations")
       setTotalNotifications(response || 0); // Update the state with the total notifications count
     } catch (error) {
       console.error("Error fetching notifications count:", error);
@@ -278,11 +297,9 @@ const StoreSociety = async() =>{
 
   const handleLogout = async () => {
     try {
-      console.log('Logging out...');
       await AsyncStorage.removeItem('userInfo');
-    const teams =   await dispatch(clearAllTeams())
+       const teams =   await dispatch(clearAllTeams())
       await dispatch(clearAllUsers())
-      console.log(teams,"this is teams")
       navigation.replace("Login");
 
     } catch (error) {
@@ -292,11 +309,11 @@ const StoreSociety = async() =>{
   };
   const renderLogoutButton = () => (
     <View
-      className="flex h-20 flex-row items-center gap-4 p-4  rounded-lg shadow-md"
+      className="flex flex-row h-20 p-4 rounded-lg shadow-md gap-4 items-center"
     >
-      {/* <View className=" bg-slate-700  rounded-lg p-2">
+      {/* <View className="bg-slate-700 p-2 rounded-lg">
         {Platform.OS === "android" && ( // Conditionally render society name for Android
-          <Text className="  text-center h-5 text-white px-0 text-sm font-semibold">
+          <Text className="h-5 text-center text-sm text-white font-semibold px-0">
             {user?.name}
           </Text>
         )}
@@ -307,7 +324,7 @@ const StoreSociety = async() =>{
        
         onPress={() => setModalVisible(true)} // Open confirmation popup
 
-        className="p-2 bg-red-600 rounded-full"
+        className="bg-red-600 p-2 rounded-full"
       >
         <Icon name="power-off" size={16} color="white" />
       </TouchableOpacity>
@@ -361,10 +378,10 @@ const StoreSociety = async() =>{
               <Text style={styles.societyNameText}>{user?.name}</Text>
             </View>
           ) : () => (
-      <View className="flex border-1 rounded-r-md h-12 items-start justify-start flex-row gap-1" style={styles.logoContainer}>
+      <View className="flex flex-row border-1 h-12 justify-start rounded-r-md gap-1 items-start" style={styles.logoContainer}>
 {siteLogo &&
   <Image
-  className="w-24 h-32"
+  className="h-32 w-24"
   source={{ uri: siteLogo }}
   style={[styles.logo, { borderRadius: 48, overflow: 'hidden' }]} 
   resizeMode="contain"
@@ -372,7 +389,7 @@ const StoreSociety = async() =>{
 
         }
   {/* {Platform.OS === "android" && ( // Conditionally render society name for Android
-    <Text className="text-center h-5 text-white px-0 text-sm font-black">
+    <Text className="h-5 text-center text-sm text-white font-black px-0">
       {user?.name?.length > 12 ? `${user.name.substring(0, 12)}...` : user?.name}
     </Text>
   )} */}
@@ -473,11 +490,11 @@ const styles = StyleSheet.create({
   },
   
   logo: {
-    maxHeight:"100%",
-    marginLeft:20,
-    borderRadius:50
+    maxWidth: 80,
+    maxHeight: 80,
+    borderRadius: 5,
 
-  },
+},
   activeIconContainer: {
     backgroundColor: '#074B7C',
   },

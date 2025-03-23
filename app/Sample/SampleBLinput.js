@@ -34,12 +34,9 @@ const WorkOrderPage = () => {
   const users = useSelector((state) => state.users.data);
   const teams = useSelector((state) => state.teams.data);
   const { ppmAsstPermissions } = usePermissions();
-  console.log(ppmAsstPermissions,"this are the permissions")
-  console.log(users[0],"users are")
   useEffect(() => {
 
     if (!users || !teams || users.length === 0 || teams.length === 0) {
-      console.log("dispatche called at workorderscreen")
       dispatch(fetchAllUsers());
       dispatch(fetchAllTeams());
     } 

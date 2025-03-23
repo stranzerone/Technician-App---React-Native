@@ -3,7 +3,6 @@ import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
 
 const handleDownload = async ({ file }) => {
-  console.log(file, 'PDF file URL');
 
   try {
     // Define the local path where the file will be saved
@@ -21,7 +20,6 @@ const handleDownload = async ({ file }) => {
     // Check if the file exists at the specified location
     const fileInfo = await FileSystem.getInfoAsync(uri);
     if (fileInfo.exists) {
-      console.log('File downloaded successfully:', uri);
 
       // Check if the file can be shared
       if (await Sharing.isAvailableAsync()) {

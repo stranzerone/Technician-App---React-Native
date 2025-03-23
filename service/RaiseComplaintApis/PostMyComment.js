@@ -25,7 +25,6 @@ export const PostMyComment = async (id, remark,file) => {
     formData.append('comp_id', id);
     formData.append('file', file);
 
-    console.log(formData,'this is formData')
     try {
       const response = await axios.post(`${API_URL2}/staff/addcomment`, formData, {
         params, 
@@ -41,7 +40,6 @@ export const PostMyComment = async (id, remark,file) => {
       });
 
       const data = response.data;
-      console.log(response.data)
       return data.status; // Return the relevant data
 
     } catch (error) {

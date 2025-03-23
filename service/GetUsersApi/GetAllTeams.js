@@ -6,7 +6,6 @@ import { API_URL } from '@env';
 export const getAllTeams = async (siteUuId) => {
   const userInfo = await AsyncStorage.getItem('userInfo');
   const soceityInfo = await AsyncStorage.getItem('societyInfo');
-console.log("get all Teams for",siteUuId)
   if (userInfo) {
 
     const parsedUserInfo = JSON.parse(userInfo);
@@ -16,7 +15,6 @@ console.log("get all Teams for",siteUuId)
     const societyId =parsedUserInfo.data.societyId
     // const apiUrl = 'https://nppm-api.isocietymanager.com/v3/teams?';
 
-    console.log(siteUuId,'this is site_uuid',soceityInfo,'this is society info')
 
      const params = {
      site_uuid:siteUuId,
@@ -26,7 +24,6 @@ console.log("get all Teams for",siteUuId)
     };
 
 
-    console.log(params,'this are params')
 
     const headers = {
         'Content-Type': 'application/json',

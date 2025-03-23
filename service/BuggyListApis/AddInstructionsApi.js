@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
 export const AddInstructionApi = async (instructionData) => {
-  console.log(instructionData, "values"); // Check the values being passed
 
   // Fetch user info from AsyncStorage
   const userInfo = await AsyncStorage.getItem('userInfo');
@@ -38,7 +37,6 @@ export const AddInstructionApi = async (instructionData) => {
         wo_uuid :  "3cf20c8a-38b8-4778-8135-b2578cd7ce08",
         remarks:''
     };
-    console.log(payload,'payload')
 
 
     const headers = {

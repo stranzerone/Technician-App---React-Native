@@ -114,7 +114,7 @@ const AssetInfo = ({ WoUuId }) => {
           <View style={styles.detailsContainer}>
             <DetailItem icon="assignment" label="Asset Name" text={asset?.Name} />
             <DetailItem icon="hashtag" label="Asset ID" text={asset?.['Sequence No']} />
-            <DetailItem icon="calendar" label="Deadline" text={workOrder[0].wo["Due Date"] || 'No Deadline Provided'} />
+            {/* <DetailItem icon="calendar" label="Deadline" text={workOrder[0].wo["Due Date"] || 'No Deadline Provided'} /> */}
             <DetailItem icon="wrench" label="Type" text={wo?.Type} />
             <DetailItem icon="tags" label="Category Of Wo" text={category?.Name} />
             <DetailItem icon="clock-o" label="Estimated Time" text={workOrder[0].wo['Estimated Time'] + "  hours"} isTag />

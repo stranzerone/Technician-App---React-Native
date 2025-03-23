@@ -44,12 +44,10 @@ export const GetWorkOrderInfo = async (uuid) => {
     };
 
 
-console.log(uuid,'this is uuid for cloasing')
     // Make the API request
     const response = await axios.get(`${API_URL}/v4/workorder?`, { params,headers,withCredentials: true });
     // Check the response data
 
-    console.log(response.data,'this is response for pms ifn')
   return response.data.data
 
   } catch (error) {

@@ -7,7 +7,6 @@ export default GetUuIdForTag = async (id) => {
   try {
     const userInfo = await AsyncStorage.getItem('userInfo');
    
-    console.log(id,"this is the id i am getting")
 
     if (userInfo) {
       const parsedUserInfo = JSON.parse(userInfo);
@@ -41,7 +40,6 @@ export default GetUuIdForTag = async (id) => {
 
     //  }
 
-     console.log(response.data,"response for tag id passed")
       return response.data;
     } else {
       console.error("User info not found in AsyncStorage");

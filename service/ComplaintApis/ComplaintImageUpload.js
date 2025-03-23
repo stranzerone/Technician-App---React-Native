@@ -59,7 +59,6 @@ export const ComplaintImageUploadApi = async (data) => {
     formData.append('user-id', userId);
     formData.append('api-token', apiToken);
     // const API_URL = 'https://drs-api.isocietymanager.com/v1/society/2/publicupload';
-    console.log(params,formData,'this are info to uplod for image of compalint')
     // Make the POST request to the API
     const response = await axios.post(`${API_URL3}/v1/society/2/publicupload`, formData, {
      headers:headers,
@@ -67,7 +66,6 @@ export const ComplaintImageUploadApi = async (data) => {
     });
 
  
-    console.log('Image uploaded successfully:', response.data);
     return response.data;
   } catch (error) {
     if (error.response) {

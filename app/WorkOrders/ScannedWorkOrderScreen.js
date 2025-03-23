@@ -17,11 +17,12 @@ import { GetSingleWorkOrders } from '../../service/WorkOrderApis/GetSingleWorkOr
 import Loader from '../LoadingScreen/AnimatedLoader';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllUsers } from '../../utils/Slices/UsersSlice';
-import { fetchAllTeams } from '../../utils/Slices/TeamSlice';
+import { clearAllUsers, fetchAllUsers } from '../../utils/Slices/UsersSlice';
+import { clearAllTeams, fetchAllTeams } from '../../utils/Slices/TeamSlice';
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLocationHk } from '../../service/HouseKeepingApis/GetHkOnScan';
+import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 
 const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
   const [filterVisible, setFilterVisible] = useState(false);
@@ -30,17 +31,18 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
   const [loading, setLoading] = useState(false);
   const [inputNumber, setInputNumber] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+  
   const type = route?.params?.type || null;
   const uuid = route?.params?.uuid || passedUuid || null;
 
-  console.log(uuid,type,"here on scanned wo screen")
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const users = useSelector((state) => state.users.data);
   const teams = useSelector((state) => state.teams.data);
-  const { ppmAsstPermissions } = usePermissions();
+  const { ppmAsstPermissions,ppmWorkorder } = usePermissions();
   const [siteLogo,setSiteLogo]  = useState(null)
- const [listType,setListType] = useState(true)
+ const [listType,setListType] = useState(false)
  const [breakdownActive,setBreakdownActive] = useState(false)
   useEffect(() => {
     if (!users || !teams || users.length === 0 || teams.length === 0) {
@@ -62,12 +64,10 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
 
 
 const fetchWorkOrders = async () => {
-  console.log('Fetching work orders:', selectedFilter, breakdownActive);
   setLoading(true);
 
   try {
     let response = [];
-    
     if (type === 'LC') {
       response = listType
         ?
@@ -80,7 +80,6 @@ const fetchWorkOrders = async () => {
       response = await GetSingleWorkOrders(uuid, selectedFilter, breakdownActive);
     }
 
-    console.log('API Response:',listType,breakdownActive,type);
 
     // Ensure response is an array before setting state
     setWorkOrders(response || []);
@@ -88,11 +87,14 @@ const fetchWorkOrders = async () => {
     console.error('Error fetching work orders:', error);
   } finally {
     setLoading(false);
+    setRefreshing(false); // Stop refreshing
+
   }
 };
 
 
 
+const permissionToAdd = ppmWorkorder.some((permission) => permission.includes('C'))
 
   const applyFilter = (filter) => {
     setSelectedFilter(filter); // Apply selected filter
@@ -101,7 +103,7 @@ const fetchWorkOrders = async () => {
 
   const filteredWorkOrders = workOrders.filter((order) => {
     // Filter work orders based on search input and selectedFilter
-    const matchesFilter = order.wo?.Status === selectedFilter;
+    const matchesFilter = order?.wo?.Status === selectedFilter;
     const matchesSearch = !inputNumber || order.wo['Sequence No'].includes(inputNumber);
     return matchesFilter && matchesSearch;
   });
@@ -109,9 +111,26 @@ const fetchWorkOrders = async () => {
   const onRefresh = () => {
     setRefreshing(true);
     fetchWorkOrders();
-    setRefreshing(false);
   };
 
+  useEffect(() => {
+    const currentRoute = navigation.getState().routes[navigation.getState().index].name;
+    console.log("Current Screen Name:", currentRoute);
+  }, [navigation]);
+  
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('userInfo');
+    const teams =   await dispatch(clearAllTeams())
+      await dispatch(clearAllUsers())
+      navigation.replace("Login");
+
+    } catch (error) {
+      console.error('Error clearing local storage', error);
+      Alert.alert('Error', 'Could not log out. Please try again.');
+    }
+  };
 
   useEffect(() => {
     // Define the fetchLogo function inside useEffect
@@ -137,30 +156,43 @@ const fetchWorkOrders = async () => {
 
   const hkClicked = () => {
     setListType((prevListType) => !prevListType);
+    setBreakdownActive(false);
   };
   
   const breakdownClicked = () => {
+    setListType(false);
     setBreakdownActive((prevBreakdownActive) => !prevBreakdownActive);
+
   };
   
 
 
   return (
     <View style={styles.container}className="text-center">
-      <View className="flex bg-[#1996D3] p-2 h-14 items-center justify-start  flex-row gap-3">
+      <View style={styles.topHeader}   >
      
+     <View className='flex justify-between items-center'>
        {siteLogo &&
- <Image
-    className="w-20 h-14 rounded-lg"
-    source={{ uri: siteLogo }}
-    style={styles.logo}
-    resizeMode="contain"
-  />}
-        <Text className="font-bold text-white  text-center text-lg">{listType?"HouseKeeping Wo":"Work Orders"}</Text>
+<Image   className="h-32 w-24"
+  source={{ uri: siteLogo }}
+  style={[styles.logo, { borderRadius: 48, overflow: 'hidden' }]} 
+  resizeMode="contain" />}
+</View>
+<View>
+  <Text className="text-lg text-start text-white font-bold pl-2">{listType?"HouseKeeping Wo":breakdownActive?"Breakdowns" :"Work Orders"}</Text>
 
-    
+  </View>
+<View>
+
+     <TouchableOpacity 
+           
+            onPress={() => setModalVisible(true)} // Open confirmation popup
+            className="bg-red-600 p-2 rounded-full"
+          >
+            <Icon name="power-off" size={15} color="white" />
+      </TouchableOpacity>
       </View>
-
+</View>
       {/* Header */}
       <View style={styles.headerContainer}>
         <View style={styles.header}>
@@ -170,37 +202,40 @@ const fetchWorkOrders = async () => {
             style={styles.statusButton}
           >
             <Icon name="filter" size={20} color="#074B7C" style={styles.searchIcon} />
-            <Text style={styles.statusButtonText}>Status</Text>
+            <Text style={styles.statusButtonText}>Filter</Text>
           </TouchableOpacity>
 
           <View style={styles.statusTextContainer}>
             <Text style={styles.statusText}>{selectedFilter}</Text>
           </View>
-          {ppmAsstPermissions.some((permission) => permission.includes('C')) && (
             <TouchableOpacity
-              onPress={() => navigation.navigate('AddWo')}
-              style={styles.addButton}
+            onPress={() => navigation.navigate('AddWoQr', { qr:"qr",type:type,uuid:uuid })}
+            style={[styles.addButton,{backgroundColor:permissionToAdd ? 'white' : 'lightgray'}]}
+            disabled={!permissionToAdd}
             >
               <Icon name="plus" size={20} color="#074B7C" style={styles.searchIcon} />
-              <Text style={styles.addButtonText}>Add WO</Text>
+              <Text style={styles.addButtonText}>Add</Text>
             </TouchableOpacity>
-          )}
         </View>
       </View>
 
 
 
- <View className="flex flex-row  gap-1 items-center justify-between w-full p-2">
+ <View className="flex flex-row justify-start p-2 w-full gap-3 items-center">
   {/* Back Button */}
   <TouchableOpacity
-    className="bg-blue-500 p-2 rounded-md w-[10vw] flex flex-row justify-center items-center"
-    onPress={() => navigation.goBack()}
+    className="flex flex-row bg-blue-500 justify-center p-1 rounded-md w-[14vw] items-center px-3"
+    onPress={() =>{ navigation.reset({
+      index: 0,
+      routes: [{ name: "Home" }], // Ensure this is the correct screen name
+    });
+    }}
   >
     <Icon name="arrow-left" size={20} color="white" />
   </TouchableOpacity>
 
   {/* Search Input */}
-  <View className="flex flex-row gap-1 items-center  w-[50vw] border border-gray-500 rounded-md px-1">
+  {/* <View className="flex flex-row border border-gray-500 rounded-md w-[50vw] gap-1 items-center px-1">
     <Icon name="search" size={18} color="#074B7C" className="mr-2" />
     <TextInput
       style={styles.numberInput}
@@ -211,25 +246,26 @@ const fetchWorkOrders = async () => {
       placeholderTextColor="#888"
       className="flex-1"
     />
-  </View>
+  </View> */}
 
 
-{ type === "LC" && <TouchableOpacity
+ {/* <TouchableOpacity
     className={`${listType?"bg-green-500":"bg-white text-green-400 border border-green-400"}  p-2 rounded-md w-[15vw] flex flex-row justify-center items-center`}
     onPress={() => hkClicked()}
+    disabled={type === "AS"}
   >
     <Text className={`${listType?"text-white":"text-green-600"} font-extrabold text-md`}>HK</Text>
-  </TouchableOpacity>}
+  </TouchableOpacity> */}
 
 
 
   <TouchableOpacity
   
-    className={`${breakdownActive?"bg-red-500":"bg-white text-red-400 border border-red-400"} p-2 rounded-md w-[15vw] flex flex-row justify-center items-center`}
+    className={`${breakdownActive?"bg-red-500":"bg-white text-red-400 border border-red-400"} p-1 rounded-md w-[35vw] flex flex-row justify-center items-center`}
     onPress={() => breakdownClicked()}
   >
 
-<Text className={` ${breakdownActive?"text-white":"text-red-400"} font-extrabold text-md`}>BRKD</Text>
+<Text className={` ${breakdownActive?"text-white":"text-red-400"} font-extrabold text-md`}>Breakdowns</Text>
 
   </TouchableOpacity>
 
@@ -249,7 +285,7 @@ const fetchWorkOrders = async () => {
       ) : filteredWorkOrders.length === 0 ? (
         <View style={styles.noRecordsContainer}>
           <Icon name="exclamation-circle" size={50} color="#074B7C" />
-          <Text style={styles.noRecordsText}>No Work Order Found</Text>
+          <Text style={styles.noRecordsText}>{`No ${listType? "HouseKeeping WO":breakdownActive?"Active Breakdowns":"Work Order"} Found`}</Text>
         </View>
       ) : (
         <View className='px-4'> 
@@ -257,7 +293,7 @@ const fetchWorkOrders = async () => {
           data={filteredWorkOrders}
           keyExtractor={(item) => item.wo['Sequence No']}
           renderItem={({ item }) => (
-            <WorkOrderCard workOrder={item} previousScreen="ScannedWoTag" />
+            <WorkOrderCard workOrder={item} uuid={uuid} type={type} previousScreen="ScannedWoTag" />
           )}
           contentContainerStyle={styles.contentContainer}
           refreshing={refreshing}
@@ -283,6 +319,16 @@ const fetchWorkOrders = async () => {
           />
         </Modal>
       )}
+          <DynamicPopup
+        visible={modalVisible}
+        type="warning"
+        message="You will be logged out. Are you sure you want to log out?"
+        onClose={() => setModalVisible(false)}
+        onOk={() => {
+          setModalVisible(false);
+          handleLogout();
+        }}
+      />
     </View>
   );
 };
@@ -292,8 +338,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 0,
-    paddingVertical: 10,
+    paddingBottom:50,
+  
     backgroundColor: '#f8f9fa',
+  },
+  topHeader: {
+    width:"100%",
+    backgroundColor: '#1996D3',
+    padding: 10,
+    height: 50,
+    flexDirection: 'row',
+    justifyContent:"space-between",
+    alignItems: 'center',
+  
   },
   headerContainer: {
     backgroundColor: '#074B7C',
@@ -305,6 +362,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   
     borderRadius: 5,
+  },
+    logo: {
+      maxWidth: 80,
+      maxHeight: 80,
+      borderRadius: 5,
+
   },
   header: {
     flexDirection: 'row',
@@ -322,6 +385,7 @@ const styles = StyleSheet.create({
   statusButtonText: {
     marginLeft: 5,
     color: '#074B7C',
+    fontWeight:900,
   },
   statusTextContainer: {
     paddingHorizontal: 10,
@@ -339,6 +403,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     marginLeft: 5,
+    fontWeight:900,
     color: '#074B7C',
   },
   inputContainer: {
@@ -369,7 +434,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   contentContainer: {
-    paddingBottom: 10,
+    paddingBottom: 100,
   },
 });
 

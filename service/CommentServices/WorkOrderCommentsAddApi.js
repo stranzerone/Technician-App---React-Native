@@ -32,7 +32,6 @@ const societyId =parsedUserInfo.data.societyId
     try {
       const response = await axios.post(`${API_URL}/v3/comment`, payload, { headers });
 
-  console.log(response.data.status)
   return response.data.status
      
 

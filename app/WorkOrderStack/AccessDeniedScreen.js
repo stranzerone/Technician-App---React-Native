@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, SafeAre
 import { MaterialIcons } from '@expo/vector-icons';
 import accessDeniedImage from '../../assets/SvgImages/qrcode_logo.png';
 import QrScanner from '../QrScanner/QrScannerComp';
+import { useNavigation } from '@react-navigation/native';
 const { height, width } = Dimensions.get('window');
 
 const AccessDeniedScreen = ({onRefresh}) => {
@@ -11,6 +12,8 @@ const AccessDeniedScreen = ({onRefresh}) => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
  const [openScaner,setOpenScaner] = useState(false)
+ const navigation = useNavigation();
+
 
   const toggleQrContainer = () => {
     setOpenScaner(!openScaner)
@@ -58,10 +61,10 @@ const AccessDeniedScreen = ({onRefresh}) => {
         </View>
 
         <Text style={styles.message}>
-          {qrVisible ? "Hold your device over the QR code to scan." : "You need to scan a QR code to proceed."}
+          {qrVisible ? "Hold your device over the QR code to scan." : "You need to scan a QR code or touch NFC Tag to proceed."}
         </Text>
 
-        <TouchableOpacity style={styles.button} onPress={toggleQrContainer}>
+        <TouchableOpacity style={styles.button} onPress={()=>navigation.navigate('QRCode')}>
           <Text>
           <MaterialIcons name="qr-code" size={24} color="#FFFFFF" />
 

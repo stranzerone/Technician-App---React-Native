@@ -4,7 +4,6 @@ import { API_URL2 } from '@env';
 
 export const GetAllMyComplaints = async () => {
   const userInfo = await AsyncStorage.getItem('userInfo');
-console.log("calling to get all complaints")
   if (userInfo) {
 
     const parsedUserInfo = JSON.parse(userInfo);

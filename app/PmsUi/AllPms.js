@@ -8,13 +8,13 @@ import {
   StyleSheet,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loader from "../LoadingScreen/AnimatedLoader"
 import { GetAllPmsApi } from "../../service/PMS/GetAllPms";
 import { CreatePmsApi } from "../../service/PMS/CreatePms";
 import DynamicPopup from "../DynamivPopUps/DynapicPopUpScreen";
+import { useNavigation } from "@react-navigation/native";
 
-const PMList = () => {
+const PMList = ({screen,uuid,type}) => {
   const [pms, setPms] = useState([]);
   const [filteredPms, setFilteredPms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +25,8 @@ const PMList = () => {
   const [confirmationPopupVisible, setConfirmationPopupVisible] = useState(false);
   const [selectedUuid, setSelectedUuid] = useState(null);
 
+  const QrUuid = uuid;
+  const navigation = useNavigation();
   // Function to load PMs from AsyncStorage or fetch from API
   const loadPms = async () => {
     try {
@@ -48,7 +50,6 @@ const PMList = () => {
   }, []);
 
 
-  console.log(pms[0],'this are pms')
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -66,6 +67,12 @@ const PMList = () => {
     try {
       const response = await CreatePmsApi({ uuid });
       setPopupType(response.status);
+      if(response.status === "success"){
+        if(screen === 'qr'){
+          navigation.navigate("ScannedWoTag",{ uuid:QrUuid, type:type });
+      }else{
+        navigation.goBack()
+      }}
       setPopupMessage(response.message);
       setPopupVisible(true);
     } catch (error) {

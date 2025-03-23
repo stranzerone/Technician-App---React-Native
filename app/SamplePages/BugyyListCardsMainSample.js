@@ -81,7 +81,6 @@ const BuggyListCard = ({ item, onUpdateSuccess, WoUuId }) => {
     if (!result.cancelled) {
       const uploadResponse = await uploadImageToServer(result.assets[0].uri);
 
-      console.log(uploadResponse, "response for image in UI URL");
       setInputValue(uploadResponse.url); // Update input value with the uploaded image URL
     }
   };
@@ -91,7 +90,6 @@ const BuggyListCard = ({ item, onUpdateSuccess, WoUuId }) => {
       try {
         const { uri, name, mimeType } = selectedFile;
         const uploadResponse = await uploadImageToServer(uri, name, mimeType, WoUuId);
-        console.log('Image uploaded:', uploadResponse);
         setIsImageSelected(false); // Hide OK button after upload
       } catch (error) {
         console.error('Error uploading image:', error);

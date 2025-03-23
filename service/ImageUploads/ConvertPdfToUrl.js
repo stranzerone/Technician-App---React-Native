@@ -4,7 +4,6 @@ import { UpdateInstructionApi } from '../BuggyListApis/UpdateInstructionApi';
 import { API_URL3 } from '@env';
 
 export const uplodPdfToServer = async (data, itemId, WoUuId) => {
-  console.log(data, itemId, WoUuId, "API called for pdf");
 
   try {
     // Fetch user information from AsyncStorage
@@ -25,7 +24,6 @@ export const uplodPdfToServer = async (data, itemId, WoUuId) => {
       return false;
     }
 
-    console.log(data, 'data for uploadint to server')
     // API URL for image upload
     // const apiUrl = `https://drs-api.isocietymanager.com/v1/society/${societyId}/publicupload`;
 
@@ -39,7 +37,6 @@ export const uplodPdfToServer = async (data, itemId, WoUuId) => {
       type: data.mimeType, // MIME type (e.g., image/jpeg)
     });
 
-    console.log("FormData for upload:", formData);
 
     // Append user-id and api-token to the form data
     formData.append('user-id', userId);
@@ -54,10 +51,8 @@ export const uplodPdfToServer = async (data, itemId, WoUuId) => {
 
     // Handle the response from the image upload
     if (response.data.status === 'success') {
-      console.log('Image successfully uploaded:', response.data);
 
       // Call UpdateInstructionApi with the image URL and metadata
-      console.log(response.data.data.url,'data for uploadint to server url')
       const updateInstResponse = await UpdateInstructionApi({
         id: itemId,
         value: response.data.data.url, // Uploaded image URL

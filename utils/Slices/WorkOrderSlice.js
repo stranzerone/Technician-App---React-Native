@@ -56,7 +56,6 @@ const workOrdersSlice = createSlice({
     updateWorkOrderStatus: (state, action) => {
       const { id, status } = action.payload;
       const workOrder = state.data.find((item) => item.wo.uuid == id);
-console.log(workOrder,"data to update redux")
       if (workOrder) {
         workOrder.wo.Status = status; // Update the status in all work orders
       }

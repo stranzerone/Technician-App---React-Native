@@ -30,7 +30,6 @@ const AddWorkOrderScreen = () => {
 
   const navigation = useNavigation()
   const handleSubmit = async () => {
-    console.log(name, dueDate, estimatedTime, selectedAsset);
     if (!name || !selectedAsset) {
       setPopupType('error');
       setPopupMessage('Please fill in all fields before submitting.');
@@ -47,7 +46,6 @@ const AddWorkOrderScreen = () => {
       type: typeSelected,
     };
 
-    console.log(workOrderData);
     try {
       await submitWorkOrder(workOrderData);
       setPopupType('success');

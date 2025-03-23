@@ -24,7 +24,7 @@ import CommentInput from './CommentInput';
 import { RenderComment } from './CommentCards';
 import ImageViewing from "react-native-image-viewing";
 const ComplaintCloseScreen = ({ route }) => {
-  const { complaint } = route.params;
+  const { complaint,category,creator } = route.params;
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [isOtpMode, setIsOtpMode] = useState(false);
@@ -59,7 +59,6 @@ const ComplaintCloseScreen = ({ route }) => {
     };
   }, []);
 
-console.log(complaint,'this is complaint check')
 
   const fetchComments = async () => {
     try {
@@ -75,7 +74,6 @@ console.log(complaint,'this is complaint check')
     if (newComment.trim()) {
       try {
         setIsPosting(true);
-        console.log(data,'on handleAddComment')
         await PostMyComment(complaint.id, data.remarks, data.file);
         fetchComments();
         setNewComment('');
@@ -90,7 +88,7 @@ console.log(complaint,'this is complaint check')
   };
 
   const handleCloseComplaint = () => {
-    if (complaint.ask_otp === '1') {
+    if (complaint.ask_otp === 1) {
       setIsOtpMode(true);
     } else {
       setPopupConfig({
@@ -117,6 +115,7 @@ console.log(complaint,'this is complaint check')
               setPopupConfig({
                 type: 'error',
                 message: response.message || 'Failed to close the complaint.',
+                onOk:() => setPopupVisible(false)
               });
               setPopupVisible(true);
             }
@@ -124,6 +123,7 @@ console.log(complaint,'this is complaint check')
             setPopupConfig({
               type: 'error',
               message: 'An error occurred. Please try again.',
+              onOk:() => setPopupVisible(false)
             });
             setPopupVisible(true);
             navigation.goBack()
@@ -142,6 +142,7 @@ console.log(complaint,'this is complaint check')
       setIsOtpMode(false);
       try {
         const response = await CloseComplaintApi(complaint, otp);
+        console.log(response,"this is resonse for close complaint")
         if (response.status === 'success') {
           setPopupConfig({
             type: 'success',
@@ -157,7 +158,7 @@ console.log(complaint,'this is complaint check')
         } else {
           setPopupConfig({
             type: 'error',
-            message: response.message || 'Failed to close the complaint.',
+            message: <Text className='font-bold'>Incorrect OTP. Please check and try again.</Text>,
           });
           setPopupVisible(true);
         }
@@ -165,6 +166,7 @@ console.log(complaint,'this is complaint check')
         setPopupConfig({
           type: 'error',
           message: 'An error occurred. Please try again.',
+          onOk:() => setPopupVisible(false)
         });
         setPopupVisible(true);
         
@@ -216,18 +218,73 @@ console.log(complaint,'this is complaint check')
 <Text className=" bg-green-400 text-white font-extrabold px-2 py-1 rounded-full ">{complaint.status}</Text>
 
 </View>
+
+
+
+<View>
+
+
+<View className="flex-row items-center mb-3">
+        <Text className="text-base font-semibold text-gray-600 w-24">Category    :</Text>
+        <Text className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+          {category}
+        </Text>
+      </View>
+  { creator &&    <View className="flex-row items-center mb-3">
+  <Text className="text-base font-semibold text-gray-600 w-24">Created By :</Text>
+  
+  <View className="flex-row items-center  bg-gray-600 px-3 py-1 rounded-lg">
+    <FontAwesome name="user" size={14} color="white" className="mr-1" />
+    <Text className="text-white font-bold text-sm ml-1">{creator}</Text>
+  </View>
+</View>}
+
+</View>
+
+
+
+
+
+{complaint && (
+  <View className="flex  justify-between items-start mt-2 gap-2">
+    
+    {/* Display Unit */}
+ { complaint?.display_unit_no &&  <View className="flex-row items-center   py-1 rounded-lg">
+      {/* <FontAwesome name="map-marker" size={16} color="#D32F2F" className="mr-2" /> */}
+      <Text> Display Unit : </Text>
+      <Text className="text-black bg-gray-200 px-2 rounded-md ml-1 font-bold">
+        {complaint.display_unit_no || 'N/A'}
+      </Text>
+    </View>
+}
+    {/* Reference Unit */}
+ { complaint?.reference_unit_no  &&  <View className="flex-row items-center  py-1 rounded-lg">
+      {/* <FontAwesome name="link" size={16} color="#F57C00" className="mr-2" /> */}
+      <Text> Ref. Unit      : </Text>
+      <Text className="text-black bg-gray-300 px-2 rounded-md ml-1 font-bold">
+        {complaint.reference_unit_no ? 
+        complaint.resource.reference_unit_no.slice(0, 10) + "..." : 'N/A'}
+      </Text>
+    </View>}
+
+  </View>
+)}
+
+
+
+
           <Text className="text-gray-600 bg-gray-100 p-2 rounded-lg font-bold mt-2">{complaint.description}</Text>
           <View className="flex-row mt-2">
             <Text className="text-gray-600">Created on: </Text>
             <Text className="text-black font-bold">{useConvertToIST(complaint.created_at)}</Text>
           </View>
-          <View className="flex-row items-center justify-between mt-4">
+          <View className="flex-row items-center justify-end mt-4">
             {complaint.status !== 'Closed' && complaintPermissions.some((permission) => permission.includes('U')) && (
               <TouchableOpacity
                 className="bg-blue-500 px-4 py-2 rounded-lg"
                 onPress={handleCloseComplaint}
               >
-                <Text className="text-white font-semibold">Close Complaint</Text>
+                <Text className="text-white font-extrabold">Close Complaint</Text>
               </TouchableOpacity>
             )}
           </View>

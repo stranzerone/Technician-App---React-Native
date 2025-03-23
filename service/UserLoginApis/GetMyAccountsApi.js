@@ -11,7 +11,6 @@ export const GetMyAccounts = async (token) => {
     const requestUrl = `${API_URL2}/getmyaccounts?token=${token}`;
     // Make the GET request
     const response = await axios.get(requestUrl);
-    console.log(response.data, "API data on OTP login get accounts");
     return response.data; // Return the data from the response
   } catch (error) {
     // Handle error

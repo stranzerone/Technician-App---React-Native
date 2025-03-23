@@ -3,7 +3,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from '@env';
 
 const GetAssets = async (text) => {
-  console.log(text,"text received")
   try {
     // Fetch user information from AsyncStorage
     const userInfo = await AsyncStorage.getItem('userInfo');

@@ -1,188 +1,173 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, Dimensions, FlatList } from 'react-native';
+import { 
+  View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, 
+  Dimensions, FlatList, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard 
+} from 'react-native';
 import { GetAllMyComplaints } from '../../service/ComplaintApis/GetMyAllComplaints';
-import { FontAwesome } from '@expo/vector-icons'; // Import icons from FontAwesome
+import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
-const { width } = Dimensions.get('window'); // Get the screen width
+
+const { width } = Dimensions.get('window');
 
 const ComplaintDropdown = () => {
-  const [complaints, setComplaints] = useState([]); // State to hold complaints
-  const [loading, setLoading] = useState(true); // State to manage loading
-  const [expandedComplaintId, setExpandedComplaintId] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(''); // State for search query
- 
+  const [complaints, setComplaints] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const { notificationsCount } = usePermissions();
-    const navigation = useNavigation()
-  // Fetch complaints when the component mounts
-  useEffect(() => {
+  const navigation = useNavigation();
 
-    console.log("fetching complaints")
+  useEffect(() => {
     const fetchComplaints = async () => {
       try {
         const response = await GetAllMyComplaints();
-        if (response && response.data) {
-          const complaintsArray = Object.values(response.data);
-          setComplaints(complaintsArray); // Update state with fetched complaints
+        if (response?.data) {
+          setComplaints(Object.values(response.data));
         }
       } catch (error) {
         console.error("Error fetching complaints:", error);
       } finally {
-        setLoading(false); // Set loading to false after the API call
+        setLoading(false);
       }
     };
 
-    fetchComplaints(); // Call the fetch function
-  }, [notificationsCount]); // Empty dependency array to run only on mount
+    fetchComplaints();
+  }, [notificationsCount]);
 
-  // Toggle complaint expansion
-  const toggleComplaint = (id) => {
-    setExpandedComplaintId((prevId) => (prevId === id ? null : id));
-  };
-
-  // Filter complaints based on search query
   const filteredComplaints = complaints.filter(complaint =>
     complaint.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Render a square card for each complaint category
   const renderComplaintCard = ({ item }) => {
-    // Split the complaint name into two parts
     const [firstLine, secondLine] = item.name.split(' (');
-    const firstLetter = firstLine.trim().charAt(0).toUpperCase(); // Get the first letter of the first line
+    const firstLetter = firstLine.trim().charAt(0).toUpperCase();
 
     return (
-      <TouchableOpacity key={item.id} style={styles.cardContainer} onPress={()=>navigation.navigate('subComplaint',{ subCategory: item.sub_catagory,category:item})}>
+      <TouchableOpacity 
+        key={item.id} 
+        style={styles.cardContainer} 
+        onPress={() => navigation.navigate('subComplaint', { subCategory: item.sub_catagory, category: item })}
+      >
         <View style={styles.circleContainer}>
           <Text style={styles.circleText}>{firstLetter}</Text>
         </View>
         <Text style={styles.cardText}>{firstLine.trim()}</Text>
-        {secondLine && (
-          <Text style={styles.cardText}>
-            {'(' + secondLine}
-          </Text>
-        )}
+        {secondLine && <Text style={styles.cardText}>{'(' + secondLine}</Text>}
       </TouchableOpacity>
     );
   };
 
   return (
-    <View style={styles.scrollContainer}>
-      <View style={styles.searchContainer} className='h-[10%] z-50'>
-     
-     <View className="bg-blue-500 p-4   rounded-l-md">
-     <FontAwesome name="search" size={20} color="white" style={styles.searchIcon} />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.flexContainer}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.flexContainer}
+        >
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <View style={styles.searchIconContainer}>
+              <FontAwesome name="search" size={20} color="white" />
+            </View>
+            <TextInput
+              style={styles.searchBar}
+              placeholder="Search Category..."
+              placeholderTextColor="#B0B0B0"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
 
-      </View> 
-
-        <TextInput
-          style={styles.searchBar}
-          placeholder="Search Categroy..."
-          placeholderTextColor="#B0B0B0"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
+          {/* Complaints List */}
+          {loading ? (
+            <ActivityIndicator size="large" color="#1996D3" style={styles.loader} />
+          ) : (
+            <FlatList
+              contentContainerStyle={styles.listContainer}
+              data={filteredComplaints}
+              renderItem={renderComplaintCard}
+              keyExtractor={(item) => item.id.toString()}
+              ListEmptyComponent={<Text style={styles.noResultsText}>No complaints found.</Text>}
+              showsVerticalScrollIndicator={false}
+              numColumns={2}
+              keyboardShouldPersistTaps="handled"
+            />
+          )}
+        </KeyboardAvoidingView>
       </View>
-      {loading ? (
-        <ActivityIndicator size="large" color="#1996D3" style={styles.loader} />
-      ) : (
-        <View className="mt-1 h-[90%]">
-        <FlatList
-          contentContainerStyle={styles.container}
-          data={filteredComplaints}
-          renderItem={renderComplaintCard}
-          keyExtractor={(item) => item.id.toString()} // Use id as key
-          ListEmptyComponent={<Text style={styles.noResultsText}>No complaints found.</Text>} // Show when no complaints match the filter
-          showsVerticalScrollIndicator={false} // Hide vertical scroll indicator
-          numColumns={2} // Display two cards per row
-        />
-        </View>
-      )}
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollContainer: {
+  flexContainer: {
     flex: 1,
-    backgroundColor: '#F9F9F9', // Light background for the whole view
-  },
-  container: {
-    marginTop: 60, // Adjusted to reduce space above
-    paddingBottom: 20, // Adjust bottom padding for a cleaner look
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    paddingBottom:150,
-  },
-  headerText: {
-    fontSize: 22,
-    fontWeight: 'normal', // Lighter font weight
-    marginBottom: 10,
-    color: '#074B7C',
-    textAlign: 'center',
+    backgroundColor: '#F9F9F9',
   },
   searchContainer: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    right: 10,
     flexDirection: 'row',
     alignItems: 'center',
-  paddingHorizontal: 10, // Horizontal padding for the container
+    margin: 10,
+    borderRadius: 8,
+    backgroundColor: 'white',
+    elevation: 3,
+  },
+  searchIconContainer: {
+    backgroundColor: '#1996D3',
+    padding: 15,
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
   },
   searchBar: {
     flex: 1,
-    height: 50, // Increased height for better visibility
-    backgroundColor: '#FFFFFF', // White background for the search bar
-    borderColor: '#1996D3',
-    borderWidth: 1,
-    borderTopLeftRadius:0,
-    borderBottomLeftRadius:0,
-    borderRadius: 8,
-    paddingLeft: 40, // Added left padding for space with the icon
+    height: 50,
     fontSize: 16,
+    paddingLeft: 10,
+    backgroundColor: 'white',
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
   },
-
+  listContainer: {
+    paddingBottom: 150,
+    paddingHorizontal: 10,
+  },
   cardContainer: {
-    backgroundColor: '#FFFFFF', // White background for the card
-    width: '48%', // 2 cards per row
-    aspectRatio: 1, // This makes it square
+    backgroundColor: '#FFFFFF',
+    width: '48%',
+    aspectRatio: 1,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 10,
-    margin: 5, // Margin between cards
+    margin: 5,
     marginTop: 10,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
   },
   cardText: {
-    color: '#074B7C', // Text color matching your theme
-    fontWeight: 'normal', // Lighter font weight
+    color: '#074B7C',
+    fontWeight: 'normal',
     textAlign: 'center',
     marginTop: 5,
-    fontSize: Math.max(14, width * 0.04), // Responsive font size
-    flexWrap: 'wrap', // Ensure text wraps properly
+    fontSize: Math.max(14, width * 0.04),
+    flexWrap: 'wrap',
   },
   circleContainer: {
-    width: 40, // Width of the circle
-    height: 40, // Height of the circle
-    borderRadius: 20, // Make it circular
-    backgroundColor: '#1996D3', // Background color of the circle
-    justifyContent: 'center', // Center the text vertically
-    alignItems: 'center', // Center the text horizontally
-    marginBottom: 5, // Space below the circle
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#1996D3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 5,
   },
   circleText: {
-    color: '#FFFFFF', // White color for the letter
-    fontSize: 18, // Font size for the letter
-    fontWeight: 'bold', // Bold weight for the letter
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   noResultsText: {
     fontSize: 16,

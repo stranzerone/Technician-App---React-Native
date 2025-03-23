@@ -4,7 +4,6 @@ import { API_URL2 } from '@env';
 
 export const LogMeInWithOtp = async (data) => {
   // const baseUrl = 'https://api.isocietymanager.com/logmein';
-  console.log(data, "data received in API");
 
   // Construct the payload properly
   const payload = {
@@ -19,12 +18,10 @@ export const LogMeInWithOtp = async (data) => {
     activated: data.data.activated
   };
 
-  console.log(payload, "payload for logmein");
 
   try {
     // Construct the request URL with query parameters
     const requestUrl = `${API_URL2}/logmein?token=${data.token}`;
-    console.log(requestUrl, "constructed URL");
 
     // Make the POST request
     const response = await axios.post(requestUrl, payload);
@@ -40,7 +37,6 @@ export const LogMeInWithOtp = async (data) => {
       return response.data;
     } else {
       // Handle unsuccessful login attempts (return full response for more details)
-      console.log("else condition")
       return {
         status: 'error',
         message: response.data.message || 'Login failed, please check your details.'

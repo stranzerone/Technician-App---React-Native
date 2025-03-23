@@ -8,7 +8,6 @@ export const GetNotificationsApi = async (page = 1) => {
     let getOldNotifications = await AsyncStorage.getItem('oldNotifications');
     let getNewNotifications = await AsyncStorage.getItem('newNotifications');
 
-    console.log('called api notifications api')
     // Initialize notifications if not set
     if (!getNewNotifications) {
       await AsyncStorage.setItem('newNotifications', '0');

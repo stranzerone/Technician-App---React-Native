@@ -10,7 +10,6 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const UserCard = ({ visible, onClose, users, onSelectUser }) => {
-  console.log(users, 'users');
   const renderUser = ({ item }) => (
     <TouchableOpacity style={styles.userCard} onPress={() => onSelectUser(item)}>
       <View style={styles.userInfo}>

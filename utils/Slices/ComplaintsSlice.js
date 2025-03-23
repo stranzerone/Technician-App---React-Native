@@ -7,7 +7,6 @@ export const fetchComplaints = createAsyncThunk(
   'complaints/fetchComplaints',
   async () => {
     const response = await GetAllMyComplaints(); // Call the API function
-    console.log("added complaints to redux")
     return response; // Return the entire response data
   }
 );

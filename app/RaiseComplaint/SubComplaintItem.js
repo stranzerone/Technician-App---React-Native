@@ -11,7 +11,6 @@ const SubComplaint = ({ route }) => {
   const navigation = useNavigation();
 
 
-  console.log(category,'this is category')
   // Filter complaints based on search query
   const filteredComplaints = subCategory.filter(complaint =>
     complaint.name.toLowerCase().includes(searchQuery.toLowerCase())

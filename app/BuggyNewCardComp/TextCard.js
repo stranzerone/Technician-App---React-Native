@@ -11,9 +11,12 @@ import RemarkCard from "./RemarkCard";
 import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
 import { UpdateInstructionApi } from "../../service/BuggyListApis/UpdateInstructionApi";
 import Icon from "react-native-vector-icons/FontAwesome";
+import useConvertToSystemTime from "../TimeConvertot/ConvertUtcToIst";
 
 const TextCard = ({ item, onUpdate, editable, type }) => {
   const [value, setValue] = useState(item.result || "");
+
+  const updatedTime =useConvertToSystemTime(item?.updated_at)
 
   const handleBlur = async () => {
     try {
@@ -61,14 +64,24 @@ const TextCard = ({ item, onUpdate, editable, type }) => {
 
         <RemarkCard item={item} editable={editable} />
 
-        {item?.data?.optional && (
-          <View className="flex-1 bg-transparent justify-end py-4">
+     
+<View className="flex-1 bg-transparent justify-end  px-4 py-2 mt-4 h-8">
+
+   { item.result || item?.data?.optional ?  
+    <View >
+{item.result &&  <Text className="text-gray-500 text-[11px]  font-bold">
+   Updated at : {updatedTime}
+  </Text>}
+
+          </View>:null}
+          {item?.data?.optional && (
             <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
               <Icon name="info-circle" size={16} color="red" />
-              <Text className="text-sm text-black mr-2">Optional</Text>
+              <Text className="text-xs text-red-800 font-bold mr-2">Optional</Text>
             </View>
+                  )}
           </View>
-        )}
+  
       </View>
     </KeyboardAvoidingView>
   );

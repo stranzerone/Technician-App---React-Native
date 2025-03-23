@@ -6,12 +6,16 @@ import { uploadImageToServer } from "../../service/ImageUploads/ConvertImageToUr
 import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
 import RemarkCard from "./RemarkCard";
 import Icon from 'react-native-vector-icons/FontAwesome';
+import useConvertToSystemTime from "../TimeConvertot/ConvertUtcToIst";
+import ImageViewing from "react-native-image-viewing";
 
 const FileCard = ({ item,onUpdate ,editable}) => {
   const [capturedImage, setCapturedImage] = useState(item.result || null); // Use item.result as initial value
   const [hasPermission, setHasPermission] = useState(null);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false); // State to control modal visibility
+
+  const updatedTime =useConvertToSystemTime(item?.updated_at)
 
   useEffect(() => {
     (async () => {
@@ -43,6 +47,8 @@ const FileCard = ({ item,onUpdate ,editable}) => {
           mimeType: "image/jpeg",
         };
 
+
+        console.log(fileData,'this is filedata')
         // Upload image to the server
         const uploadResponse = await uploadImageToServer(fileData, item.id, item.ref_uuid);
 
@@ -59,7 +65,7 @@ const FileCard = ({ item,onUpdate ,editable}) => {
 
   return (
     <View
-      className={`shadow-md rounded-lg p-4 mb-4 `}
+      className={`shadow-md rounded-lg p-4  `}
       
       style={[
         styles.inputContainer,
@@ -111,20 +117,35 @@ const FileCard = ({ item,onUpdate ,editable}) => {
         }
       />
 
+<View className="flex-1 bg-transparent justify-end  px-4 py-2 mt-4 h-8">
 
-        {item?.data?.optional &&   
-            <View className="flex-1 bg-transparent justify-end py-4 ">
-            <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
-           
-              <Icon name="info-circle" size={16} color="red" />
-              <Text className="text-sm text-black mr-2">
-                Optional
-              </Text>
-            </View>
-          </View>}
+         { item.result || item?.data?.optional ?  
+    <View >
+      {item.result &&  <Text className="text-gray-500 text-[11px]  font-bold">
+         Updated at : {updatedTime}
+        </Text>}
+       
+                </View>:null}
+                {item?.data?.optional && (
+                  <View className="flex-row justify-end gap-1 items-center absolute bottom-2 right-0">
+                    <Icon name="info-circle" size={16} color="red" />
+                    <Text className="text-xs text-red-800 font-bold mr-2">Optional</Text>
+                  </View>
+                        )}
+         </View>       
       </View>
       {/* Modal to View Full Image */}
-      <Modal
+
+
+      {modalVisible && (
+      <ImageViewing
+        images={[{ uri: capturedImage }]}
+        imageIndex={0}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      />
+    )}
+      {/* <Modal
         visible={modalVisible}
         transparent={true}
         animationType="fade"
@@ -144,7 +165,7 @@ const FileCard = ({ item,onUpdate ,editable}) => {
             />
           </View>
         </View>
-      </Modal>
+      </Modal> */}
     </View>
   );
 };

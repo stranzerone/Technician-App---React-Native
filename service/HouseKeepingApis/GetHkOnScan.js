@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
 export const getLocationHk = async (uuid,status) => {
-    console.log(uuid,"uuid received on getLocationWorkOrderHK")
 //https://nppm-api.isocietymanager.com/v3/workorder/assigned/asset?
   try {
     // Fetch user info and uuid from AsyncStorage
@@ -18,7 +17,6 @@ export const getLocationHk = async (uuid,status) => {
     // Parse userInfo and access data object inside it
     const parsedUserInfo = JSON.parse(userInfo);
 
-    console.log(parsedUserInfo.data)
       // Extract user_id (id) and api_token
       const userId = parsedUserInfo.data.id; 
       const apiToken = parsedUserInfo.data.api_token;
@@ -41,13 +39,11 @@ export const getLocationHk = async (uuid,status) => {
     };
 
 
-   console.log(params,"this are params for wo lo")
     // Make the API request
     const response = await axios.get(`${API_URL}/v5/housekeeping/location?`, {params});
     // Check the response data
-    console.log(response.data.data[0].wo,"response data for location HK" )
     const data = response.data.data;
-
+console.log(data,'this is hk data')
   return data
 
   } catch (error) {

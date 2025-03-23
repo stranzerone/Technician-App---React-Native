@@ -19,7 +19,6 @@ const AssetCard = ({ searchQuery, onClose, onSelect }) => {
         }
 
         const data = await GetAssets(searchQuery);
-        console.log(data, "data on asset search");
         setAssets(data.data || []);
         setStatus('succeeded');
       } catch (error) {

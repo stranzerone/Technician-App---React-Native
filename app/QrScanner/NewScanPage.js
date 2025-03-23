@@ -56,7 +56,7 @@ export default function MainScannerPage() {
 
   const handleAssetSelect = (item) => {
     setShowOptions(false); // Hide list after selection
-    navigation.navigate("ScannedWoTag", { uuid: item.uuid, type: "AST" });
+    navigation.navigate("ScannedWoTag", { uuid: item.uuid, type: "AS" });
   };
 
   return (

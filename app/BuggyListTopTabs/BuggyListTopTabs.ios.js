@@ -25,7 +25,6 @@ const TabNavigationPage = ({route}) => {
     navigation.goBack(); 
   };
 
-  console.log(uuid,wo,hasPermission,"this is ios data")
   const renderContent = () => {
     if (selectedTab === 0) {
       return  <BuggyListPage   uuid={uuid}  wo={wo}/>; 

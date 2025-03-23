@@ -9,15 +9,14 @@ export const PermissionsProvider = ({ children }) => {
   const [ppmAsstPermissions, setPpmAsstPermissions] = useState([]);
   const [complaintPermissions, setComplaintPermissions] = useState([]);
   const [instructionPermissions, setInstructionPermissions] = useState([]);
+  const [ppmWorkorder,setPpmWorkorder] = useState([])
  const [complaintFilter,setComplaintFilter]  = useState("Open")
   const loadPermissions = async () => {
- console.log("inside call permissions")
     try {
       const savedPermissions = await AsyncStorage.getItem('userInfo');
      
       if (savedPermissions) {
         const userInfo = JSON.parse(savedPermissions); // Parse the stored string into an object
-        console.log("after load permission in context",userInfo.permissions)
 
         if (userInfo.permissions) {
           // const filteredPermissions = userInfo.permissions
@@ -56,11 +55,13 @@ export const PermissionsProvider = ({ children }) => {
         complaintPermissions,
         instructionPermissions,
         complaintFilter,
+        ppmWorkorder,
         setComplaintFilter,
         setPpmAsstPermissions,
         setComplaintPermissions,
         setInstructionPermissions,
-        loadPermissions, // Expose the function
+        loadPermissions,
+        setPpmWorkorder
       }}
     >
       {children}

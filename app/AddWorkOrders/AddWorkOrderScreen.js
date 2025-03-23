@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   TextInput
 } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons'; // Added MaterialIcons
+import { FontAwesome, FontAwesome6, Ionicons, MaterialIcons } from '@expo/vector-icons'; // Added MaterialIcons
 import TypeSelector from './OptionsInputs/AddType';
 import TaskInput from './TextInput/TextInputs';
 import PrioritySelector from './OptionsInputs/PriorityInput';
@@ -20,20 +20,25 @@ import { submitWorkOrder } from '../../service/AddWorkOrderApis/CreateWorkOrderA
 import { useNavigation } from '@react-navigation/native';
 import GetAssets from '../../service/AddWorkOrderApis/FetchAssests';
 
-const AddWorkOrderScreen = () => {
+const AddWorkOrderScreen = ({screen,type,uuid}) => {
   const [name, setName] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  const [dueDate, setDueDate] = useState(null);
   const [estimatedTime, setEstimatedTime] = useState('');
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [priority, setPriority] = useState("Normal");
   const [typeSelected, setTypeSelected] = useState("Panned");
+  const [breakdownHours, setBreakdownHours] = useState("");
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupType, setPopupType] = useState('success');
   const [popupMessage, setPopupMessage] = useState('');
   const [assets, setAssets] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [buttonLoading,setButtonLoading]  = useState(false)
 const[optionsOpen,setOpen]  = useState(false)
+const [dropdownOpen, setDropdownOpen] = useState(false);
+const [workOrderType, setWorkOrderType] = useState("workorder");
+
   const navigation = useNavigation();
 
 
@@ -45,51 +50,64 @@ const[optionsOpen,setOpen]  = useState(false)
     setSelectedAsset(null);
     setPriority("Normal");
     setTypeSelected("");
+    setBreakdownHours("");
   };
 
 
   const handleSubmit = async() => {
+    setButtonLoading(true)
     const workOrderData = {
       name,
       dueDate,
       priority,
       estimatedTime,
+      woType:workOrderType,
       asset: selectedAsset,
       type: typeSelected,
+      breakdownHours: workOrderType === "breakdown" ? breakdownHours : null,
     };
+    
     try {
 
-      if (!name || !selectedAsset) {
+      console.log(workOrderData,'this is data for wo')
+      if (!name || !typeSelected || !dueDate || !priority) {
         setPopupType('error');
         setPopupMessage('Please fill in all fields before submitting.');
         setPopupVisible(true);
         return;
       }
-  
-   
-    const response =  await submitWorkOrder(workOrderData);
      
-    console.log(response.status)
+    const response =  await submitWorkOrder(workOrderData);
     if(response.status == "success"){
-      console.log(response.status)
       setPopupType('success');
       setPopupMessage('Work order submitted successfully!');
       setPopupVisible(true);
-      navigation.navigate('WorkOrderHomeTab');
-      resetForm();
+      if(screen === 'qr'){
+        resetForm();
+        setTimeout(()=>{
+        navigation.navigate('ScannedWoTag', { uuid:uuid, type:type });
+      },2000)
+      }else{
+        resetForm();
+        setTimeout(()=>{
+      navigation.goBack();
+        },2000)
+      }
+     
     }
-    console.log(response.data)
 
     } catch (error) {
       console.log(error,'this is error for adding wo')
       setPopupType('error');
       setPopupMessage('Failed to submit work order. Please try again.');
       setPopupVisible(true);
+    }finally{
+      
+      setButtonLoading(false)
     }
   };
 
   const handleSelectAsset = (asset) => {
-    console.log(asset,"this is selected asset")
     setSelectedAsset(asset);
     clearSearch()
     setOpen(false)
@@ -128,6 +146,46 @@ const[optionsOpen,setOpen]  = useState(false)
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.formContainer}>
+
+
+          <View className="flex flex-row justify-between items-center mb-4">
+  {/* Work Order Type Dropdown */}
+  <View className="flex-1 relative">
+    <Text className="text-gray-700 text-md font-bold mt-2">WorkOrder Type</Text>
+    <TouchableOpacity
+      onPress={() => setDropdownOpen(!dropdownOpen)}
+      className="flex-row bg-white border border-gray-400 justify-between rounded-md w-[85vw] items-center px-4 py-2"
+    >
+      <Text className="text-gray-700">{workOrderType || "Select Type"}</Text>
+      <FontAwesome name={dropdownOpen ? "chevron-up" : "chevron-down"} size={16} color="gray" />
+    </TouchableOpacity>
+
+    {dropdownOpen && (
+      <View className="bg-white border border-gray-300 rounded-md shadow-md absolute left-0 mt-16 right-0 z-50">
+        {["workorder", "breakdown"].map((item) => (
+      <TouchableOpacity
+      key={item}
+      onPress={() => {
+        setWorkOrderType(item);
+        setDropdownOpen(false);
+      }}
+      className="flex-row border-b border-gray-300 items-center last:border-b-0 px-4 py-2"
+    >
+      {/* Blue Dot */}
+      <View className="bg-blue-500 h-3 rounded-full w-3 mr-2"></View>
+    
+      {/* Text */}
+      <Text className="text-black font-bold">{item}</Text>
+    </TouchableOpacity>
+    
+        ))}
+      </View>
+    )}
+  </View>
+
+  {/* Breakdown Hours Input (Only if Breakdown is selected) */}
+
+</View>
 
             {/* Search Input with Search & Clear Icons */}
             <View style={styles.searchContainer}>
@@ -168,10 +226,19 @@ const[optionsOpen,setOpen]  = useState(false)
             <View style={styles.rowContainer}>
               <View style={styles.inputContainer}>
                 <TypeSelector onTypeSelect={setTypeSelected} />
+ <View className ='flex-row items-center '>
+      
+      <Text className='text-[10px] text-red-500 ml-1'><FontAwesome6 name="star-of-life" size={8} color="red" /> mandatory</Text>
+    </View>    
               </View>
-              <View style={styles.inputContainer}>
+              <View  style={styles.inputContainer}>
                 <PrioritySelector onPrioritySelect={setPriority} />
-              </View>
+         <View className ='flex-row items-center'>
+      
+          <Text className='text-[10px] text-red-500 ml-1'><FontAwesome6 name="star-of-life" size={8} color="red" /> mandatory</Text>
+    </View>    
+    
+                  </View>
             </View>
 
             <View style={styles.formSection}>
@@ -179,13 +246,21 @@ const[optionsOpen,setOpen]  = useState(false)
                 onChangeName={setName}
                 onChangeDueDate={setDueDate}
                 onChangeEstimatedTime={setEstimatedTime}
+                workOrderType={workOrderType}
+                onChangeBreakDonwHours={setBreakdownHours}
               />
             </View>
 
+
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Create Work Order</Text>
-              </TouchableOpacity>
+            { buttonLoading ?    
+            <View style={styles.button}>
+      <Text style={styles.buttonText}>Creating...</Text>
+
+           </View>
+            : <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                <Text style={styles.buttonText}>Create {workOrderType}</Text>
+              </TouchableOpacity>}
             </View>
           </View>
         </ScrollView>
@@ -210,11 +285,12 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     height: 50,
     textAlign:'center',
+    width:"97%",
     borderWidth: 1,
     borderRadius: 12,
     borderColor: "#074B7C",
     paddingHorizontal: 10,
-    marginVertical: 15,
+    marginVertical: 1,
   },
   searchIcon: {
     backgroundColor:"#074B7C",
@@ -230,7 +306,7 @@ const styles = StyleSheet.create({
     justifyContent:"flex-start",
     paddingVertical: 14,
     paddingHorizontal: 16,
-    marginVertical: 6,
+    marginVertical: 1,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#074B7C",
