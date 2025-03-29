@@ -23,7 +23,7 @@ import CardRenderer from '../BuggyNewCardComp/CardsMainScreen';
 import { Platform } from 'react-native';
 import InfoCard from './InstructionDetails';
 
-const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime,id,type,sequence}) => {
+const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime,id,type,sequence,handleBuggyChange}) => {
   const [data, setData] = useState([]);
   const [assetDescription, setAssetDescription] = useState(''); 
   const [loading, setLoading] = useState(false);
@@ -124,8 +124,8 @@ const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime,id,type,sequence}) 
 
   const toggleExpand = () => {
     const finalValue = expanded ? 0 : 1; 
-    setExpanded(!expanded);
-
+    // setExpanded(!expanded);
+    handleBuggyChange(false)
     Animated.timing(animation, {
       toValue: finalValue,
       duration: 100,
@@ -248,6 +248,10 @@ const styles = StyleSheet.create({
   expandButtonContainer: {
 // bottom: 80,
 left:10,
+  },
+  progressBarContainer:{
+   marginBottom: Platform.OS === "ios"?  10:null,
+   marginLeft: Platform.OS ==="ios" ? 20 :null,
   },
   expandButton: {
     width: 50,

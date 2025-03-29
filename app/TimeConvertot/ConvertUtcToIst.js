@@ -2,7 +2,6 @@
 import { useMemo } from 'react';
 
 const useConvertToSystemTime = (utcDate) => {
-  console.log(utcDate, 'this is date of die');
 
   const convertToSystemTime = useMemo(() => {
     if (!utcDate || typeof utcDate !== 'string') return 'Invalid Date';

@@ -30,6 +30,28 @@ export default function QrScanner({ onRefresh }) {
       setTimeout(() => setShowCamera(true), 2000); // Ensure camera shows after delay
     }, [])
   );
+  useEffect(() => {
+    setShowCamera(true); // Delay camera rendering
+
+    return () => {
+      setShowCamera(false); // Delay camera rendering
+
+      console.log("Page Left: QrScanner unmounted or screen changed");
+    };
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setShowCamera(true); // Delay camera rendering
+
+      return () => {
+        setShowCamera(false); // Delay camera rendering
+
+        console.log("Page Left: QrScanner lost focus");
+      };
+    }, [])
+  );
+  
 
   const handleBarcodeScanned = async ({ data }) => {
     setScanned(true);

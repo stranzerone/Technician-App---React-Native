@@ -373,11 +373,7 @@ const StoreSociety = async() =>{
           },
           
           headerRight: renderLogoutButton,
-          headerLeft: Platform.OS === 'ios' ? () => (
-            <View style={styles.societyNameContainer}>
-              <Text style={styles.societyNameText}>{user?.name}</Text>
-            </View>
-          ) : () => (
+          headerLeft: () => (
       <View className="flex flex-row border-1 h-12 justify-start rounded-r-md gap-1 items-start" style={styles.logoContainer}>
 {siteLogo &&
   <Image
@@ -396,7 +392,7 @@ const StoreSociety = async() =>{
 </View>
 
           ),
-          headerTitle: Platform.OS === "ios" ? "" : null, // Hide title on Android
+          
 
           headerStyle: { backgroundColor: '#1996D3' },
           headerTintColor: '#fff',

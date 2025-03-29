@@ -52,7 +52,7 @@ const AssetInfo = ({ WoUuId }) => {
 
   // Map user IDs to user names for assigned users
   useEffect(() => {
-    if (users[0] !== 'error' && workOrder && workOrder[0]?.wo?.Assigned) {
+    if (users[0] !== 'error' && workOrder && workOrder[0]?.wo?.Assigned  && users[1]) {
       const assignedUserIds = workOrder[0].wo.Assigned;
       const assignedNames = assignedUserIds
         ?.map((id) => {
@@ -96,7 +96,7 @@ const AssetInfo = ({ WoUuId }) => {
         </View>
 
         {/* Description Section */}
-        <View className="mt-2 border-t border-gray-400 pt-2 max-h-20 overflow-hidden">
+        <View className="border-gray-400 border-t max-h-20 mt-2 overflow-hidden pt-2">
   <ScrollView 
     className="px-2" 
     contentContainerStyle={{ flexGrow: 1 }}

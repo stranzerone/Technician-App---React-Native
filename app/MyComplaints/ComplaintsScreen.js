@@ -98,6 +98,7 @@ const ComplaintsScreen = () => {
         </View>
 
           <TouchableOpacity
+          onPress={() => navigation.navigate('RaiseComplaint')}
           disabled={!complaintPermissions.some((permission) => permission.includes('C'))}
           style={[
             styles.addButton,

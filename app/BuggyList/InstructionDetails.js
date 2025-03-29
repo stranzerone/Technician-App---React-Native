@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { GetWorkOrderInfo } from "../../service/WorkOrderApis/GetWorkOrderInfo";
 import { UpdateWorkOrder } from "../../service/WorkOrderApis/UpdateWorkOrderApi";
 import { ScrollView } from "react-native";
 import { GetCategory } from "../../service/GetCategoryInfo";
@@ -111,12 +110,12 @@ setCategory(cat?.Name)
       </View>
 
       <View className="flex-row flex-wrap gap-2">
-        <View className="flex-row items-center bg-blue-200 px-2 py-1 rounded-md">
+        <View className="flex-row items-center bg-blue-200 px-1 py-1 rounded-md">
           <FontAwesome name="id-badge" size={16} color="#074B7C" />
           <Text className="ml-2 font-bold text-sm text-blue-800">{wo["Sequence No"]}</Text>
         </View>
 
-{ category && <View className="flex-row items-center bg-green-200 px-2 py-1 rounded-md">
+{ category && <View className="flex-row items-center bg-green-200 px-1 py-1 rounded-md">
 <FontAwesome name="folder" size={16} color="#074B7C" />
 <Text className="ml-2 font-bold text-sm text-green-800">
   {category?.length > 12 ? category.slice(0, 12) + "..." : category}
@@ -124,13 +123,13 @@ setCategory(cat?.Name)
 </View>}
 
 
-        <View className="flex-row items-center bg-yellow-100 px-2 py-1 rounded-md">
+        <View className="flex-row items-center bg-yellow-100 px-1 py-1 rounded-md">
           <FontAwesome name="exclamation-circle" size={16} color="#074B7C" />
           <Text className="ml-2 font-bold text-sm text-black">{wo.Type}</Text>
         </View>
 
         {wo.wo_restriction_time &&(
-          <View className={`flex-row items-center bg-white border-2 ${restricted?"border-red-400":"border-green-400"} px-2 py-1 rounded-md`}>
+          <View className={`flex-row items-center bg-white border-2 ${restricted?"border-red-400":"border-green-400"} px-1 py-1 rounded-md`}>
             <FontAwesome name="clock-o" size={16} color="black" />
             <Text className={`ml-2 font-black text-sm   ${restricted?"text-red-500":"text-green-500"}`} >{restricted?null:"In"} {formattedTime} {restricted?"ago":null}</Text>
           </View>
