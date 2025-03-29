@@ -73,10 +73,17 @@ const createdByName = getUserNames(data.created_by);
 
 
 <View>
-{myCat && <View className="flex flex-row gap-1 my-2 items-center " >
+{myCat && <View className="flex flex-row gap-1 items-center my-2" >
 <Icon name="list-alt" size={16} color="#60A5FA" />
 
-  <Text className="font-bold">Category : </Text><Text className="bg-blue-400 rounded-lg text-white font-bold px-2 py-1">{myCat}</Text>
+<Text className="font-bold">Category : </Text>
+<Text 
+  className="bg-blue-400 rounded-lg text-white font-bold max-w-[70%] px-1 py-1"
+  numberOfLines={1}
+  ellipsizeMode="tail"
+>
+  {myCat}
+</Text>
 </View>}
 </View>
       {/* Description (Truncated) */}
@@ -87,7 +94,7 @@ const createdByName = getUserNames(data.created_by);
 
      { createdByName &&  <View style={styles.infoItem}>
           <Icon name="user" size={16} color="#074B7C" />
-          <Text className="font-bold " style={styles.infoText}>Created By: {createdByName}</Text>
+          <Text className="font-bold" style={styles.infoText}>Created By: {createdByName}</Text>
         </View>}
      
         <View style={styles.infoItem}>

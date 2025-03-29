@@ -138,13 +138,13 @@ const [workOrderType, setWorkOrderType] = useState("workorder");
   };
 
   return (
-    <SafeAreaView style={styles.screenContainer}>
+    <SafeAreaView  style={styles.screenContainer} >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+        behavior={Platform.OS === 'ios' ? 'height' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <ScrollView  contentContainerStyle={styles.scrollContainer}>
           <View style={styles.formContainer}>
 
 
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop:15,
     justifyContent: 'space-between',
-    marginBottom: 25,
+    marginBottom: 5,
   },
   inputContainer: {
     flex: 1,

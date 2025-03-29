@@ -8,6 +8,7 @@ import {
   TextInput,
   Modal,
   Image,
+  SafeAreaView
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import FilterOptions from './WorkOrderFilter';
@@ -31,7 +32,7 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
   const [loading, setLoading] = useState(false);
   const [inputNumber, setInputNumber] = useState('');
   const [refreshing, setRefreshing] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   
   const type = route?.params?.type || null;
   const uuid = route?.params?.uuid || passedUuid || null;
@@ -168,6 +169,7 @@ const permissionToAdd = ppmWorkorder.some((permission) => permission.includes('C
 
 
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#1996D3' }}>
     <View style={styles.container}className="text-center">
       <View style={styles.topHeader}   >
      
@@ -330,6 +332,7 @@ const permissionToAdd = ppmWorkorder.some((permission) => permission.includes('C
         }}
       />
     </View>
+</SafeAreaView>
   );
 };
 

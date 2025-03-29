@@ -9,12 +9,7 @@ import OtpLogin from './app/Login/OtpLogin/OtpLoginScreen';
 import OtpEnterPage from './app/Login/OtpLogin/OtpEnterPage';
 import { PermissionsProvider } from './app/GlobalVariables/PermissionsContext';
 import FilteredWorkOrderPage from './app/WorkOrders/ScannedWorkOrderScreen';
-import WorkOrderPage from "./app/WorkOrders/WorkOrderScreen"
-import SubComplaint from './app/RaiseComplaint/SubComplaintItem';
-import NewComplaintPage from './app/RaiseComplaint/CompaintInput';
-import ComplaintCloseScreen from './app/MyComplaints/CloseComplaint';
-import ComplaintDropdown from './app/RaiseComplaint/ComplaintDropdown';
-import BuggyListTopTabs from './app/BuggyListTopTabs/BuggyListTopTabsQr.android';
+import BuggyListTopTabs from './app/BuggyListTopTabs/BuggyListTopTabsQr';
 import UpdateAppScreen from './app/TabNavigatorsWo/VersionHandler';
 const Stack = createNativeStackNavigator();
 
