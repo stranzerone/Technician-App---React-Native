@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     maxWidth: 80,
-    maxHeight: 80,
+    maxHeight: 50,
     borderRadius: 5,
   },
   headerText: {

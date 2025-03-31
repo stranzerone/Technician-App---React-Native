@@ -235,6 +235,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   otpLinkText: {
+    textDecorationLine:"underline",
     color: '#074B7C',
     fontWeight: 'bold',
     fontSize: 16,

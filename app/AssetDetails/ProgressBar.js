@@ -3,13 +3,9 @@ import { View, TextInput, TouchableOpacity, Text, StyleSheet, Modal } from 'reac
 import * as Progress from 'react-native-progress';
 import { usePermissions } from '../GlobalVariables/PermissionsContext';
 import { MarkAsCompleteApi } from '../../service/BuggyListApis/MarkAsCompleteApi';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import { CommonActions } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
-import { updateWorkOrderStatus } from '../../utils/Slices/WorkOrderSlice';
-import { GetWorkOrderInfo } from '../../service/WorkOrderApis/GetWorkOrderInfo';
-import { GetSiteUuid } from '../../service/GetSiteInfo';
+import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 
 const ProgressPage = ({ data, wo,canComplete,id,sequence }) => {
   const [remark, setRemark] = useState('');
@@ -17,7 +13,7 @@ const ProgressPage = ({ data, wo,canComplete,id,sequence }) => {
   const [count, setCount] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [canMarkComplete, setCanMarkComplete] = useState(false); // New state to track the button visibility condition
-  const { ppmAsstPermissions } = usePermissions();
+ const [popUp,setPopUp] = useState(false)
   const navigation = useNavigation();
 
 
@@ -69,9 +65,6 @@ if(mandatoryItems.length === manCount){
 
   
   const handleComplete = async () => {
-    console.log(sequence,'thi sis sequcne in wait')
-
-
 if(!remark){
   alert('Please Enter Remark To Mark As Complete')
 }else{
@@ -84,21 +77,21 @@ if(!remark){
 
 
       if (response) {
-        // Once the status update is successful, navigate
-    if(id){
-
-navigation.goBack()
-    }else{
-         navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'Home' }],
-                  })
-                );
-    }
-        
-        
+        setPopUp(true)
+        setTimeout(() => {
+          if (id) {
+            navigation.goBack();
+          } else {
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'Home' }],
+              })
+            );
+          }
+        }, 1500); // ⏳ Delay navigation by 2 seconds
       }
+      
     } catch (error) {
       console.error('Error marking as complete:', error);
     }
@@ -197,6 +190,8 @@ navigation.goBack()
           </View>
         </View>
       </Modal>
+     
+    {  popUp && <DynamicPopup message={"Successfully Marked As Complete"} type={'success'}   /> }
     </View>
   );
 };
