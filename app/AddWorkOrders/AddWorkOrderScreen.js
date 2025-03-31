@@ -80,7 +80,11 @@ const [workOrderType, setWorkOrderType] = useState("workorder");
     const response =  await submitWorkOrder(workOrderData);
     if(response.status == "success"){
       setPopupType('success');
+      if(workOrderType==="breakdown"){
+        setPopupMessage('Breakdown created  successfully!');
+      }else{
       setPopupMessage('Work order submitted successfully!');
+      }
       setPopupVisible(true);
       if(screen === 'qr'){
         resetForm();

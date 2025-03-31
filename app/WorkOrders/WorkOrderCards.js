@@ -316,7 +316,7 @@ null
         getTeamName(workOrder.wo.AssignedTeam).split(", ").filter((name) => name && name.trim() !== "").map((name, index) => (
           <View
           key={`team-${index}`}
-          className="bg-green-200 rounded-md mb-2 mr-2 px-3"
+          className="bg-green-200 rounded-md text-xs mb-1 ml-1 mr-1 px-2 py-0.5"
           style={{ maxWidth: 110 }} // Adjust maxWidth as needed
         >
           <Text

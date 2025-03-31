@@ -10,20 +10,14 @@ import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import NewScanPage from '../QrScanner/NewScanPage';
 import WorkOrderHomeTab from '../TabNavigatorsWo/WoTabsNavigators';
-import AddWorkOrderForm from '../AddWorkOrders/AddWorkOrderScreen';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faBellConcierge, faList, faQrcode, faBell, faPager, faFileLines, faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 import { usePermissions } from '../GlobalVariables/PermissionsContext'; // Use your PermissionsContext
 import NotificationMainPage from '../Notification/NotificationScreen';
-import { GetNotificationsApi } from '../../service/NotificationsApis/GetNotificationsApi';
-import ImageUploadScreen from '../SamplePges/UploadImage';
-import LogWorkOrders from '../../service/BuggyListApis/GetReduxAllInstructions';
-import BuggyListComponent from '../SamplePages/SampleReduxBLcards';
 import ComplaintDropdown from '../RaiseComplaint/ComplaintDropdown';
 import ComplaintsScreen from '../MyComplaints/ComplaintsScreen';
 import RequestServiceTabs from '../ServiceTab/RequestServiceTopTabs';
-import WorkOrderPage from '../WorkOrders/WorkOrderScreen';
 import ComplaintCloseScreen from '../MyComplaints/CloseComplaint';
 import SubComplaint from '../RaiseComplaint/SubComplaintItem';
 import NewComplaintPage from '../RaiseComplaint/CompaintInput';
@@ -35,7 +29,6 @@ import { clearAllTeams, fetchAllTeams } from '../../utils/Slices/TeamSlice';
 import { clearAllUsers, fetchAllUsers } from '../../utils/Slices/UsersSlice';
 import { Keyboard } from 'react-native';
 import { GetSiteUuid } from '../../service/GetSiteInfo';
-import UpdateAppScreen from '../TabNavigatorsWo/VersionHandler';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -478,16 +471,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   logoContainer: {
-    height:60,
+    height:50,
     justifyContent: "start",
     paddingHorizontal: 10,
-    width: "70%",
+    width: "80%",
     alignItems: "center",
   },
   
   logo: {
     maxWidth: 80,
-    maxHeight: 80,
+    maxHeight: 45,
     borderRadius: 5,
 
 },

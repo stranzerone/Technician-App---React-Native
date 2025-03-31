@@ -180,7 +180,7 @@ const permissionToAdd = ppmWorkorder.some((permission) => permission.includes('C
   style={[styles.logo, { borderRadius: 48, overflow: 'hidden' }]} 
   resizeMode="contain" />}
 </View>
-<View>
+<View className="w-1/3"> 
   <Text className="text-lg text-start text-white font-bold pl-2">{listType?"HouseKeeping Wo":breakdownActive?"Breakdowns" :"Work Orders"}</Text>
 
   </View>
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   },
     logo: {
       maxWidth: 80,
-      maxHeight: 80,
+      maxHeight: 45,
       borderRadius: 5,
 
   },
