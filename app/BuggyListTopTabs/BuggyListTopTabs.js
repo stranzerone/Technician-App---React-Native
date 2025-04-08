@@ -29,7 +29,6 @@ const BuggyListTopTabs = ({ route }) => {
   const handleBuggyChange = (value) =>{
 
     setCommentOpen(value)
-    console.log("Comment Open",isCommentOpen)
   }
 
   // Render scenes with full width

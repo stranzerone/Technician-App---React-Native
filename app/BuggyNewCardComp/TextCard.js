@@ -15,9 +15,7 @@ import useConvertToSystemTime from "../TimeConvertot/ConvertUtcToIst";
 
 const TextCard = ({ item, onUpdate, editable, type }) => {
   const [value, setValue] = useState(item.result || "");
-
   const updatedTime =useConvertToSystemTime(item?.updated_at)
-
   const handleBlur = async () => {
     try {
       const payload = {
@@ -69,7 +67,7 @@ const TextCard = ({ item, onUpdate, editable, type }) => {
 
    { item.result || item?.data?.optional ?  
     <View >
-{item.result &&  <Text className="text-gray-500 text-[11px]  font-bold">
+{item.result && updatedTime &&  <Text className="text-gray-500 text-[11px]  font-bold">
    Updated at : {updatedTime}
   </Text>}
 

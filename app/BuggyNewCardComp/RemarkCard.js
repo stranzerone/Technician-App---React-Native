@@ -32,7 +32,6 @@ const RemarkCard = ({ item,editable }) => {
     try {
       // Call the API to update the remark value
       const response = await UpdateInstructionApi(payload);
-      console.log(response, "response for remark");
     } catch (error) {
       console.error("Error updating remark:", error);
     }

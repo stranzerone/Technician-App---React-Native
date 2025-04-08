@@ -36,7 +36,7 @@ const ComplaintCard = ({ data,categroy }) => {
 
 const getUserNames = (assignedId) => {
   if (!assignedId) {
-    return 'Team';
+    return false;
   }
 
   if (users[0] === 'success') {
@@ -44,7 +44,7 @@ const getUserNames = (assignedId) => {
     return user ? user.name : null;
   }
 
-  return 'User Not Found';
+  return false;
 };
 
 

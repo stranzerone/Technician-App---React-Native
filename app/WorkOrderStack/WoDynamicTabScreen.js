@@ -12,8 +12,6 @@ const WorkOrderHomeTab = () => {
   // Refresh logic that will run every time the tab is focused
   useFocusEffect(
     useCallback(() => {
-      console.log("refresh page");
-      // Add any other logic you need to refresh data here
     }, [])
   );
 
@@ -24,7 +22,7 @@ const WorkOrderHomeTab = () => {
         // Use paramUuId if present, otherwise use stored uuid
         <WorkOrderPage nullUuId={null} />
       ) : (
-        <AccessDeniedScreen onRefresh={() => console.log("refresh page")} /> // Pass the refresh function
+        <AccessDeniedScreen  /> // Pass the refresh function
       )}
     </View>
   );

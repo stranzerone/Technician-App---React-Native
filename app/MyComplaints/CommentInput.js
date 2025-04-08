@@ -15,12 +15,14 @@ import { FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { useNavigation } from '@react-navigation/native';
 
 const CommentInput = ({ value, onChangeText, onSubmit, isPosting }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageBase64, setImageBase64] = useState(null);
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
 
+  const navigation = useNavigation()
   // Function to compress and convert the image to Base64
   const compressAndConvertToBase64 = async (uri) => {
     try {
@@ -30,6 +32,7 @@ const CommentInput = ({ value, onChangeText, onSubmit, isPosting }) => {
         { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG } // Compress quality
       );
 
+   
       const base64 = await FileSystem.readAsStringAsync(manipulatedImage.uri, {
         encoding: FileSystem.EncodingType.Base64,
       });
@@ -64,24 +67,20 @@ const CommentInput = ({ value, onChangeText, onSubmit, isPosting }) => {
   };
 
   // Handle capturing an image with the camera
-  const handleCaptureImage = async () => {
-    try {
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: false,
-        quality: 1,
-      });
-
-      if (!result.canceled) {
-        const imageUri = result.assets[0].uri;
+  const handleCaptureImage = () => {
+    navigation.navigate('CameraScreen', {
+      onPictureTaken: async (imageUri) => {
         setImagePreview(imageUri);
-
-        const base64 = await compressAndConvertToBase64(imageUri);
-        setImageBase64(base64);
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to capture an image. Please try again.');
-    }
+        try {
+          const base64 = await compressAndConvertToBase64(imageUri);
+          setImageBase64(base64);
+        } catch (error) {
+          Alert.alert('Error', 'Failed to process the captured image.');
+        }
+      },
+    });
   };
+  
 
   // Handle submitting the comment
   const handleSubmit = () => {

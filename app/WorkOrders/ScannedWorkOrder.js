@@ -60,10 +60,8 @@ const FilteredWorkOrderPage = ({ route, uuids: passedUuid }) => {
     try {
       let response;
       if (type === 'LC') {
-        console.log('Fetching location work orders...');
         response = await getLocationWorkOrder(uuid);
       } else {
-        console.log('Fetching asset work orders...');
         response = await GetSingleWorkOrders(uuid);
       }
       if (response && response.length > 0) {

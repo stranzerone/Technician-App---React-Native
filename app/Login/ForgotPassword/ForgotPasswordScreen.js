@@ -6,7 +6,6 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
   const handleForgotPassword = () => {
     // Handle forgot password logic (e.g., API call)
-    console.log('Requesting password reset for', email);
     // Optionally, navigate to another screen or show a success message
   };
 

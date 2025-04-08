@@ -11,6 +11,7 @@ import { PermissionsProvider } from './app/GlobalVariables/PermissionsContext';
 import FilteredWorkOrderPage from './app/WorkOrders/ScannedWorkOrderScreen';
 import BuggyListTopTabs from './app/BuggyListTopTabs/BuggyListTopTabsQr';
 import UpdateAppScreen from './app/TabNavigatorsWo/VersionHandler';
+import CameraScreen from "./app/GlobalVariables/CameraScreen";
 const Stack = createNativeStackNavigator();
 
 export default function MainNavigation() {
@@ -46,6 +47,8 @@ export default function MainNavigation() {
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           <Stack.Screen options={{ title:"Request OTP"}} name="OtpLogin" component={OtpLogin} />
           <Stack.Screen  options={{ title:"OTP Verification"}} name="OtpEnter" component={OtpEnterPage} />
+          <Stack.Screen  options={{ title:"Camera"}} name="CameraScreen" component={CameraScreen} />
+
           <Stack.Screen
       name="ScannedWoTag"
       component={FilteredWorkOrderPage}

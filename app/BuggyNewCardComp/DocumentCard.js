@@ -28,17 +28,11 @@ const DocumentCard = ({ item, onUpdate, editable }) => {
           Alert.alert("Error", "The selected file is too large. Please upload a file smaller than 10MB.");
           return;
         }
-
-
-
-        console.log(result,'this is result for file uplod')
         const fileData = {
           uri: result.assets?.[0]?.uri,
           fileName: result.assets?.[0]?.name,
           mimeType: result.assets?.[0]?.mimeType,
         };
-        console.log(fileData,'this is filedata for file uplod')
-
         setSelectedFile(result);
         setIsUploading(true);
 
@@ -136,7 +130,7 @@ const DocumentCard = ({ item, onUpdate, editable }) => {
 
    { item.result || item?.data?.optional? 
      <View >
-{item.result &&  <Text className="text-gray-500 text-[11px]  font-bold">
+{item.result && updatedTime &&   <Text className="text-gray-500 text-[11px]  font-bold">
    Updated at : {updatedTime}
   </Text>}
 

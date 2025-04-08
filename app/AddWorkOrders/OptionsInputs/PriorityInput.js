@@ -13,7 +13,6 @@ const OptionSelector = ({ onPrioritySelect }) => {
   ];
 
   const handleOptionSelect = (option) => {
-    console.log(option,"this is selected")
     setSelectedOption(option); // Update local state
     onPrioritySelect(option); // Call the prop function to send the selected option to the parent
     setIsModalVisible(false); // Close the modal after selection

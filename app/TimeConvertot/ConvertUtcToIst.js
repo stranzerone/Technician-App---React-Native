@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 const useConvertToSystemTime = (utcDate) => {
 
   const convertToSystemTime = useMemo(() => {
-    if (!utcDate || typeof utcDate !== 'string') return 'Invalid Date';
+    if (!utcDate || typeof utcDate !== 'string') return null;
 
     try {
       // Detect the system's time zone

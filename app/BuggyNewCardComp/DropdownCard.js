@@ -91,7 +91,7 @@ const DropdownCard = ({ item, onUpdate,editable }) => {
 
          { item.result || item?.data?.optional ? 
     <View >
-      {selectedValue &&  <Text className="text-gray-500 text-[11px]  font-bold">
+      {selectedValue && updatedTime &&    <Text className="text-gray-500 text-[11px]  font-bold">
          Updated at : {updatedTime}
         </Text>}
     

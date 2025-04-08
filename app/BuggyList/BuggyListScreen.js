@@ -35,8 +35,6 @@ const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime,id,type,sequence,ha
   const navigate = useNavigation();
  
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-
-
   // Function to fetch buggy list data
 
   const loadBuggyList = async () => {
@@ -226,6 +224,7 @@ const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime,id,type,sequence,ha
         wo={wo}
         canComplete={setCancomplete}
         sequence={sequence}
+        restricted={restricted}
       />
       </View>}
     </View>

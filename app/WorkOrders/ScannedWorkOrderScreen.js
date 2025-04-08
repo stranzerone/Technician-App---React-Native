@@ -62,36 +62,37 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
   );
 
 
-
-
-const fetchWorkOrders = async () => {
-  setLoading(true);
-
-  try {
-    let response = [];
-    if (type === 'LC') {
-      response = listType
-        ?
-        await getLocationHk(uuid, selectedFilter, breakdownActive)
-        
-        : 
-        await getLocationWorkOrder(uuid, selectedFilter, breakdownActive)
-
-    } else {
-      response = await GetSingleWorkOrders(uuid, selectedFilter, breakdownActive);
+  const fetchWorkOrders = async () => {
+    setLoading(true);
+  
+    try {
+      let response = [];
+  
+      if (type === 'LC') {
+        const [responseTrue, responseFalse] = await Promise.all([
+          getLocationWorkOrder(uuid, selectedFilter, true),
+          getLocationWorkOrder(uuid, selectedFilter, false)
+        ]);
+  
+        response = [...responseTrue, ...responseFalse];
+      } else {
+        const [responseTrue, responseFalse] = await Promise.all([
+          GetSingleWorkOrders(uuid, selectedFilter, true),
+          GetSingleWorkOrders(uuid, selectedFilter, false)
+        ]);
+  
+        response = [...responseTrue, ...responseFalse];      }
+  
+      // Ensure response is an array before setting state
+      setWorkOrders(response || []);
+    } catch (error) {
+      console.error('Error fetching work orders:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false); // Stop refreshing
     }
-
-
-    // Ensure response is an array before setting state
-    setWorkOrders(response || []);
-  } catch (error) {
-    console.error('Error fetching work orders:', error);
-  } finally {
-    setLoading(false);
-    setRefreshing(false); // Stop refreshing
-
-  }
-};
+  };
+  
 
 
 
@@ -116,7 +117,6 @@ const permissionToAdd = ppmWorkorder.some((permission) => permission.includes('C
 
   useEffect(() => {
     const currentRoute = navigation.getState().routes[navigation.getState().index].name;
-    console.log("Current Screen Name:", currentRoute);
   }, [navigation]);
   
 
@@ -260,7 +260,7 @@ const permissionToAdd = ppmWorkorder.some((permission) => permission.includes('C
   </TouchableOpacity> */}
 
 
-
+{/* 
   <TouchableOpacity
   
     className={`${breakdownActive?"bg-red-500":"bg-white text-red-400 border border-red-400"} p-1 rounded-md w-[35vw] flex flex-row justify-center items-center`}
@@ -269,7 +269,7 @@ const permissionToAdd = ppmWorkorder.some((permission) => permission.includes('C
 
 <Text className={` ${breakdownActive?"text-white":"text-red-400"} font-extrabold text-md`}>Breakdowns</Text>
 
-  </TouchableOpacity>
+  </TouchableOpacity> */}
 
 
 </View>

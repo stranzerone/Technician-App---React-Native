@@ -5,7 +5,6 @@ import QrScanner from "./QrScannerComp";
 import fetchQrAssets from "../../service/AddWorkOrderApis/FetchAssetsforQr"; 
 import { useNavigation } from "@react-navigation/native";
 import { usePermissions } from "../GlobalVariables/PermissionsContext";
-
 export default function MainScannerPage() {
   const [scanned, setScanned] = useState(false);
   const [options, setOptions] = useState([]);
@@ -93,10 +92,17 @@ export default function MainScannerPage() {
           data={options}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.assetButton} onPress={() => handleAssetSelect(item)}>
-              <Text style={styles.assetText}>{item.label}</Text>
-              <Ionicons name="chevron-forward" size={20} color="#074B7C" />
-            </TouchableOpacity>
+            <TouchableOpacity
+            className = "flex-row items-center gap-2 p-3 mb-2 border-b-2 bg-white rounded-lg shadow-md hover:shadow-lg"
+            onPress={() => handleAssetSelect(item)}
+          >
+<Ionicons name="cube" className="mt-4" size={15} color="#074B7C" />
+
+            <Text className ="text-lg  text-gray-600 font-medium flex-1">
+              {item.label}
+            </Text>
+            <Ionicons name="chevron-forward" size={20} color="#074B7C" />
+          </TouchableOpacity>
           )}
           ListEmptyComponent={<Text style={styles.noDataText}>No assets found</Text>}
         />

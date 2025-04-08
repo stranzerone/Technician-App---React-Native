@@ -9,7 +9,9 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  
 } from 'react-native';
 import otpSvg from "../../../assets/SvgImages/otp.png";
 import validateOtp from '../../../service/LoginWithOtp/ValidateOtpApi';
@@ -30,6 +32,7 @@ const OtpPage = ({ route }) => {
   const [showUserCard, setShowUserCard] = useState(false);
   const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
   const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(false); 
   const navigation = useNavigation();
 
   const handleChangeText = useCallback((text, index) => {
@@ -52,8 +55,10 @@ const OtpPage = ({ route }) => {
   };
 
   const handleVerifyOtp = async () => {
+   
     const otpString = otp.join('');
     if (otpString.length === 4) {
+      setLoading(true);
       try {
         const response = await validateOtp(data.id, otpString);
         if (response.status === 'success') {
@@ -93,6 +98,8 @@ const OtpPage = ({ route }) => {
           message: 'Failed to verify OTP. Please try again later.',
         });
         setPopupVisible(true);
+      }finally{
+        setLoading(false);
       }
     } else {
       setPopupData({
@@ -105,15 +112,18 @@ const OtpPage = ({ route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined} // Adjusts for iOS; use 'height' for Android
+    >
+
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <SafeAreaView style={styles.scrollViewContainer}>
       <View style={styles.topContainer} />
 
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={90}
-      >
-        <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+ 
+        {/* <ScrollView contentContainerStyle={styles.scrollViewContainer}> */}
           <View style={styles.imageUriContainer}>
             <Image source={otpSvg} style={styles.imageUri} resizeMode="contain" />
           </View>
@@ -146,16 +156,16 @@ const OtpPage = ({ route }) => {
             onPress={handleVerifyOtp}
             disabled={attemptsRemaining === 0}
           >
-            <Text style={styles.verifyOtpButtonText}>Verify OTP</Text>
+           {loading ? <Text style={styles.verifyOtpButtonText}>verifying</Text> : <Text style={styles.verifyOtpButtonText}>Verify OTP</Text>}
           </TouchableOpacity>
 
           <View style={styles.textContainer}>
             <Text style={styles.attemptsText}>Attempts remaining: {attemptsRemaining}</Text>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        {/* </ScrollView> */}
+              {/* <View style={styles.bottomContainer} /> */}
 
-      <View style={styles.bottomContainer} />
+
 
       {/* Dynamic Popup for OTP Verification */}
       <DynamicPopup
@@ -176,6 +186,8 @@ const OtpPage = ({ route }) => {
         />
       )}
     </SafeAreaView>
+    </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 

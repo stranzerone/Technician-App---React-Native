@@ -63,7 +63,7 @@ const updatedTime =useConvertToSystemTime(item?.updated_at)
 <View className="flex-1  justify-end bg-transparent px-4 py-2 mt-4 h-8">
       { item.result || item?.data?.optional ?  
     <View >
-{<Text className="text-gray-500 text-[11px]  font-bold">
+{updatedTime &&  item?.result && <Text className="text-gray-500 text-[11px]  font-bold">
    Updated at : {updatedTime}
   </Text>}
 

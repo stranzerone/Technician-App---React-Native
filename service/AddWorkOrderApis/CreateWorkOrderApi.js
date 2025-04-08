@@ -11,11 +11,17 @@ export const submitWorkOrder = async (workOrderData) => {
   try {
     const userInfo = await AsyncStorage.getItem('userInfo');
     const societyInfo = await AsyncStorage.getItem('societyInfo');
-
-
+    const storedStatusesString = await AsyncStorage.getItem('statusUuid');
+    const storedStatuses = storedStatusesString ? JSON.parse(storedStatusesString) : [];
     if (!userInfo) {
       throw new Error("User info not found");
     }
+    const getStatusUuid = (statusName) => {
+
+      const status = storedStatuses?.find(item => item.Name === statusName);
+      console.log(status,'this is the status')
+      return status ? status.uuid : ""; // Return found UUID or empty string if not found
+    };
 
     const parsedUserInfo = JSON.parse(userInfo);
     const userId = parsedUserInfo.data.id;
@@ -33,7 +39,6 @@ export const submitWorkOrder = async (workOrderData) => {
       })
     };
 
-    console.log(workOrderData.dueDate,'this is the due date')
         const payload = {
       "Name": workOrderData.name,
       "Type": workOrderData.type,
@@ -46,16 +51,14 @@ export const submitWorkOrder = async (workOrderData) => {
       "asset_uuid": workOrderData.asset?.uuid || '',
       "breakdown": workOrderData.woType === "breakdown", 
       "Status": "OPEN",
-      "status_uuid": "bac5f1f1-78c3-4d51-85cf-249e2f09b775",
+      "status_uuid": getStatusUuid("OPEN"),
       "site_uuid":site_uuid,
       "created_by": userId
     };
-
+    console.log(payload,"this is due data")
 
     // Pass payload as the second argument and headers as the third argument
     const response = await axios.post(`${API_URL}/v3/`+workOrderData.woType, payload, { headers });
-
-    console.log(response.data,'this is response for adding wo')
     return response.data; // Return the response data if needed
   } catch (error) {
     console.error('API Error:', error);

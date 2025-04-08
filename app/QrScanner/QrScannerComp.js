@@ -35,8 +35,6 @@ export default function QrScanner({ onRefresh }) {
 
     return () => {
       setShowCamera(false); // Delay camera rendering
-
-      console.log("Page Left: QrScanner unmounted or screen changed");
     };
   }, []);
 
@@ -46,8 +44,6 @@ export default function QrScanner({ onRefresh }) {
 
       return () => {
         setShowCamera(false); // Delay camera rendering
-
-        console.log("Page Left: QrScanner lost focus");
       };
     }, [])
   );

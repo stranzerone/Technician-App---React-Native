@@ -50,9 +50,25 @@ const AssetInfo = ({ WoUuId }) => {
     loadWorkOrderData();
   }, [WoUuId, teams]);
 
+  const getTeamName = (assignedTeamIds) => {
+    if (!assignedTeamIds || assignedTeamIds.length === 0) {
+      return null;
+    }
+    return assignedTeamIds
+      .map((teamId) => {
+        if (teamId) {
+          // Find the team in the teams array based on teamId
+          const team = teams?.find((team) => team.t._ID === teamId);
+          return team ? team.t.Name : 'Team Not Found';
+        }
+        return 'Team Not Found';
+      })
+      .join(', ');
+  };
+  
   // Map user IDs to user names for assigned users
   useEffect(() => {
-    if (users[0] !== 'error' && workOrder && workOrder[0]?.wo?.Assigned  && users[1]) {
+    if (users[0] !== 'error' && workOrder && workOrder[0]?.wo?.Assigned && users[1]) {
       const assignedUserIds = workOrder[0].wo.Assigned;
       const assignedNames = assignedUserIds
         ?.map((id) => {
@@ -60,9 +76,13 @@ const AssetInfo = ({ WoUuId }) => {
           return user ? user.name : 'Unknown User';
         })
         .join(', ') || 'None';
-      setNames(assignedNames);
+      const assignedTeamIds = workOrder[0]?.wo?.AssignedTeam || []; // Check the correct key
+      const teamNames = getTeamName(assignedTeamIds) || '';
+      setNames(assignedNames + (teamNames ? ` , ${teamNames}` : ''));
     }
-  }, [users, workOrder]);
+  }, [users, workOrder, teams]);
+  
+  
 
   // Show loading indicator while fetching data
   if (loading) {

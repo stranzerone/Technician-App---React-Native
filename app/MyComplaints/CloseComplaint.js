@@ -142,7 +142,6 @@ const ComplaintCloseScreen = ({ route }) => {
       setIsOtpMode(false);
       try {
         const response = await CloseComplaintApi(complaint, otp);
-        console.log(response,"this is resonse for close complaint")
         if (response.status === 'success') {
           setPopupConfig({
             type: 'success',
@@ -225,9 +224,9 @@ const ComplaintCloseScreen = ({ route }) => {
 
 
 <View className="flex-row items-center mb-3 mt-1">
-        <Text style={styles.text} className="text-base text-gray-600 w-24 font-semibold">Category  :</Text>
+        <Text style={styles.text} className=" text-gray-600 w-24 font-semibold ">Category  :</Text>
         <Text 
-  className="bg-blue-500 rounded-md text-sm text-white font-semibold max-w-[75%] px-3 py-1"
+  className="bg-blue-400 rounded-md text-sm text-white font-semibold max-w-[75%] px-2 py-1"
   numberOfLines={1}
   ellipsizeMode="tail"
 >
@@ -393,7 +392,7 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   text: {
-    fontSize: Platform.OS === 'ios' ? 14 : 18, // Reduce size by 20% only on iOS
+    fontSize: Platform.OS === 'ios' ? 14 : 15, // Reduce size by 20% only on iOS
   },
 });
 

@@ -10,10 +10,15 @@ export const MarkAsCompleteApi = async ({item,remark,sequence,siteUuid}) => {
 
   const parsedUserInfo = JSON.parse(userInfo);
  const parsedSocietyInfo = JSON.parse(societyInfo)
- 
- const v = sequence === "HK"?"v5":"v3"
-const name =  sequence === "HK"?"housekeeping":"workorder"
+ const storedStatusesString = await AsyncStorage.getItem('statusUuid');
+ const storedStatuses = storedStatusesString ? JSON.parse(storedStatusesString) : [];
 
+ const getStatusUuid = (statusName) => {
+
+  const status = storedStatuses?.find(item => item.Name === statusName);
+  console.log(status,'this is the status')
+  return status ? status.uuid : ""; // Return found UUID or empty string if not found
+};
   if (userInfo) {
     const userId = parsedUserInfo.data.id
     const apiToken = parsedUserInfo.data.api_token
@@ -26,10 +31,10 @@ const name =  sequence === "HK"?"housekeeping":"workorder"
     const payload = {
     Status: "COMPLETED",
     closed_by:userId,
-    // completed_at: new Date().toISOString().replace("T", " ").split(".")[0],
+    completed_at: new Date().toISOString().replace("T", " ").split(".")[0],
     site_uuid:site_uuid,
-    status_uuid:  "36891c87-60c5-4a0a-9e5c-e726e542f49f",
-    // updated_at: new Date().toISOString().replace("T", " ").split(".")[0] ,
+    status_uuid: getStatusUuid("COMPLETED"),
+    updated_at: new Date().toISOString().replace("T", " ").split(".")[0] ,
     updated_by: userId,
     instruction_remark:remark,
     uuid: item.uuid,
@@ -48,9 +53,8 @@ const name =  sequence === "HK"?"housekeeping":"workorder"
 
     try {
       // Send the PUT request
-      const response = await axios.put(`${API_URL}/${v}/${name}`, payload, { headers, withCredentials: true });
+      const response = await axios.put(`${API_URL}/v3/workorder`, payload, { headers, withCredentials: true });
       // Check if the response is as expected
-      console.log("Mark as complete response",response.data)
       if (response.data.status === 'success') {
         return true; // Return success
       } else {
