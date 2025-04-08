@@ -83,7 +83,7 @@ const NewComplaintPage = ({ route }) => {
         [{ resize: { width: 800 } }], // Resize image
         { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG } // Compress quality
       );
-  
+
       const base64 = await FileSystem.readAsStringAsync(manipulatedImage.uri, {
         encoding: FileSystem.EncodingType.Base64,
       });
@@ -98,47 +98,30 @@ const NewComplaintPage = ({ route }) => {
     }
   };
   
-  const pickImage = async () => {
-    setImageLoading(true); // Start the loading indicator when the user selects an image
+  const pickImage = () => {
+    navigation.navigate('CameraScreen', {
+      onPictureTaken: async (imageUri) => {
+        setImage(imageUri); // Preview image
   
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 0.5,
-    });
+        try {
+          setImageLoading(true);
   
-    console.log(result, 'image result');
-    if (!result.canceled) {
-      setImage(result.assets[0].uri); // Immediately show the image preview
+          const base64 = await compressAndConvertToBase64(imageUri);
   
-      try {
-        // Compress and convert the image to base64
-        const base64 = await compressAndConvertToBase64(result.assets[0].uri); // Await the promise here
-  
-        if (base64) {
-          const imageData = {
-            uri: result.assets[0].uri,
-            mimeType: result.assets[0].type,
-            base64: base64, // Pass the base64 value
-            fileName: result.assets[0].fileName, // You can set a custom file name if needed
-          };
-  
-          // Upload image and get the URL
-          const ImageResponse = true;
-          console.log(ImageResponse, 'this is image response');
-          setImageUrl(ImageResponse.data?.url); // Set image URL after successful upload
+          if (base64) {
+            setLongUrl(base64); // Use base64 directly as you're not uploading
+            setImageUrl(imageUri); // For display
+          }
+        } catch (error) {
+          console.error('Error processing image:', error);
+          Alert.alert('Error', 'Failed to process the image.');
+        } finally {
+          setImageLoading(false);
         }
-      } catch (error) {
-        console.error('Error uploading image:', error);
-      } finally {
-        setImageLoading(false); // End loading once the process is complete
-      }
-    } else {
-      setImageLoading(false); // End loading if no image was selected
-    }
+      },
+    });
   };
-      
-
+  
   
   const submitComplaint = async () => {
     setLoading(true); // Show loader during API request

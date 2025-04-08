@@ -7,27 +7,24 @@ import { useNavigation } from '@react-navigation/native';
 import { CommonActions } from '@react-navigation/native';
 import DynamicPopup from '../DynamivPopUps/DynapicPopUpScreen';
 
-const ProgressPage = ({ data, wo,canComplete,id,sequence }) => {
+const ProgressPage = ({ data, wo,canComplete,id,sequence,restricted }) => {
   const [remark, setRemark] = useState('');
   const [lock,setLock] = useState(false)
   const [count, setCount] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [canMarkComplete, setCanMarkComplete] = useState(false); // New state to track the button visibility condition
- const [popUp,setPopUp] = useState(false)
+  const [popUp,setPopUp] = useState(false)
   const navigation = useNavigation();
 
 
 
-
-  const mandatoryItems = data?.filter((item) => item?.data?.optional === false || item?.data == null);
+  const mandatoryItems = data?.filter((item) => item?.data?.optional !== true );
   useLayoutEffect(() => {
     let tempCount = 0;
     let manCount =0;
-
     mandatoryItems &&
       mandatoryItems.forEach((item) => {
         if (
-          item.remarks ||
           (item.type !== 'checkbox' && item.result && item.result.trim() !== '') ||
           (item.type === 'checkbox' && item.result !== '0' && item.result !== '' && item.result !== null && item.result !== undefined)
         ) {
@@ -49,7 +46,6 @@ if(mandatoryItems.length === manCount){
     data &&
       data.forEach((item) => {
         if (
-          item.remarks ||
           (item.type !== 'checkbox' && item.result && item.result.trim() !== '') ||
           (item.type === 'checkbox' && item.result !== '0' && item.result !== '' && item.result !== null && item.result !== undefined)
         ) {
@@ -116,10 +112,10 @@ if(!remark){
               className="flex flex-row bg-green-500 gap-1 py-1"
               style={[
                 styles.tickContainer,
-                wo.Status === 'COMPLETED' && styles.disabledTickContainer, // Apply faint style if completed
+                wo.Status === 'COMPLETED' || restricted && styles.disabledTickContainer, // Apply faint style if completed
               ]}
               onPress={() => wo.Status !== 'COMPLETED' && setModalVisible(true)} // Prevent opening modal if completed
-              disabled={wo.Status === 'COMPLETED'} // Disable button if completed
+              disabled={wo.Status === 'COMPLETED' || restricted} // Disable button if completed
             >
               <Text className="text-white text-xs font-black">{wo.Status === 'COMPLETED' ? 'Completed' : 'Mark As Complete'}</Text>
             </TouchableOpacity>

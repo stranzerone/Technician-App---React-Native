@@ -68,8 +68,6 @@ const [workOrderType, setWorkOrderType] = useState("workorder");
     };
     
     try {
-
-      console.log(workOrderData,'this is data for wo')
       if (!name || !typeSelected || !dueDate || !priority) {
         setPopupType('error');
         setPopupMessage('Please fill in all fields before submitting.');
@@ -101,7 +99,6 @@ const [workOrderType, setWorkOrderType] = useState("workorder");
     }
 
     } catch (error) {
-      console.log(error,'this is error for adding wo')
       setPopupType('error');
       setPopupMessage('Failed to submit work order. Please try again.');
       setPopupVisible(true);
@@ -193,7 +190,7 @@ const [workOrderType, setWorkOrderType] = useState("workorder");
 
             {/* Search Input with Search & Clear Icons */}
             <View style={styles.searchContainer}>
-              <Ionicons name="search" size={22} color="gray" style={styles.searchIcon} />
+              <Ionicons name="search" size={14} color="gray" style={styles.searchIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Search for an asset..."
@@ -213,7 +210,7 @@ const [workOrderType, setWorkOrderType] = useState("workorder");
         { optionsOpen &&   <ScrollView>
               {assets?.map((asset, index) => (
                 <TouchableOpacity key={index} style={styles.assetCard} onPress={() => handleSelectAsset(asset)}>
-                  <MaterialIcons name="inventory" size={22} color="#074B7C" />
+                  <MaterialIcons name="inventory" size={16} color="#074B7C" />
                   <Text style={styles.assetText}>{asset.Name}</Text>
                 </TouchableOpacity>
               ))}
@@ -322,8 +319,9 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
   assetText: {
-    fontSize: 17,
+    fontSize: 12,
     fontWeight: '500',
+    width:"90%",
     color: '#2C3E50',
     marginLeft: 0, // Space between icon and text
   },
@@ -361,10 +359,9 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     width: '100%',
-  
-    marginTop:10,
+    marginTop:5,
     padding:0,
-    paddingVertical: 10,
+    paddingVertical: 4,
     paddingHorizontal:10,
     fontSize: 16,
   },

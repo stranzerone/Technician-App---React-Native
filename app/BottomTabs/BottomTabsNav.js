@@ -29,6 +29,7 @@ import { clearAllTeams, fetchAllTeams } from '../../utils/Slices/TeamSlice';
 import { clearAllUsers, fetchAllUsers } from '../../utils/Slices/UsersSlice';
 import { Keyboard } from 'react-native';
 import { GetSiteUuid } from '../../service/GetSiteInfo';
+import {GetStatusUuid} from '../../service/GetStatusUuid'
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -228,6 +229,7 @@ const StoreSociety = async() =>{
   try {
    
     const response = await GetSiteUuid()
+    const statusResponse = await GetStatusUuid()
     
   } catch (error) {
     console.error('Error fetching society data:', error);

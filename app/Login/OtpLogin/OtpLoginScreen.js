@@ -9,6 +9,8 @@ import {
   Image,
   TouchableWithoutFeedback,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { otpLoginApi } from '../../../service/LoginWithOtp/LoginWithOtpApi';
 import otpSvg from '../../../assets/SvgImages/otp.png'; // Ensure the path to your image is correct
@@ -54,55 +56,59 @@ const PhoneNumberPage = ({ navigation }) => {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={styles.container}>
-        {/* Top Blue Container */}
-        <View style={styles.topContainer} />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined} // Adjusts for iOS; use 'height' for Android
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <SafeAreaView style={styles.container}>
+          {/* Top Blue Container */}
+          <View style={styles.topContainer} />
 
-        <View style={styles.imageUriContainer}>
-          <Image source={otpSvg} style={styles.imageUri} resizeMode="contain" />
-        </View>
+          <View style={styles.imageUriContainer}>
+            <Image source={otpSvg} style={styles.imageUri} resizeMode="contain" />
+          </View>
 
-        <View style={styles.textContainer}>
-          <Text style={styles.headingOTP}>OTP VERIFICATION</Text>
-          <Text style={styles.paraOTP}>
-            Enter OTP for Verification for direct Login to the Dashboard
-          </Text>
-        </View>
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Phone Number Or Email"
-         
-          minLength={1}
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-          />
-          <TouchableOpacity
-            style={[styles.sendOtpButton, loading && styles.sendOtpButtonDisabled]}
-            onPress={handleSendOtp}
-            disabled={loading} // Disable the button while loading
-          >
-            <Text style={styles.sendOtpButtonText}>
-              {loading ? 'Sending OTP...' : 'Send OTP'}
+          <View style={styles.textContainer}>
+            <Text style={styles.headingOTP}>OTP VERIFICATION</Text>
+            <Text style={styles.paraOTP}>
+              Enter OTP for Verification for direct Login to the Dashboard
             </Text>
-          </TouchableOpacity>
-        </View>
+          </View>
 
-        {/* Dynamic Popup for displaying messages */}
-        <DynamicPopup
-          visible={popupVisible}
-          message={popupMessage}
-          onClose={() => setPopupVisible(false)}
-          type="warning"
-          onOk={() => setPopupVisible(false)}
-        />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Phone Number Or Email"
+              minLength={1}
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+            />
+            <TouchableOpacity
+              style={[styles.sendOtpButton, loading && styles.sendOtpButtonDisabled]}
+              onPress={handleSendOtp}
+              disabled={loading} // Disable the button while loading
+            >
+              <Text style={styles.sendOtpButtonText}>
+                {loading ? 'Sending OTP...' : 'Send OTP'}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* Bottom Blue Container */}
-        <View style={styles.bottomContainer} />
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+          {/* Dynamic Popup for displaying messages */}
+          <DynamicPopup
+            visible={popupVisible}
+            message={popupMessage}
+            onClose={() => setPopupVisible(false)}
+            type="warning"
+            onOk={() => setPopupVisible(false)}
+          />
+
+          {/* Bottom Blue Container */}
+          {/* <View style={styles.bottomContainer} /> */}
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 

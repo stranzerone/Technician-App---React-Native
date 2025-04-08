@@ -222,6 +222,29 @@ if(previousScreen == 'ScannedWoTag'){
   }
 }
 
+function formatDateTime(dateTimeString) {
+  if (!dateTimeString) return 'N/A';
+
+  // Convert "2025-04-01 11:00:00" to a Date object
+  const dateObj = new Date(dateTimeString.replace(" ", "T")); // Ensure proper format for Date parsing
+
+  if (isNaN(dateObj)) return 'Invalid Date';
+
+  // Extract YYYY, MM, DD
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const day = String(dateObj.getDate()).padStart(2, '0');
+
+  // Format time as HH:MM am/pm
+  const formattedTime = dateObj.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  }).toLowerCase();
+
+  return `${year}/${month}/${day} ${formattedTime}`;
+}
+
 
   const fontSize = Platform.OS === 'ios' ? 13 : 13;
   const largeFontSize = Platform.OS === 'ios' ? 16 : 18;
@@ -242,7 +265,7 @@ if(previousScreen == 'ScannedWoTag'){
           ID : {workOrder.wo['Sequence No']} 
         </Text>
       {workOrder.wo['Sequence No'].split('-')[0] == 'BR' &&  <View className='bg-red-400 rounded-lg text-white ml-2 px-1'>
-          <Text className='text-white text-xs font-black'>BRKD</Text>
+          <Text className='text-white text-xs font-black'>breakdown</Text>
         </View>}
         {workOrder.wo['Sequence No'].split('-')[0] == 'HK' &&  <View className='bg-green-400 rounded-lg text-white ml-2 px-1'>
           <Text className='text-white text-xs font-black'>HK</Text>
@@ -304,9 +327,9 @@ null
       {users[0] !== "error" &&
         workOrder.wo.Assigned &&
         getUserNames(workOrder.wo.Assigned).split(", ").map((name, index) => (
-          <View key={`user-${index}`} className="bg-blue-100 rounded-md text-xs mb-1 ml-1 mr-1 px-2 py-0.5">
-            <Text className="font-semibold" style={{ fontSize }}>
-  {name.length > 10 ? name.slice(0, 10) + ".." : name}
+          <View key={`user-${index}`} className="bg-blue-100 flex items-center justify-center rounded-md text-center text-xs mb-1 ml-1 mr-1 px-2 py-0.5">
+            <Text className="font-semibold text-center" style={{ fontSize }}>
+  {name}
 </Text>
 
           </View>
@@ -316,7 +339,7 @@ null
         getTeamName(workOrder.wo.AssignedTeam).split(", ").filter((name) => name && name.trim() !== "").map((name, index) => (
           <View
           key={`team-${index}`}
-          className="bg-green-200 rounded-md text-xs mb-1 ml-1 mr-1 px-2 py-0.5"
+          className="bg-green-200 flex items-center justify-center rounded-md text-xs mb-1 ml-1 mr-1 px-2 py-0.5"
           style={{ maxWidth: 110 }} // Adjust maxWidth as needed
         >
           <Text
@@ -324,7 +347,7 @@ null
             style={{ fontSize }}
        
           >
-  {name.length > 7 ? name.slice(0, 7) + ".." : name}
+  {name}
   </Text>
         </View>
         
@@ -341,7 +364,7 @@ null
           <Text className="text-gray-700 font-extrabold ml-2" style={{ fontSize }}>
   {workOrder.wo['Due Date'] 
     ? (/\d{2}:\d{2}/.test(workOrder.wo['Due Date']) 
-        ? workOrder.wo['Due Date'] 
+        ?formatDateTime(workOrder.wo['Due Date'])
         : `${workOrder.wo['Due Date']} 12:00 AM`) 
     : 'N/A'}
 </Text>

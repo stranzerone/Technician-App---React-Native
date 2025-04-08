@@ -15,7 +15,6 @@ try{
       try {
         const isSupported = await NfcManager.isSupported();
         if (!isSupported) {
-          console.log('NFC is not supported on this device.');
           return;
         }
 
@@ -46,10 +45,7 @@ try{
 
   const onTagDetected = async (tag) => {
     try {
-      console.log(tag.id,"this is tag id")
        const response = await GetUuIdForTag(tag.id.toLowerCase());
-      console.log('NFC tag detected:', tag.id, response);
-
       if (response.status === 'success') {
         if(response.metadata.count =='0'){
           Alert.alert("No Asset Found Related to Tag")

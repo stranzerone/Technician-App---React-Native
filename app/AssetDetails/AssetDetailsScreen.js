@@ -4,7 +4,6 @@ import AssetInfo from './AssetInfo';
 const AssetDetailsMain = ({ uuid }) => {
 
   const WoUuId = uuid;
-  console.log(WoUuId, 'Uuid at infomain');
 
   // Toggle expansion
 

@@ -1,19 +1,18 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_URL } from '@env';
+import { API_URL} from '@env';
 
-export const GetSingleWorkOrders = async (uuid,status,breakdownActive) => {
+export const GetStatusUuid = async () => {
 
 
-//https://nppm-api.isocietymanager.com/v3/workorder/assigned/asset?
+
+
   try {
-    // Fetch user info and uuid from AsyncStorage
     const userInfo = await AsyncStorage.getItem('userInfo');
-// const uuid = await AsyncStorage.getItem('uuid');
 
 
     if (!userInfo) {
-      throw new Error('User information or UUID not found in AsyncStorage');
+      throw new Error('User information  not found in AsyncStorage');
     }
 
     // Parse userInfo and access data object inside it
@@ -27,19 +26,10 @@ export const GetSingleWorkOrders = async (uuid,status,breakdownActive) => {
 
       //https://nppm-api.isocietymanager.com/v3/asset/uuid1
     const params = {
-      asset_uuid:uuid,
-      per_page:'10',
-      page_no:'1',
-      "user_id": userId,
-      site_id:societyId,
-      Status:status,
-      breakdown:breakdownActive,
+       "site_id": societyId,
+      "user-id": userId,
       "api-token": apiToken,
-     "user-id": userId,
-      "api-token": apiToken,
-      "user-id": userId
     };
-
 
     const headers = {
       'Content-Type': 'application/json',
@@ -50,16 +40,13 @@ export const GetSingleWorkOrders = async (uuid,status,breakdownActive) => {
       })
     };
 
-
-
     // Make the API request
-    const response = await axios.get(`${API_URL}/v3/workorder/assigned/asset?`, { params,headers,withCredentials: true });
+    const response = await axios.get(`${API_URL}/v3/status?`, {params,headers});
     // Check the response data
-    if(response.data.data){
-  return response.data.data
-    }else{
-      return []
-    }
+    await AsyncStorage.setItem('statusUuid', JSON.stringify(response.data.data));
+
+  return response.data
+
   } catch (error) {
     console.error('Error fetching data:', error.message || error);
     throw error; // Rethrow error to handle it later

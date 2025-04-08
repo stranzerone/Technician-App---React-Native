@@ -148,7 +148,6 @@ const InputField = ({ item, inputValue, setInputValue, imagePreviewUrl, pdfPrevi
     const result = await DocumentPicker.getDocumentAsync({
       type: ['application/pdf', 'image/*'],
     });
-console.log(result,"document selected")
     if (result.assets[0].uri) {
       setSelectedFile(result);
       const uploadResponse = await uploadImageToServer(result.assets[0], item.id, WoUuId);

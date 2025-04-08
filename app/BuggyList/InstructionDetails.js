@@ -27,14 +27,8 @@ const RestrictionCard = ({ wo, restricted, restrictedTime, description, onUpdate
   const [showInput, setShowInput] = useState(false);
   const [loading, setLoading] = useState(false);
  const [category,setCategory]  = useState('')
+
   const formattedTime = formatRestrictedTime(restrictedTime);
-
-
-
-
-
-
-
   const GetCategoryInfo = async()=>{
 
 try{
@@ -59,7 +53,28 @@ setCategory(cat?.Name)
   },[])
 
 
-
+  function formatDateTime(dateTimeString) {
+    if (!dateTimeString) return 'N/A';
+  
+    // Convert "2025-04-01 11:00:00" to a Date object
+    const dateObj = new Date(dateTimeString.replace(" ", "T")); // Ensure proper format for Date parsing
+  
+    if (isNaN(dateObj)) return 'Invalid Date';
+  
+    // Extract YYYY, MM, DD
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(dateObj.getDate()).padStart(2, '0');
+  
+    // Format time as HH:MM am/pm
+    const formattedTime = dateObj.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    }).toLowerCase();
+  
+    return `${year}/${month}/${day} ${formattedTime}`;
+  }
 
 
 
@@ -98,7 +113,7 @@ setCategory(cat?.Name)
   };
 
   return (
-    <View className="w-full max-h-[40vh] p-2 rounded-md shadow-lg border-b-2 bg-blue-50 border-blue-200">
+    <View className="w-full max-h-[50vh] p-2 rounded-md shadow-lg border-b-2 bg-blue-50 border-blue-200">
       <View>
       <View className="flex-row items-center mb-2">
      
@@ -146,14 +161,25 @@ setCategory(cat?.Name)
           {/* Delay Reason Section */}
           <View className="mt-2 flex-row items-center rounded-md px-4 py-4 bg-white">
             {!showInput ? (
-              <TouchableOpacity onPress={() => setShowInput(true)} className="flex-1">
-                <Text className="font-black">Delay Reason</Text>
-                <Text className="text-gray-600 flex flex-row gap-2 mt-1 font-semibold">
-                  <FontAwesome name="pencil" size={15} className="text-blue-500" />
-                  &nbsp;
-                  { delayReason || wo.flag_delay_reason || "Enter delay reason..."}
-                </Text>
-              </TouchableOpacity>
+        <View style={{ maxHeight: 60 }}>
+     
+          <ScrollView 
+      className="px-2" 
+      nestedScrollEnabled={true}  // Allow inner scroll separately
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={true}  // Make sure the scroll is visible
+    >
+      <TouchableOpacity onPress={() => setShowInput(true)} className="flex-1">
+            <Text className="font-black">Delay Reason</Text>
+            <Text className="text-gray-600 flex flex-row gap-2 mt-1 font-semibold">
+              <FontAwesome name="pencil" size={15} style={{ color: "#3B82F6" }} />
+              &nbsp;
+              {delayReason || wo.flag_delay_reason || "Enter delay reason..."}
+            </Text>
+          </TouchableOpacity>
+    </ScrollView>
+      </View>
+      
             ) : (
               <TextInput
                 className="flex-1 text-black"
@@ -178,20 +204,26 @@ setCategory(cat?.Name)
       )}
 
 <View className="mt-2 border-t border-gray-400 pt-2">
-  <View className="max-h-16 min-h-2"> 
-  <View className="flex flex-row items-center justify-start mr-2 space-x-2 font-bold">
-     <FontAwesome name="clock-o" size={16} color="gray" />
-     <Text className="text-gray-700 font-extrabold text-xs ">
-    Created at:  <Text className="text-blue-900 text-xs">{useConvertToSystemTime(wo.created_at)}</Text>
-  </Text>
-</View>
+  <View className="max-h-20 min-h-8"> 
+
     <ScrollView 
       className="px-2" 
-      nestedScrollEnabled={true}  // Allow inner scroll separately
+      nestedScrollEnabled={true}  
       keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={true}  // Make sure the scroll is visible
+      showsVerticalScrollIndicator={true}  
     >
-      <Text className="text-sm text-left italic font-bold text-gray-900">
+{ wo['Due Date'] && <View className="flex flex-row items-center justify-start mr-2 space-x-2 font-bold">
+     <FontAwesome name="clock-o" size={16} color="gray" />
+     <Text className="text-gray-700 font-extrabold">Due at : </Text>
+          <Text className="text-gray-700 font-extrabold ml-2">
+     {wo['Due Date'] 
+    ? (/\d{2}:\d{2}/.test(wo['Due Date']) 
+        ?formatDateTime(wo['Due Date'])
+        : `${wo['Due Date']} 12:00 AM`) 
+    : 'N/A'}
+    </Text>
+</View>}
+      <Text className="text-sm text-left  font-bold text-gray-900">
         ** {description} **
       </Text>
     </ScrollView>

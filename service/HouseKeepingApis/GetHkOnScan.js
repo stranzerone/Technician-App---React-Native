@@ -43,7 +43,6 @@ export const getLocationHk = async (uuid,status) => {
     const response = await axios.get(`${API_URL}/v5/housekeeping/location?`, {params});
     // Check the response data
     const data = response.data.data;
-console.log(data,'this is hk data')
   return data
 
   } catch (error) {
