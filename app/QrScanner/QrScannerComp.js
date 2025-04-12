@@ -48,12 +48,18 @@ export default function QrScanner({ onRefresh }) {
     }, [])
   );
   
-
+  const isUUID = (str) => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    console.log(uuidRegex.test(str),'this is uuid')
+    return uuidRegex.test(str);
+  };
+  
   const handleBarcodeScanned = async ({ data }) => {
     setScanned(true);
+    console.log(data,"this is data")
+    console.log(data.v, "this is data.v")
     const type = data.split("=")[1];
     const uuid = data.split("=")[2];
-
     try {
       if (data.includes("app.factech")) {
         await AsyncStorage.setItem("uuid", uuid);
@@ -62,7 +68,18 @@ export default function QrScanner({ onRefresh }) {
 
         setScanned(false);
         navigation.navigate("ScannedWoTag", { uuid, type });
-      } else {
+      } else if(isUUID(data)) {
+        await AsyncStorage.setItem("uuid", data);
+        await AsyncStorage.setItem("type", "AS");
+        setScanned(false);
+
+        navigation.navigate("ScannedWoTag", { uuid:data, type:"AS" });
+
+      } else if(JSON.parse(data).v == "1"){
+          if(JSON.parse(data).t==="warehouse"){
+            navigation.navigate("InventoryOptionsScreen", { uuid:data.uuid, type:"warehouse" });
+          }
+      }else{
         setPopupMessage("QR Code is not related to site. Please scan a valid QR.");
         setPopupType("error");
         setPopupVisible(true);

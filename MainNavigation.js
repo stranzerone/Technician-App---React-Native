@@ -12,6 +12,11 @@ import FilteredWorkOrderPage from './app/WorkOrders/ScannedWorkOrderScreen';
 import BuggyListTopTabs from './app/BuggyListTopTabs/BuggyListTopTabsQr';
 import UpdateAppScreen from './app/TabNavigatorsWo/VersionHandler';
 import CameraScreen from "./app/GlobalVariables/CameraScreen";
+import RequestServiceTabs from './app/ServiceTab/RequestServiceTopTabs';
+import InventoryOptionsScreen from './app/Inventory/InventoryMainScreen';
+import IRItemsScreen from './app/Inventory/IR/IssueRequestScreen';
+import CreateIRScreen from './app/Inventory/IR/RaiseIssueRequest';
+import IRDetailScreen from './app/Inventory/IR/IRItemInfo';
 const Stack = createNativeStackNavigator();
 
 export default function MainNavigation() {
@@ -48,39 +53,32 @@ export default function MainNavigation() {
           <Stack.Screen options={{ title:"Request OTP"}} name="OtpLogin" component={OtpLogin} />
           <Stack.Screen  options={{ title:"OTP Verification"}} name="OtpEnter" component={OtpEnterPage} />
           <Stack.Screen  options={{ title:"Camera"}} name="CameraScreen" component={CameraScreen} />
+          <Stack.Screen  options={{ title:"Inventory"}} name="InventoryOptionsScreen" component={InventoryOptionsScreen} />
+          <Stack.Screen  options={{ title:"Issue Requests"}} name="IssuedRequests" component={IRItemsScreen} />
+          <Stack.Screen  options={{ title:"New Issue Request"}} name="CreateIssueRequest" component={CreateIRScreen} />
+          <Stack.Screen  options={{ title:"IR detail"}} name="IrDetail" component={IRDetailScreen} />
 
+    <Stack.Screen
+    
+    name="AddWoQr"
+    component={RequestServiceTabs}
+    options={{
+      title:'',
+      headerShown: false }}
+  />
           <Stack.Screen
       name="ScannedWoTag"
       component={FilteredWorkOrderPage}
       options={{ headerShown: false }}
     />
 
+
 <Stack.Screen
       name="ScannedWoBuggyList"
       component={BuggyListTopTabs}
       options={{ headerShown: false }}
-    />
-         
-         
-          {/* <Stack.Screen name="WorkOrderPage" component={WorkOrderPage} />
-          <Stack.Screen 
-          name="subComplaint"
-          component={SubComplaint} 
-          options={{ title: 'Sub Category', headerShown: true }}
+ />
 
-          />
-          <Stack.Screen 
-           name="complaintInput"
-           component={NewComplaintPage}
-           options={{ title: 'Report Complaint', headerShown: true }}
-           />
-          <Stack.Screen name="CloseComplaint" component={ComplaintCloseScreen} />
-          <Stack.Screen 
-          name="RaiseComplaint"
-           component={ComplaintDropdown} 
-           options={{ title: 'Select Category', headerShown: true }}
-
-           /> */}
         </Stack.Navigator>
       </NavigationContainer>
       {modalVisible && <UpdateAppScreen />}

@@ -327,8 +327,8 @@ null
       {users[0] !== "error" &&
         workOrder.wo.Assigned &&
         getUserNames(workOrder.wo.Assigned).split(", ").map((name, index) => (
-          <View key={`user-${index}`} className="bg-blue-100 flex items-center justify-center rounded-md text-center text-xs mb-1 ml-1 mr-1 px-2 py-0.5">
-            <Text className="font-semibold text-center" style={{ fontSize }}>
+          <View key={`user-${index}`} className="bg-blue-100 rounded-md text-xs mb-1 ml-1 mr-1 px-2 py-0.5">
+            <Text className="font-semibold" style={{ fontSize }}>
   {name}
 </Text>
 
@@ -339,7 +339,7 @@ null
         getTeamName(workOrder.wo.AssignedTeam).split(", ").filter((name) => name && name.trim() !== "").map((name, index) => (
           <View
           key={`team-${index}`}
-          className="bg-green-200 flex items-center justify-center rounded-md text-xs mb-1 ml-1 mr-1 px-2 py-0.5"
+          className="bg-green-200 rounded-md text-xs mb-1 ml-1 mr-1 px-2 py-0.5"
           style={{ maxWidth: 110 }} // Adjust maxWidth as needed
         >
           <Text

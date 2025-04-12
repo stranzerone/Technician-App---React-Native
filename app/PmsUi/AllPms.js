@@ -33,7 +33,8 @@ const PMList = ({screen,uuid,type}) => {
    
    
         // If data is not available in AsyncStorage, fetch from API
-        const data = await GetAllPmsApi();
+        const data = await GetAllPmsApi({screen:screen,asset_uuid:QrUuid});
+
         setPms(data);
         setFilteredPms(data);
       
@@ -91,32 +92,32 @@ const PMList = ({screen,uuid,type}) => {
     <View style={styles.card}>
       <View style={styles.cardRow}>
         <Icon name="file-text" size={24} color="#1996D3" />
-        <Text style={styles.cardTitle}>{item.Name || "Unnamed PM"}</Text>
+        <Text style={styles.cardTitle}>{screen ==="qr" ?item?.pm?.Name|| "Unnamed PM" : item?.Name || "Unnamed PM"}</Text>
       </View>
 
       <View style={styles.cardRow}>
         <Icon name="cogs" size={20} color="#4CAF50" />
         <Text style={styles.cardText}>
-          <Text style={styles.boldText}>Asset:</Text> {item.ass || "Not Assigned"}
+          <Text style={styles.boldText}>Asset:</Text> {screen ==="qr" ?item?.asset?.Name || "Assigned" : item?.ass || "Not Assigned"}
         </Text>
       </View>
 
       <View style={styles.cardRow}>
         <Icon name="tags" size={20} color="#FFA726" />
         <Text style={styles.cardText}>
-          <Text style={styles.boldText}>Category:</Text> {item.cat || "N/A"}
+          <Text style={styles.boldText}>Category:</Text> {screen ==="qr" ?item?.category?.Name || "N/A" : item?.cat || "N/A"}
         </Text>
       </View>
 
-      <View style={styles.cardRow}>
+{ screen === "no"  &&     <View style={styles.cardRow}>
         <Icon name="map-marker" size={20} color="#F44336" />
         <Text style={styles.cardText}>
-          <Text style={styles.boldText}>Location:</Text> {item.loc || "Unknown"}
+          <Text style={styles.boldText}>Location:</Text> {item?.loc || "Unknown"}
         </Text>
-      </View>
+      </View>}
 
       <TouchableOpacity
-        onPress={() => showConfirmationPopup(item._ID)}
+        onPress={() => showConfirmationPopup( screen ==="qr"?item?.pm._ID : item._ID)}
         style={styles.createButton}
       >
         <Text style={styles.createButtonText}>Create</Text>
@@ -139,12 +140,17 @@ const PMList = ({screen,uuid,type}) => {
       {loading ? (
         <Loader />
         // <ActivityIndicator size="large" color="#1996D3" style={styles.loader} />
-      ) : filteredPms.length > 0  ? (
-        <FlatList
+      ) : filteredPms?.length > 0  ? (
+    screen !=="qr"  ?  <FlatList
           data={filteredPms}
           renderItem={renderItem}
-          keyExtractor={(item) => item.uuid}
-        />
+          keyExtractor={(item) => item._ID}
+        />:
+        <FlatList
+        data={filteredPms}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+      />
       ) : (
         <View style={styles.emptyContainer}>
           <Icon name="exclamation-circle" size={40} color="#ccc" />

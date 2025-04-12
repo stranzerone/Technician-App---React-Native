@@ -12,13 +12,11 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './utils/Store/Store.js';
 import MainNavigation from './MainNavigation.js';
-import NfcManager, { NfcEvents } from 'react-native-nfc-manager';
-import  GetUuIdForTag  from './service/NfcTag/GetUuId.js';
+import NfcManager from 'react-native-nfc-manager';
 NfcManager.start();
 
 const App = () => {
   const [nfcEnabled, setNfcEnabled] = useState(null);
-  const [nfcDetected, setNfcDetected] = useState(false);
   const [showNfcModal, setShowNfcModal] = useState(false);
 
   useEffect(() => {
@@ -26,7 +24,6 @@ const App = () => {
       try {
         const isSupported = await NfcManager.isSupported();
         if (!isSupported) {
-          console.log('NFC is not supported on this device.');
           return;
         }
 

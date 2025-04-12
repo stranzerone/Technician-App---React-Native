@@ -50,8 +50,6 @@ export const GetSingleWorkOrders = async (uuid,status,breakdownActive) => {
       })
     };
 
-
-
     // Make the API request
     const response = await axios.get(`${API_URL}/v3/workorder/assigned/asset?`, { params,headers,withCredentials: true });
     // Check the response data

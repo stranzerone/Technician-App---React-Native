@@ -2,31 +2,54 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '@env';
 
-export const GetAllPmsApi = async () => {
+export const GetAllPmsApi = async ({ screen, asset_uuid }) => {
   try {
-    // Fetch user info and uuid from AsyncStorage
     const userInfo = await AsyncStorage.getItem('userInfo');
-// const uuid = await AsyncStorage.getItem('uuid');
 
 
     if (!userInfo) {
       throw new Error('User information not found in AsyncStorage');
     }
 
-    // Parse userInfo and access data object inside it
     const parsedUserInfo = JSON.parse(userInfo);
+    const userId = parsedUserInfo?.data?.id;
+    const apiToken = parsedUserInfo?.data?.api_token;
+    const societyId = parsedUserInfo?.data?.societyId;
 
-      // Extract user_id (id) and api_token
-      const userId = parsedUserInfo.data.id; 
-      const apiToken = parsedUserInfo.data.api_token;
-      const societyId =parsedUserInfo.data.societyId
+    const headers = {
+      'Content-Type': 'application/json',
+      'ism-auth': JSON.stringify({
+        "api-token": apiToken,
+        "user-id": userId,
+        "site-id": societyId,
+      }),
+    };
 
-      //https://nppm-api.isocietymanager.com/v3/pm/all
-    // const apiUrl ='https://nppm-api.isocietymanager.com/v3/pm/all';
-    
-    // Log the selected filter for debugging
+    // If the screen is QR, use a different endpoint and add asset_uuid to params
+    if (screen === 'qr') {
+      if (!asset_uuid) {
+        throw new Error('Asset UUID is required for QR screen');
+      }
 
-    // Define the parameters for the API call
+      const params = {
+        site_id: societyId,
+        api_token: apiToken,
+        "user-id": userId,
+        'site-id': societyId,
+        'api-token': apiToken,
+        asset_uuid, // <-- Additional param for QR
+      };
+
+      const response = await axios.get(`${API_URL}/v3/asset/pm`, {
+        params,
+        headers,
+        withCredentials: true,
+      });
+
+      return response.data?.data;
+    }
+
+    // Default case for all other screens
     const params = {
       site_id: societyId,
       api_token: apiToken,
@@ -35,23 +58,16 @@ export const GetAllPmsApi = async () => {
       'api-token': apiToken,
     };
 
+    const response = await axios.get(`${API_URL}/v3/pm/all`, {
+      params,
+      headers,
+      withCredentials: true,
+    });
 
-    const headers = {
-      'Content-Type': 'application/json',
-      'ism-auth': JSON.stringify({
-        "api-token": apiToken,     // Dynamic from AsyncStorage
-        "user-id": userId,         // Dynamic from AsyncStorage
-        "site-id":  societyId    // If siteId is not available, fallback to default
-      })
-    };
-    // Make the API request
-    const response = await axios.get(`${API_URL}/v3/pm/all?`, { params,headers,withCredentials: true });
-    // Check the response data
-    const data = response.data.data;
-    return data
+    return response.data?.data;
 
   } catch (error) {
     console.error('Error fetching data:', error.message || error);
-    throw error; // Rethrow error to handle it later
+    throw error;
   }
 };
