@@ -32,7 +32,6 @@ const PMList = ({screen,uuid,type}) => {
     try {
    
    
-        // If data is not available in AsyncStorage, fetch from API
         const data = await GetAllPmsApi({screen:screen,asset_uuid:QrUuid});
 
         setPms(data);
@@ -48,18 +47,26 @@ const PMList = ({screen,uuid,type}) => {
   // Fetch PMs only on first mount (when app is opened)
   useEffect(() => {
     loadPms();
-  }, []);
+  }, [uuid]);
 
 
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-    if (query) {
-      const filteredData = pms.filter((item) =>
+    if (pms && query && screen !== "qr") {
+      const filteredData = pms?.filter((item) =>
         item.Name?.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredPms(filteredData);
-    } else {
+    } 
+    
+    else if(pms && query && screen === "qr"){
+      const filteredData = pms?.filter((item) =>
+        item.pm.Name?.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredPms(filteredData);
+    }
+    else {
       setFilteredPms(pms); // Reset to the original list if search is empty
     }
   };
@@ -92,7 +99,7 @@ const PMList = ({screen,uuid,type}) => {
     <View style={styles.card}>
       <View style={styles.cardRow}>
         <Icon name="file-text" size={24} color="#1996D3" />
-        <Text style={styles.cardTitle}>{screen ==="qr" ?item?.pm?.Name|| "Unnamed PM" : item?.Name || "Unnamed PM"}</Text>
+        <Text style={styles.cardTitle}>{screen ==="qr" ? item?.pm?.Name|| "Unnamed PM" : item?.Name || "Unnamed PM"}</Text>
       </View>
 
       <View style={styles.cardRow}>

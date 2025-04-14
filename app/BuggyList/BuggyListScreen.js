@@ -157,7 +157,17 @@ const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime,id,type,sequence,ha
     return <Loader />;
   }
 
-
+  const groupBy = (array, key) => {
+    return array.reduce((result, currentItem) => {
+      const groupKey = currentItem[key] || 'Ungrouped';
+      if (!result[groupKey]) {
+        result[groupKey] = [];
+      }
+      result[groupKey].push(currentItem);
+      return result;
+    }, {});
+  };
+  
 
 
   return (
@@ -173,23 +183,29 @@ const BuggyListPage = ({ uuid, wo ,restricted,restrictedTime,id,type,sequence,ha
             <InfoCard  wo={wo} restricted={restricted} restrictedTime={restrictedTime}  description={assetDescription}/>
           </View>
           {/* List of Cards */}
+          {data.length !== 0 ? (
+  Object.entries(groupBy(data, 'group')).map(([groupName, items], groupIndex) => (
+    <View key={groupIndex} style={{ marginBottom: 20 }}>
+      <Text style={styles.groupTitle}>{groupName}</Text>
+      {items.map((item, index) => (
+        <CardRenderer
+          key={item.id}
+          restricted={restricted}
+          item={item}
+          onUpdateSuccess={handleRefreshData}
+          index={index}
+          WoUuId={uuid}
+          wo={wo}
+        />
+      ))}
+    </View>
+  ))
+) : (
+  <View style={styles.emptyContainer}>
+    <Text style={styles.emptyText}>No instructions available.</Text>
+  </View>
+)}
 
-          {data.length !== 0?
-          <FlatList
-            data={data}
-            renderItem={renderCard}
-            keyExtractor={(item) => item.id.toString()}
-            scrollEnabled={false} 
-            contentContainerStyle={styles.listContainer}
-          />
-          : 
-          
-          
-          <View style={styles.emptyContainer}>
-          
-                <Text style={styles.emptyText}>No instructions available.</Text>
-           </View>
-          }
           
           {/* Comments Section */}
       
@@ -248,6 +264,18 @@ const styles = StyleSheet.create({
 // bottom: 80,
 left:10,
   },
+  groupTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    backgroundColor: '#e1ecf4',
+    borderRadius: 5,
+    marginHorizontal: 1,
+    marginTop: 10,
+  },
+  
   progressBarContainer:{
    marginBottom: Platform.OS === "ios"?  10:null,
    marginLeft: Platform.OS ==="ios" ? 20 :null,

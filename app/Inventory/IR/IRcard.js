@@ -5,14 +5,13 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 
 const getStatusColor = (status) => {
   switch (status) {
-    case "Approved":
+    case "APPROVED":
       return "#22C55E";
-    case "Pending":
+    case "PENDING":
       return "#FACC15";
-    case "Rejected":
-    case "Cancelled":
+    case "DECLINED":
+    case "CANCELLED":
       return "#EF4444";
-    case "Draft":
     case "DRAFT":
       return "#A5B4FC";
     default:
@@ -20,21 +19,23 @@ const getStatusColor = (status) => {
   }
 };
 
+
 const IRCard = ({ item }) => {
   const issue = item.issue || {};
-  const firstLineItem = item.item?.[0] || {};
+ 
   const sequenceNo = issue["Sequence No"] || "N/A";
   const statusName = issue.Status || "Unknown";
   const createdAt = issue.created_at?.split(" ")[0] || "-";
   const statusColor = getStatusColor(statusName);
-  const itemName = firstLineItem?.Name || "Unnamed Item";
+  const itemNames = item.item?.map((i) => i.Name).join(", ") || "Unnamed Item";
+
 
   const navigation = useNavigation()
   return (
 
     <Pressable
     onPress={()=>navigation.navigate("IrDetail", { item })}
-      className="bg-white rounded-2xl px-4 py-3 mb-4"
+      className="bg-white rounded-xl px-4 py-3 mb-1"
       style={{
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 3 },
@@ -59,15 +60,15 @@ const IRCard = ({ item }) => {
             borderRadius: 20,
           }}
         >
-          <Text className="text-white text-xs font-semibold">{statusName}</Text>
+          <Text className="text-white text-xs font-black">{statusName}</Text>
         </View>
       </View>
 
       {/* Item Name */}
       <View className="flex-row items-center mb-2">
         <FontAwesome name="cube" size={16} color="#64748B" />
-        <Text className="ml-2 text-gray-800 text-sm font-medium">{itemName}</Text>
-      </View>
+        <Text className="ml-2 text-gray-800 text-sm font-medium">{itemNames}</Text>
+        </View>
 
       {/* Created At */}
       <View className="flex-row items-center">

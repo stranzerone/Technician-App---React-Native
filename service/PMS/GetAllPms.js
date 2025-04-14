@@ -25,6 +25,7 @@ export const GetAllPmsApi = async ({ screen, asset_uuid }) => {
       }),
     };
 
+    console.log(screen,'this is screen for page')
     // If the screen is QR, use a different endpoint and add asset_uuid to params
     if (screen === 'qr') {
       if (!asset_uuid) {
@@ -45,7 +46,6 @@ export const GetAllPmsApi = async ({ screen, asset_uuid }) => {
         headers,
         withCredentials: true,
       });
-
       return response.data?.data;
     }
 

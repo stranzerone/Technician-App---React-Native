@@ -40,9 +40,9 @@ const InventoryOptionsScreen = () => {
   style={{
     width: cardSize,
     marginBottom: 16,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: "black",
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: "gray",
     backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",

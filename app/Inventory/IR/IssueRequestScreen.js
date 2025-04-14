@@ -6,12 +6,16 @@ import {
   SafeAreaView,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
 } from "react-native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import { useNavigation } from "@react-navigation/native";
 import IRCard from "./IRcard"; // adjust path as needed
 import { GetAllIssueItems } from "../../../service/Inventory/GetAllissues";
 
 const IRItemsScreen = () => {
+  const navigation = useNavigation();
+
   const [irItems, setIrItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -19,7 +23,6 @@ const IRItemsScreen = () => {
   const fetchData = async () => {
     try {
       const response = await GetAllIssueItems();
-      console.log(response, "this is full response");
       setIrItems(response.data);
     } catch (error) {
       console.error("Error fetching data:", error.message || error);
@@ -45,8 +48,12 @@ const IRItemsScreen = () => {
     </View>
   );
 
+  const handleCreateIR = () => {
+    navigation.navigate("CreateIssueRequest"); // adjust route name as needed
+  };
+
   return (
-    <SafeAreaView className="flex-1 bg-[#F1F5F9] px-4">
+    <SafeAreaView className="flex-1 bg-[#F1F5F9] px-4 pb-32">
       {loading ? (
         <ActivityIndicator size="large" color="#074B7C" className="mt-10" />
       ) : (
@@ -61,6 +68,17 @@ const IRItemsScreen = () => {
           }
         />
       )}
+
+      {/* Floating Button */}
+      <View className="absolute bottom-16 left-4 right-4">
+        <TouchableOpacity
+          onPress={handleCreateIR}
+          className="bg-[#074B7C] py-4 rounded-2xl flex-row items-center justify-center shadow-lg"
+        >
+          <FontAwesome name="plus" size={16} color="#fff" />
+          <Text className="text-white font-semibold ml-2">Create New IR</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
