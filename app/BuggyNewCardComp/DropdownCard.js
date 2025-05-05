@@ -72,7 +72,7 @@ const DropdownCard = ({ item, onUpdate,editable }) => {
       {/* Modal for options */}
       <OptionsModal
         visible={modalVisible}
-        options={item.options.map((option) => ({
+        options={item?.options?.map((option) => ({
           label: option,
           value: option,
         }))}

@@ -47,7 +47,6 @@ if(data.ask_otp == -1){
 
     try {
       const response = await axios.put(`${API_URL2}/staff/updatecomplaint`, payload, { params, headers });
-    console.log('API Response:', response.data); // Log 
       return response.data;
     } catch (error) {
       console.error('Error fetching data:', error);

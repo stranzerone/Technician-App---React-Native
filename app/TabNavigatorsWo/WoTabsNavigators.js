@@ -24,7 +24,6 @@ const [modelType,setModelType]  = useState('warning')
       try {
         const isSupported = await NfcManager.isSupported();
         if (!isSupported) {
-          console.log("NFC is not supported on this device.");
           return;
         }
 
@@ -54,17 +53,11 @@ const [modelType,setModelType]  = useState('warning')
   }, []);
 
   const onTagDetected = async (tag) => {
-    console.log("Tag detected", tag);
     try {
       if (!tag || !tag.id) {
-        console.log("Invalid or missing NFC tag.");
         return;
       }
-
-      console.log(tag.id, "this is tag id");
-
       const response = await GetUuIdForTag(tag.id.toLowerCase());
-      console.log("NFC tag detected:", tag.id, response);
       setModalVisible(true);
 
       setModelType("success")
@@ -79,11 +72,9 @@ const [modelType,setModelType]  = useState('warning')
     It seems tag <Text style={{ fontWeight: 'bold' }}> {tag.id.toLowerCase()}</Text> is not associated with any asset or location.
   </>);
           setModalVisible(true);
-          console.log("This NFC is not associated with any asset or location");
         } else {
           const siteUuid = response.data[0]?.uuid;
           if (!siteUuid) {
-            console.log("Invalid site_uuid in response data:", response.data[0]);
             return;
           }
 

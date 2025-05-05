@@ -16,7 +16,6 @@ export const MarkAsCompleteApi = async ({item,remark,sequence,siteUuid}) => {
  const getStatusUuid = (statusName) => {
 
   const status = storedStatuses?.find(item => item.Name === statusName);
-  console.log(status,'this is the status')
   return status ? status.uuid : ""; // Return found UUID or empty string if not found
 };
   if (userInfo) {

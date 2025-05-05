@@ -61,7 +61,6 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
     }, [uuid, type, selectedFilter, listType,breakdownActive])
   );
 
-
   const fetchWorkOrders = async () => {
     setLoading(true);
   
@@ -93,8 +92,6 @@ const ScannedWorkOrderPage = ({ route, uuids: passedUuid }) => {
     }
   };
   
-
-
 
 const permissionToAdd = ppmWorkorder.some((permission) => permission.includes('C'))
 
@@ -211,7 +208,7 @@ const permissionToAdd = ppmWorkorder.some((permission) => permission.includes('C
             <Text style={styles.statusText}>{selectedFilter}</Text>
           </View>
             <TouchableOpacity
-            onPress={() => navigation.navigate('AddWoQr', { qr:"qr",type:type,uuid:uuid })}
+            onPress={() => navigation.navigate('AddWo', { qr:"qr",type:type,uuid:uuid })}
             style={[styles.addButton,{backgroundColor:permissionToAdd ? 'white' : 'lightgray'}]}
             disabled={!permissionToAdd}
             >

@@ -19,7 +19,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.sumasamu.isocietyManagerAdmin2"
+      "package": "com.sumasamu.isocietyManagerAdmin"
     },
     "web": {
       "favicon": "./assets/favicon.png"

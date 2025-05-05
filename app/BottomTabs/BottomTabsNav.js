@@ -30,6 +30,9 @@ import { clearAllUsers, fetchAllUsers } from '../../utils/Slices/UsersSlice';
 import { Keyboard } from 'react-native';
 import { GetSiteUuid } from '../../service/GetSiteInfo';
 import {GetStatusUuid} from '../../service/GetStatusUuid'
+import IRItemsScreen from '../Inventory/IR/IssueRequestScreen';
+import CreateIRScreen from '../Inventory/IR/RaiseIssueRequest';
+import InventoryOptionsScreen from '../Inventory/InventoryMainScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -84,14 +87,14 @@ const QRCodeStack = () => (
         title:'',
         headerShown: false }}
     />
-      <Stack.Screen
+      {/* <Stack.Screen
     
     name="AddWoQr"
     component={RequestServiceTabs}
     options={{
       title:'',
       headerShown: false }}
-  />
+  /> */}
 
 
 
@@ -426,8 +429,9 @@ const StoreSociety = async() =>{
         <Tab.Screen name="ServiceRequests" options={{ title: 'Service Request', headerShown: true, }} component={ServiceRequestStack} />
 
         <Tab.Screen 
-          name="Notifications" 
-          // component={NotificationMainPage}
+          name="Notifications"
+                    // component={IRItemsScreen}
+ 
           component={NotificationMainPage}
           options={{
             title:'Notifications',

@@ -8,16 +8,12 @@ export const UpdateWorkOrderApi = async ({ siteUUID, description }) => {
   const uuid = await AsyncStorage.getItem('uuid');
 
   if (userInfo) {
-    const { id: userId, api_token: apiToken, site_id: siteId,societyId:societyId } = JSON.parse(userInfo);
+    const { id: userId, api_token: apiToken,societyId:societyId } = JSON.parse(userInfo);
 
     // Get current date and time in the required format (YYYY-MM-DD HH:mm:ss)
     const currentDate = new Date();
     const formattedDate = currentDate.toISOString().slice(0, 19).replace('T', ' ');  // Format to "YYYY-MM-DD HH:mm:ss"
 
-    // Define the API endpoint
-    // const apiUrl = 'https://nppm-api.isocietymanager.com/v3/workorder';
-
-    // Prepare the payload for the API request
     const payload = {
       Description: description,
       site_uuid: siteUUID,

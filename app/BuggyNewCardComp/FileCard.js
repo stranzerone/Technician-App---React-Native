@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,8 +8,10 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { Camera } from "react-native-vision-camera";
 import { useNavigation } from "@react-navigation/native";
 import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system";
 import { uploadImageToServer } from "../../service/ImageUploads/ConvertImageToUrlApi";
 import styles from "../BuggyListCardComponets/InputFieldStyleSheet";
 import RemarkCard from "./RemarkCard";
@@ -18,13 +20,24 @@ import ImageViewing from "react-native-image-viewing";
 
 const FileCard = ({ item, onUpdate, editable }) => {
   const [capturedImage, setCapturedImage] = useState(item.result || null);
+  const [hasPermission, setHasPermission] = useState(null);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
   const updatedTime = useConvertToSystemTime(item?.updated_at);
   const navigation = useNavigation();
 
-
+  useEffect(() => {
+    (async () => {
+      const status = await Camera.getCameraPermissionStatus();
+      if (status === "granted") {
+        setHasPermission(true);
+      } else {
+        const newStatus = await Camera.requestCameraPermission();
+        setHasPermission(newStatus === "authorized");
+      }
+    })();
+  }, []);
 
   const compressImage = async (uri) => {
     try {
@@ -46,7 +59,11 @@ const FileCard = ({ item, onUpdate, editable }) => {
   };
 
   const handleCaptureImage = async () => {
-
+    const currentPermission = await Camera.getCameraPermissionStatus();
+    if (currentPermission !== "granted") {
+      Alert.alert("Permission Required", "Camera permission is required to capture an image.");
+      return;
+    }
 
     navigation.navigate("CameraScreen", {
       onPictureTaken: async (uri) => {

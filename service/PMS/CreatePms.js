@@ -32,7 +32,6 @@ export const CreatePmsApi = async ({ uuid }) => {
     const response = await axios.post(
       `${API_URL}/v3/action/createwofrompm`,{ uuid },{ headers } 
     );
-
     // Extract and return response data
     const data = response.data;
     return data;

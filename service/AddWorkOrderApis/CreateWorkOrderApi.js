@@ -19,7 +19,6 @@ export const submitWorkOrder = async (workOrderData) => {
     const getStatusUuid = (statusName) => {
 
       const status = storedStatuses?.find(item => item.Name === statusName);
-      console.log(status,'this is the status')
       return status ? status.uuid : ""; // Return found UUID or empty string if not found
     };
 
@@ -55,7 +54,6 @@ export const submitWorkOrder = async (workOrderData) => {
       "site_uuid":site_uuid,
       "created_by": userId
     };
-    console.log(payload,"this is due data")
 
     // Pass payload as the second argument and headers as the third argument
     const response = await axios.post(`${API_URL}/v3/`+workOrderData.woType, payload, { headers });

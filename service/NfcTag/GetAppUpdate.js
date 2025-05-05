@@ -18,7 +18,7 @@ export default GetAppUdatesApi = async () => {
 
       const params = {
         code:"factech_tech_android",
-         version_code: 490,
+         version_code: 503,
          "api-token":apiToken,
          "user-id": userId,
           app_id:APP_ID
